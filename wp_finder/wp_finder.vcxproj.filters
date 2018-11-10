@@ -39,9 +39,6 @@
     <ClInclude Include="..\nav\minheap.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\nav\list.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="wp_finder.cpp">

@@ -61,7 +61,7 @@ find_neighbors(pathfinder_t * finder, node_t * node, node_t** neighbours) {
 	for ( i = 0; i < node->size; i++ ) {
 		node_t * nei = &finder->node[node->link[i]];
 
-		if (nei->next) {
+		if (nei->closed) {
 			continue;
 		}
 

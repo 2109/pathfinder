@@ -118,7 +118,7 @@ find_neighbors(pathfinder_t * finder, struct node * node, node_t **neighbours) {
 		int x = node->x + DIRECTION[i][0];
 		int z = node->z + DIRECTION[i][1];
 		node_t * nei = find_node(finder, x, z);
-		if ( nei && nei->next == NULL ) {
+		if ( nei && nei->closed == 0 ) {
 			if ( !isblock(finder, nei) ) {
 				nei->next = ( *neighbours );
 				( *neighbours ) = nei;

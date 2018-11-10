@@ -109,7 +109,6 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\nav\list.h" />
     <ClInclude Include="..\nav\minheap.h" />
     <ClInclude Include="..\wp\pathfinder.h" />
     <ClInclude Include="Resource.h" />
