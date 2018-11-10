@@ -103,6 +103,17 @@ dot2poly(struct nav_mesh_context* mesh_ctx, int poly_id, struct vector3* pt) {
 	return min;
 }
 
+static inline bool
+vt_inside_vt(struct vector3* vt, struct vector3* vtl, struct vector3* vtr) {
+	double sign_a = cross_product_direction(vtl, vt);
+	double sign_b = cross_product_direction(vtr, vt);
+
+	if ( ( sign_a < 0 && sign_b > 0 ) || ( sign_a == 0 && sign_b > 0 ) || ( sign_a < 0 && sign_b == 0 ) ) {
+		return true;
+	}
+	return false;
+}
+
 bool
 inside_poly(struct nav_mesh_context* mesh_ctx, int* poly, int size, struct vector3* vt3) {
 	int sign = 0;
@@ -239,22 +250,22 @@ H_COST(struct nav_node* from, struct vector3* to) {
 
 bool
 raycast(struct nav_mesh_context* ctx, struct vector3* pt0, struct vector3* pt1, struct vector3* result, search_dumper dumper, void* userdata) {
-	struct nav_node* curr_node = search_node(ctx, pt0->x, pt0->y, pt0->z);
+	struct nav_node* node = search_node(ctx, pt0->x, pt0->y, pt0->z);
 
 	int index = 0;
 	struct vector3 vt10;
 	vector3_sub(pt1, pt0, &vt10);
 
-	while ( curr_node ) {
-		if ( inside_node(ctx, curr_node->id, pt1->x, pt1->y, pt1->z) ) {
+	while ( node ) {
+		if ( inside_node(ctx, node->id, pt1->x, pt1->y, pt1->z) ) {
 			vector3_copy(result, pt1);
 			return true;
 		}
 
 		bool crossed = false;
 		int i;
-		for ( i = 0; i < curr_node->size; i++ ) {
-			struct nav_border* border = get_border(ctx, curr_node->border[i]);
+		for ( i = 0; i < node->size; i++ ) {
+			struct nav_border* border = get_border(ctx, node->border[i]);
 
 			struct vector3* pt3 = &ctx->vertices[border->a];
 			struct vector3* pt4 = &ctx->vertices[border->b];
@@ -263,39 +274,32 @@ raycast(struct nav_mesh_context* ctx, struct vector3* pt0, struct vector3* pt1, 
 			vector3_sub(pt3, pt0, &vt30);
 			vector3_sub(pt4, pt0, &vt40);
 
-			double sign_a = cross_product_direction(&vt30, &vt10);
-			double sign_b = cross_product_direction(&vt40, &vt10);
-
-			if ( ( sign_a < 0 && sign_b > 0 ) || ( sign_a == 0 && sign_b > 0 ) || ( sign_a < 0 && sign_b == 0 ) ) {
+			if ( vt_inside_vt(&vt10, &vt30, &vt40)) {
 				int next = -1;
 				if ( border->node[0] != -1 ) {
-					if ( border->node[0] == curr_node->id )
+					if ( border->node[0] == node->id )
 						next = border->node[1];
 					else
 						next = border->node[0];
 				}
 				else
-					assert(border->node[1] == curr_node->id);
+					assert(border->node[1] == node->id);
 
 				if ( next == -1 ) {
 					cross_point(pt3, pt4, pt1, pt0, result);
-					result->x = pt0->x + ( result->x - pt0->x ) * 0.9;
-					result->z = pt0->z + ( result->z - pt0->z ) * 0.9;
 					return true;
 				}
 				else {
 					struct nav_node* next_node = get_node(ctx, next);
 					if ( get_mask(ctx->mask_ctx, next_node->mask) == 0 ) {
 						cross_point(pt3, pt4, pt1, pt0, result);
-						result->x = pt0->x + ( result->x - pt0->x ) * 0.9;
-						result->z = pt0->z + ( result->z - pt0->z ) * 0.9;
 						return true;
 					}
 					if ( dumper )
 						dumper(userdata, next);
 
 					crossed = true;
-					curr_node = next_node;
+					node = next_node;
 					break;
 				}
 			}
@@ -303,8 +307,8 @@ raycast(struct nav_mesh_context* ctx, struct vector3* pt0, struct vector3* pt1, 
 
 		if ( !crossed ) {
 			assert(index == 0);
-			pt0->x = curr_node->center.x;
-			pt0->z = curr_node->center.z;
+			pt0->x = node->center.x;
+			pt0->z = node->center.z;
 			vector3_sub(pt1, pt0, &vt10);
 		}
 
