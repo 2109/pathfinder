@@ -41,6 +41,7 @@ typedef struct node {
 	float G;
 	float H;
 	float F;
+	int closed;
 } node_t;
 
 typedef struct pathfinder {
@@ -146,6 +147,7 @@ clear_node(node_t* node) {
 	node->F = node->G = node->H = 0;
 	node->elt.index = 0;
 	node->next = NULL;
+	node->closed = 0;
 }
 
 static inline void
@@ -348,6 +350,7 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, f
 	while ( ( current = (node_t*)minheap_pop(finder->openlist) ) != NULL ) {
 		current->next = finder->closelist;
 		finder->closelist = current;
+		current->closed = 1;
 
 		if ( current == to ) {
 			make_path(finder, current, from, smooth, cb, result_ud);

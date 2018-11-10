@@ -32,8 +32,8 @@ poly_area(struct nav_mesh_context* ctx, int size, int* poly) {
 
 static int
 node_cmp(struct element * left, struct element * right) {
-	struct nav_node *l = cast_node(left);
-	struct nav_node *r = cast_node(right);
+	struct nav_node *l = ( struct nav_node *) left;
+	struct nav_node *r = ( struct nav_node *) right;
 	return l->F < r->F;
 }
 
@@ -164,8 +164,7 @@ init_mesh(struct nav_mesh_context* mesh_ctx) {
 	mesh_ctx->result.wp = ( struct vector3* )malloc(sizeof( struct vector3 )*mesh_ctx->result.size);
 
 	mesh_ctx->openlist = minheap_create(50 * 50, node_cmp);
-	list_init(&mesh_ctx->closelist);
-	list_init(&mesh_ctx->linked);
+	mesh_ctx->closelist = NULL;
 }
 
 struct nav_mesh_context*

@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <string.h>
 #include "minheap.h"
-#include "list.h"
 #include <stdbool.h>
 #ifdef _MSC_VER
 #define inline __inline
@@ -25,8 +24,6 @@
 #define max(a,b)    (((a) > (b)) ? (a) : (b))
 
 #define min(a,b)    (((a) < (b)) ? (a) : (b))
-
-#define cast_node(elt) ((struct nav_node*)((int8_t*)elt - sizeof(struct list_node)))
 
 struct vector3
 {
@@ -50,9 +47,8 @@ struct nav_mesh_mask
 
 struct nav_node
 {
-	struct list_node list_head;
 	struct element elt;
-
+	
 	int id;
 
 	int* poly;
@@ -71,6 +67,9 @@ struct nav_node
 	double G;
 	double H;
 	double F;
+
+	struct nav_node* next;
+	int closed;
 
 	//缓存A*寻路出来的相邻多边形和与相邻多边形共边的边
 	struct nav_node* link_parent;
@@ -137,11 +136,8 @@ struct nav_mesh_context
 	//寻路结果缓存
 	struct nav_path result;
 
-	//获取相邻多边形缓存
-	struct list linked;
-
 	struct minheap* openlist;
-	struct list closelist;
+	struct nav_node* closelist;
 };
 
 typedef void(*search_dumper)( void* ud, int index );
