@@ -88,6 +88,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="minheap-internal.h" />
     <ClInclude Include="minheap.h" />
     <ClInclude Include="nav.h" />
   </ItemGroup>

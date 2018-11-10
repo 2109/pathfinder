@@ -182,7 +182,7 @@ int main() {
 
 	struct vector3 result;
 
-	count = 1024 * 1024;
+	count = 1024 * 10;
 
 	double ti0 = get_time_millis();
 	for ( int i = 1; i < count;i++ )

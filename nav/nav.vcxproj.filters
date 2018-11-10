@@ -21,6 +21,9 @@
     <ClInclude Include="nav.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="minheap-internal.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lua-nav.c">
