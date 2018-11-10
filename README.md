@@ -3,7 +3,7 @@
 ## navmesh pathfinder
 基于unity3d的navigation的寻路
 从unity3d导出mesh数据，基于数据实现的寻路算法
-![image](https://github.com/2109/pic/blob/master/nv0.png)
+![image](https://github.com/2109/pic/blob/master/nv0.jpg)
  
 ###绕过障碍寻路
 
@@ -26,7 +26,7 @@
 ## tile pathfinder
 
 ###寻路
-![image](https://github.com/2109/pic/blob/master/tile0.png)
+![image](https://github.com/2109/pic/blob/master/til0.png)
 
 ###直线
 ![image](https://github.com/2109/pic/blob/master/tile1.png)
