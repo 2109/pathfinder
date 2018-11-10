@@ -163,7 +163,7 @@ BOOL pathfinderDlg::OnInitDialog()
 	fclose(fp);
 
 	int now = time(NULL);
-#define EDITOR_TILE
+//#define EDITOR_TILE
 	this->m_mesh = load_mesh(v_ptr, vertex_count, p_ptr, poly_count);
 #ifdef EDITOR_TILE
 	this->m_mesh->tile = create_tile(this->m_mesh, 400);

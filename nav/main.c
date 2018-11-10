@@ -89,7 +89,7 @@ get_time_millis() {
 
 
 int main() {
-	FILE* fp = fopen("./nav/1002.nav", "rb");
+	FILE* fp = fopen("./nav/1005.nav", "rb");
 
 	uint32_t vertex_count;
 	fread(&vertex_count, sizeof( uint32_t ), 1, fp);
@@ -126,18 +126,69 @@ int main() {
 	}
 	fclose(fp);
 
-
 	struct nav_mesh_context* mesh = load_mesh(v_ptr, vertex_count, p_ptr, poly_count);
-	mesh->tile = create_tile(mesh, 400);
 
-	int count = 1024 * 1024;
+	fp = fopen("./nav/1005.nav.tile", "rb");
+
+	uint32_t tile_unit;
+	fread(&tile_unit, sizeof( uint32_t ), 1, fp);
+
+	uint32_t count = 0;
+	fread(&count, sizeof( uint32_t ), 1, fp);
+
+	mesh->tile = ( struct nav_tile* )malloc(sizeof( struct nav_tile )*count);
+	memset(mesh->tile, 0, sizeof( struct nav_tile )*count);
+
+	uint32_t i;
+	for ( i = 0; i < count; i++ ) {
+
+		struct nav_tile* tile = &mesh->tile[i];
+
+		uint32_t size;
+		fread(&size, sizeof( uint32_t ), 1, fp);
+
+		tile->offset = tile->size = size;
+		tile->node = NULL;
+		if ( tile->offset != 0 ) {
+			tile->node = (int*)malloc(sizeof(int)*tile->offset);
+			uint32_t j;
+			for ( j = 0; j < size; j++ ) {
+				uint32_t val;
+				fread(&val, sizeof( uint32_t ), 1, fp);
+				tile->node[j] = val;
+			}
+		}
+
+		float x, z;
+		fread(&x, sizeof( float ), 1, fp);
+		fread(&z, sizeof( float ), 1, fp);
+
+		tile->center.x = x;
+		tile->center.y = 0;
+		tile->center.z = z;
+
+		int center_node;
+		fread(&center_node, sizeof( int ), 1, fp);
+		tile->center_node = center_node;
+	}
+	fclose(fp);
+
+	mesh->tile_unit = tile_unit;
+	mesh->tile_width = mesh->width / tile_unit + 1;
+	mesh->tile_heigh = mesh->heigh / tile_unit + 1;
+
+	
+	//mesh->tile = create_tile(mesh, 400);
+
+	struct vector3 result;
+
+	count = 1024 * 1024;
 
 	double ti0 = get_time_millis();
 	for ( int i = 1; i < count;i++ )
 	{
-		struct vector3 start = { 5785, 0, 14950 };
-		struct vector3 over = { 5750, 0, 7500 };
-		struct vector3 result;
+		struct vector3 start = { 2833, 0, 34333 };
+		struct vector3 over = { 49000, 0, 8333 };
 		raycast(mesh, &start, &over, &result, NULL, NULL);
 	}
 	double ti1 = get_time_millis();
@@ -146,8 +197,8 @@ int main() {
 
 	for ( int i = 1; i < count; i++ )
 	{
-		struct vector3 start = { 4400, 0, 20100 };
-		struct vector3 over = { 1650, 0, 3050 };
+		struct vector3 start = { 2833, 0, 34333 };
+		struct vector3 over = { 49000, 0, 8333 };
 		astar_find(mesh, &start, &over, NULL, NULL);
 	}
 	double ti2 = get_time_millis();
