@@ -93,7 +93,6 @@
     <ClCompile Include="pathfinder.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\nav\minheap.h" />
     <ClInclude Include="pathfinder.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

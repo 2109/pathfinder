@@ -10,7 +10,9 @@
 #include "minheap.h"
 #include "minheap-internal.h"
 
-//#define MINHEAP_USE_LIBEVENT
+#define MINHEAP_USE_LIBEVENT
+
+#include "minheap-adapter.h"
 
 #define ERROR_CANNOT_REACH	-1
 #define ERROR_START_POINT	-2

@@ -5,15 +5,15 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
-
-#include "minheap.h"
-#include "minheap-internal.h"
-
-//#define MINHEAP_USE_LIBEVENT
+#include <assert.h>
 
 #ifdef _MSC_VER
 #define inline __inline
 #endif
+
+#define MINHEAP_USE_LIBEVENT
+
+#include "minheap-adapter.h"
 
 #define USE_NAV_TILE
 
@@ -52,11 +52,7 @@ struct nav_mesh_mask
 
 struct nav_node
 {
-#ifdef MINHEAP_USE_LIBEVENT
-	min_elt_t elt;
-#else
-	struct element elt;
-#endif	
+	mh_elt_t elt;
 	int id;
 
 	int* poly;
@@ -144,11 +140,7 @@ struct nav_mesh_context
 	//Ñ°Â·½á¹û»º´æ
 	struct nav_path result;
 
-#ifdef MINHEAP_USE_LIBEVENT
-	min_heap_t openlist;
-#else
-	struct minheap openlist;
-#endif
+	mh_t openlist;
 	struct nav_node* closelist;
 };
 

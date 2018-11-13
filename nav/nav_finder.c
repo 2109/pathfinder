@@ -323,11 +323,7 @@ clear_node(struct nav_node* n) {
 	n->link_parent = NULL;
 	n->link_border = -1;
 	n->F = n->G = n->H = 0;
-#ifdef MINHEAP_USE_LIBEVENT
-	n->elt.index = -1;
-#else
-	n->elt.index = 0;
-#endif
+	mh_init(&n->elt);
 	n->next = NULL;
 	n->closed = 0;
 }
@@ -347,11 +343,7 @@ reset(struct nav_mesh_context* ctx) {
 		clear_node(tmp);
 	}
 	ctx->closelist = NULL;
-#ifdef MINHEAP_USE_LIBEVENT
-	min_heap_clear_(&ctx->openlist, heap_clear);
-#else
-	minheap_clear(&ctx->openlist, heap_clear);
-#endif
+	mh_clear(&ctx->openlist, heap_clear);
 }
 
 struct nav_node*
@@ -606,18 +598,10 @@ astar_find(struct nav_mesh_context* mesh_ctx, struct vector3* pt_start, struct v
 
 	vector3_copy(&node_start->pos, pt_start);
 
-#ifdef MINHEAP_USE_LIBEVENT
-	min_heap_push_(&mesh_ctx->openlist, &node_start->elt);
-#else
-	minheap_push(&mesh_ctx->openlist, &node_start->elt);
-#endif
+	mh_push(&mesh_ctx->openlist, &node_start->elt);
 	struct nav_node* node = NULL;
 
-#ifdef MINHEAP_USE_LIBEVENT
-	while ( ( node = ( struct nav_node* )min_heap_pop_(&mesh_ctx->openlist) ) != NULL ) {
-#else
-	while ( ( node = ( struct nav_node* )minheap_pop(&mesh_ctx->openlist) ) != NULL ) {
-#endif
+	while ( ( node = ( struct nav_node* )mh_pop(&mesh_ctx->openlist) ) != NULL ) {
 		node->closed = 1;
 		node->next = mesh_ctx->closelist;
 		mesh_ctx->closelist = node;
@@ -632,22 +616,14 @@ astar_find(struct nav_mesh_context* mesh_ctx, struct vector3* pt_start, struct v
 		get_link(mesh_ctx, node, &linked_node);
 
 		while ( linked_node ) {
-#ifdef MINHEAP_USE_LIBEVENT
-			if ( linked_node->elt.index >= 0 ) {
-#else
-			if ( linked_node->elt.index ) {
-#endif
+			if ( mh_elt_has_init(&linked_node->elt) ) {
 				double nG = node->G + G_COST(node, linked_node);
 				if ( nG < linked_node->G ) {
 					linked_node->G = nG;
 					linked_node->F = linked_node->G + linked_node->H;
 					linked_node->link_parent = node;
 					linked_node->link_border = linked_node->reserve;
-#ifdef MINHEAP_USE_LIBEVENT
-					min_heap_adjust_(&mesh_ctx->openlist, &linked_node->elt);
-#else
-					minheap_change(&mesh_ctx->openlist, &linked_node->elt);
-#endif
+					mh_adjust(&mesh_ctx->openlist, &linked_node->elt);
 				}
 			}
 			else {
@@ -656,11 +632,7 @@ astar_find(struct nav_mesh_context* mesh_ctx, struct vector3* pt_start, struct v
 				linked_node->F = linked_node->G + linked_node->H;
 				linked_node->link_parent = node;
 				linked_node->link_border = linked_node->reserve;
-#ifdef MINHEAP_USE_LIBEVENT
-				min_heap_push_(&mesh_ctx->openlist, &linked_node->elt);
-#else
-				minheap_push(&mesh_ctx->openlist, &linked_node->elt);
-#endif
+				mh_push(&mesh_ctx->openlist, &linked_node->elt);
 				if ( dumper != NULL )
 					dumper(userdata, linked_node->id);
 			}

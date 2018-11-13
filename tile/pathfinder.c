@@ -32,11 +32,7 @@ typedef struct path {
 } path_t;
 
 typedef struct node {
-#ifdef MINHEAP_USE_LIBEVENT
-	min_elt_t elt;
-#else
-	struct element elt;
-#endif	
+	mh_elt_t elt;
 	struct node *next;
 	struct node *parent;
 	int x;
@@ -55,11 +51,7 @@ typedef struct pathfinder {
 	char *data;
 	char mask[MARK_MAX];
 
-#ifdef MINHEAP_USE_LIBEVENT
-	min_heap_t openlist;
-#else
-	struct minheap openlist;
-#endif
+	mh_t openlist;
 	node_t* closelist;
 } pathfinder_t;
 
@@ -73,7 +65,6 @@ static int DIRECTION[8][2] = {
 	{ 1, -1 },
 	{ 1, 1 },
 };
-
 
 
 static inline node_t*
@@ -155,11 +146,7 @@ clear_node(node_t* node) {
 	node->F = node->G = node->H = 0;
 	node->next = NULL;
 	node->closed = 0;
-#ifdef MINHEAP_USE_LIBEVENT
-	node->elt.index = -1;
-#else
-	node->elt.index = 0;
-#endif
+	mh_init(&node->elt);
 }
 
 static inline void
@@ -177,39 +164,39 @@ reset(pathfinder_t* finder) {
 		clear_node(tmp);
 	}
 	finder->closelist = NULL;
-#ifdef MINHEAP_USE_LIBEVENT
-	min_heap_clear_(&finder->openlist, heap_clear);
-#else
-	minheap_clear(&finder->openlist, heap_clear);
-#endif
+	mh_clear(&finder->openlist, heap_clear);
 }
 
 static inline int
 less(struct element * left, struct element * right) {
 	node_t *l = (node_t*)left;
 	node_t *r = (node_t*)right;
-#ifdef MINHEAP_USE_LIBEVENT
-	return l->F > r->F;
-#else
 	return l->F < r->F;
-#endif
 }
 
-static void
+static inline int
+great(struct element * left, struct element * right) {
+	node_t *l = (node_t*)left;
+	node_t *r = (node_t*)right;
+	return l->F > r->F;
+}
+
+
+static inline void
 path_init(path_t* path) {
 	path->index = 0;
 	path->size = INIT_PATH_SIZE;
 	path->nodes = path->init;
 }
 
-static void
+static inline void
 path_release(path_t* path) {
 	if ( path->nodes != path->init ) {
 		free(path->nodes);
 	}
 }
 
-static void
+static inline void
 path_add(path_t* path, int x, int z) {
 	if ( path->index >= path->size ) {
 		int nsize = path->size * 2;
@@ -227,42 +214,42 @@ path_add(path_t* path, int x, int z) {
 }
 
 void
-make_path(pathfinder_t *finder, node_t *current, node_t *from, int smooth, finder_result cb, void* ud) {
+build_path(pathfinder_t *finder, node_t *node, node_t *from, int smooth, finder_result cb, void* ud) {
 	path_t path;
 	path_init(&path);
 
-	path_add(&path, current->x, current->z);
+	path_add(&path, node->x, node->z);
 
-	node_t * parent = current->parent;
+	node_t * parent = node->parent;
 	assert(parent != NULL);
 
-	int dx0 = DX(current, parent);
-	int dz0 = DZ(current, parent);
+	int dx0 = DX(node, parent);
+	int dz0 = DZ(node, parent);
 
-	current = parent;
-	while ( current ) {
-		if ( current != from ) {
-			parent = current->parent;
+	node = parent;
+	while ( node ) {
+		if ( node != from ) {
+			parent = node->parent;
 			if ( parent != NULL ) {
-				int dx1 = DX(current, parent);
-				int dz1 = DZ(current, parent);
+				int dx1 = DX(node, parent);
+				int dz1 = DZ(node, parent);
 				if ( dx0 != dx1 || dz0 != dz1 ) {
-					path_add(&path, current->x, current->z);
+					path_add(&path, node->x, node->z);
 					dx0 = dx1;
 					dz0 = dz1;
 				}
 			}
 			else {
-				path_add(&path, current->x, current->z);
+				path_add(&path, node->x, node->z);
 				break;
 			}
 
 		}
 		else {
-			path_add(&path, current->x, current->z);
+			path_add(&path, node->x, node->z);
 			break;
 		}
-		current = current->parent;
+		node = node->parent;
 	}
 
 	if (smooth == 0 || path.index == 2) {
@@ -327,18 +314,14 @@ finder_create(int width, int heigh, char* data) {
 			node->x = i;
 			node->z = j;
 			node->block = finder->data[index];
-#ifdef MINHEAP_USE_LIBEVENT
-			node->elt.index = -1;
-#else
-			node->elt.index = 0;
-#endif
+			mh_init(&node->elt);
 		}
 	}
 
 #ifdef MINHEAP_USE_LIBEVENT
-	min_heap_ctor_(&finder->openlist, less);
+	mh_ctor(&finder->openlist, great);
 #else
-	minheap_ctor(&finder->openlist, less);
+	mh_ctor(&finder->openlist, less);
 #endif
 	finder->closelist = NULL;
 
@@ -347,12 +330,7 @@ finder_create(int width, int heigh, char* data) {
 
 void
 finder_release(pathfinder_t* finder) {
-#ifdef MINHEAP_USE_LIBEVENT
-	min_heap_dtor_(&finder->openlist);
-#else
-	minheap_dtor(&finder->openlist);
-#endif
-	
+	mh_dtor(&finder->openlist);
 	free(finder->node);
 	free(finder->data);
 	free(finder);
@@ -377,70 +355,49 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, f
 		return ERROR_SAME_POINT;
 	}
 
-#ifdef MINHEAP_USE_LIBEVENT
-	min_heap_push_(&finder->openlist, &from->elt);
-#else
-	minheap_push(&finder->openlist, &from->elt);
-#endif
-	node_t * current = NULL;
 
-#ifdef MINHEAP_USE_LIBEVENT
-	while ( ( current = ( struct nav_node* )min_heap_pop_(&finder->openlist) ) != NULL ) {
-#else
-	while ( ( current = ( struct nav_node* )minheap_pop(&finder->openlist) ) != NULL ) {
-#endif
-		current->next = finder->closelist;
-		finder->closelist = current;
-		current->closed = 1;
+	mh_push(&finder->openlist, &from->elt);
+	node_t * node = NULL;
 
-		if ( current == to ) {
-			make_path(finder, current, from, smooth, cb, result_ud);
+	while ( ( node = ( node_t* )mh_pop(&finder->openlist) ) != NULL ) {
+		node->next = finder->closelist;
+		finder->closelist = node;
+		node->closed = 1;
+
+		if ( node == to ) {
+			build_path(finder, node, from, smooth, cb, result_ud);
 			reset(finder);
 			return 0;
 		}
 
 		node_t* neighbors = NULL;
 
-		find_neighbors(finder, current, &neighbors);
+		find_neighbors(finder, node, &neighbors);
 		while ( neighbors ) {
-			node_t* node = neighbors;
+			node_t* nei = neighbors;
 
-#ifdef MINHEAP_USE_LIBEVENT
-			if ( node->elt.index >= 0 ) {
-#else
-			if ( node->elt.index ) {
-#endif
-				int nG = current->G + neighbor_cost(current, node);
-				if ( nG < node->G ) {
-					node->G = nG;
-					node->F = node->G + node->H;
-					node->parent = current;
-
-#ifdef MINHEAP_USE_LIBEVENT
-					min_heap_adjust_(&finder->openlist, &node->elt);
-#else
-					minheap_change(&finder->openlist, &node->elt);
-#endif
+			if ( mh_elt_has_init(&nei->elt)) {
+				int nG = node->G + neighbor_cost(node, nei);
+				if ( nG < nei->G ) {
+					nei->G = nG;
+					nei->F = nei->G + nei->H;
+					nei->parent = node;
+					mh_adjust(&finder->openlist, &nei->elt);
 				}
 			}
 			else {
-				node->parent = current;
-				node->G = current->G + neighbor_cost(current, node);
-				node->H = GOAL_COST(node, to, cost);
-				node->F = node->G + node->H;
-
-#ifdef MINHEAP_USE_LIBEVENT
-				min_heap_push_(&finder->openlist, &node->elt);
-#else
-				minheap_push(&finder->openlist, &node->elt);
-#endif
+				nei->parent = node;
+				nei->G = node->G + neighbor_cost(node, nei);
+				nei->H = GOAL_COST(nei, to, cost);
+				nei->F = nei->G + nei->H;
+				mh_push(&finder->openlist, &nei->elt);
 				if ( dump != NULL ) {
-					dump(dump_ud, node->x, node->z);
-				}	
+					dump(dump_ud, nei->x, nei->z);
+				}
 			}
 
-			neighbors = node->next;
-			node->next = NULL;
+			neighbors = nei->next;
+			nei->next = NULL;
 		}
 	}
 	reset(finder);

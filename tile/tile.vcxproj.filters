@@ -18,18 +18,15 @@
     <ClCompile Include="pathfinder.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\nav\minheap.c">
+    <ClCompile Include="main.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="main.c">
+    <ClCompile Include="..\nav\minheap.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pathfinder.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\nav\minheap.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -8,6 +8,11 @@
 
 #define DEFAULT_CAP 64
 
+void 
+minheap_elt_init(struct element * elt) {
+	elt->index = 0;
+}
+
 void
 minheap_ctor(struct minheap *mh, int(*less)( struct element *l, struct element *r )) {
 	memset(mh, 0, sizeof( *mh ));
