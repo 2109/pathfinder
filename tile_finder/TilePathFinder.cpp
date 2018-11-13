@@ -265,7 +265,7 @@ void OnSearchDump(void* ud, int x, int z)
 
 	cdc->SelectObject(obrush);
 
-	Sleep(100);
+	Sleep(1);
 }
 
 void OnPathDump(void* ud, int x, int z)
@@ -344,9 +344,6 @@ void CTilePathFinderDlg::OnFindPath()
 
 	dc.SelectObject(open);
 
-	finder_mask_set(m_finder, 0, 0);
-	finder_mask_set(m_finder, 1, 1);
-	finder_mask_set(m_finder, 2, 0);
 
 	double pathCost = (double)((over.QuadPart - start.QuadPart) * 1000) / (double)freq.QuadPart;
 	CString str;
@@ -626,10 +623,6 @@ void CTilePathFinderDlg::RayCast(int type)
 
 	int rx = 0;
 	int ry = 0;
-
-	finder_mask_set(m_finder, 0, 0);
-	finder_mask_set(m_finder, 1, 1);
-	finder_mask_set(m_finder, 2, 0);
 
 	LARGE_INTEGER freq;
 	LARGE_INTEGER start, over;

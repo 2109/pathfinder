@@ -33,6 +33,7 @@ int finder_find(struct pathfinder * finder, int x0, int z0, int x1, int z1, int 
 int finder_movable(struct pathfinder * finder, int x, int z, int ignore);
 void finder_mask_set(struct pathfinder * finder, int mask_index, int enable);
 void finder_mask_reset(struct pathfinder * finder);
+void finder_mask_reverse(struct pathfinder * finder);
 struct node* search_node(struct pathfinder * finder, int x0, int z0, int x1, int z1, finder_dump dump, void* ud);
 
 #endif

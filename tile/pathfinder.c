@@ -83,15 +83,9 @@ node_t*
 search_node(pathfinder_t* finder, int x0, int z0, int x1, int z1, finder_dump dump, void* ud) {
 	int rx, rz;
 	int stopx, stopz;
-	finder_mask_set(finder, 0, 0);
-	finder_mask_set(finder, 1, 1);
-	finder_mask_set(finder, 2, 1);
-	finder_mask_set(finder, 3, 1);
+	finder_mask_reverse(finder);
 	finder_raycast(finder, x1, z1, x0, z0, 0, &rx, &rz, &stopx, &stopz, dump, ud);
-	finder_mask_set(finder, 0, 1);
-	finder_mask_set(finder, 1, 0);
-	finder_mask_set(finder, 2, 0);
-	finder_mask_set(finder, 3, 0);
+	finder_mask_reverse(finder);
 	return find_node(finder, stopx, stopz);
 }
 
@@ -319,6 +313,9 @@ finder_create(int width, int heigh, char* data) {
 	mh_ctor(&finder->openlist, less);
 #endif
 	finder->closelist = NULL;
+
+	finder_mask_reset(finder);
+	finder_mask_set(finder, 0, 1);
 
 	return finder;
 }
@@ -573,6 +570,15 @@ finder_mask_set(pathfinder_t * finder, int index, int enable) {
 void
 finder_mask_reset(pathfinder_t * finder) {
 	int i = 0;
-	for ( ; i < MARK_MAX; i++ )
+	for ( ; i < MARK_MAX; i++ ) {
 		finder->mask[i] = 0;
+	}
+}
+
+void
+finder_mask_reverse(pathfinder_t * finder) {
+	int i = 0;
+	for ( ; i < MARK_MAX; i++ ) {
+		finder->mask[i] = !finder->mask[i];
+	}
 }
