@@ -153,9 +153,13 @@ static inline void
 clear_node(node_t* node) {
 	node->parent = NULL;
 	node->F = node->G = node->H = 0;
-	node->elt.index = 0;
 	node->next = NULL;
 	node->closed = 0;
+#ifdef MINHEAP_USE_LIBEVENT
+	node->elt.index = -1;
+#else
+	node->elt.index = 0;
+#endif
 }
 
 static inline void
