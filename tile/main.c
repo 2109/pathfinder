@@ -91,7 +91,7 @@ int main(int argc,const char* argv[]) {
 	for ( int i = 1; i <= count; i++ )
 	{
 		int rx, rz;
-		finder_raycast(finder, 90, 311, 333, 298, 1, &rx, &rz, NULL, NULL);
+		finder_raycast(finder, 90, 311, 333, 298, 1, &rx, &rz, NULL, NULL, NULL, NULL);
 	}
 	double ti2 = get_time_millis();
 	printf("raycast:%f\n", ti2 - ti1);

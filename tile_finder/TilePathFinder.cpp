@@ -265,7 +265,7 @@ void OnSearchDump(void* ud, int x, int z)
 
 	cdc->SelectObject(obrush);
 
-	//Sleep(5);
+	Sleep(100);
 }
 
 void OnPathDump(void* ud, int x, int z)
@@ -527,6 +527,11 @@ void CTilePathFinderDlg::OnRButtonUp(UINT nFlags, CPoint point)
 
 	if (Between(point))
 	{
+		CClientDC dc(this);
+		DumpArgs args;
+		args.self = this;
+		args.cdc = &dc;
+
 		if (m_edit)
 		{
 			int x = (point.x - m_offset_x) / m_scale;
@@ -538,6 +543,8 @@ void CTilePathFinderDlg::OnRButtonUp(UINT nFlags, CPoint point)
 		{
 			m_over_x = (point.x - m_offset_x) / m_scale;
 			m_over_z = (point.y - m_offset_z) / m_scale;
+
+			//search_node(m_finder, m_begin_x, m_begin_z, m_over_x, m_over_z, OnSearchDump, &args);
 		}
 
 		Invalidate();
@@ -608,8 +615,8 @@ void CTilePathFinderDlg::OnStraightLineEx()
 	RayCast(1);
 }
 
-extern "C" void raycast(struct pathfinder* finder, int x0, int z0, int x1, int z1, int ignore, int* resultx, int* resultz, finder_dump dump, void* ud);
-extern "C" void raycast_breshenham(struct pathfinder* finder, int x0, int z0, int x1, int z1, int ignore, int* resultx, int* resultz, finder_dump dump, void* ud);
+extern "C" void raycast(struct pathfinder* finder, int x0, int z0, int x1, int z1, int ignore, int* resultx, int* resultz, int* stopx, int* stopz, finder_dump dump, void* ud);
+extern "C" void raycast_breshenham(struct pathfinder* finder, int x0, int z0, int x1, int z1, int ignore, int* resultx, int* resultz, int* stopx, int* stopz, finder_dump dump, void* ud);
 void CTilePathFinderDlg::RayCast(int type)
 {
 	CClientDC dc(this);
@@ -631,10 +638,10 @@ void CTilePathFinderDlg::RayCast(int type)
 
 	if (type == 0)
 	{
-		raycast(m_finder, m_begin_x, m_begin_z, m_over_x, m_over_z, 1, &rx, &ry, m_show_line_search ? LineDump : NULL, &args);
+		raycast(m_finder, m_begin_x, m_begin_z, m_over_x, m_over_z, 1, &rx, &ry, NULL, NULL, m_show_line_search ? LineDump : NULL, &args);
 	}
 	else {
-		raycast_breshenham(m_finder, m_begin_x, m_begin_z, m_over_x, m_over_z, 1, &rx, &ry, m_show_line_search ? LineDump : NULL, &args);
+		raycast_breshenham(m_finder, m_begin_x, m_begin_z, m_over_x, m_over_z, 1, &rx, &ry, NULL, NULL, m_show_line_search ? LineDump : NULL, &args);
 	}
 	
 

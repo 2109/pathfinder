@@ -28,11 +28,11 @@ typedef void(*finder_dump)(void* ud, int x, int z);
 
 struct pathfinder* finder_create(int width, int heigh, char* data);
 void finder_release(struct pathfinder* finder);
-void finder_raycast(struct pathfinder* finder, int x0, int z0, int x1, int z1, int ignore, int* resultx, int* resultz, finder_dump dump, void* ud);
+void finder_raycast(struct pathfinder* finder, int x0, int z0, int x1, int z1, int ignore, int* resultx, int* resultz, int* stopx, int* stopz, finder_dump dump, void* ud);
 int finder_find(struct pathfinder * finder, int x0, int z0, int x1, int z1, int smooth, finder_result cb, void* result_ud, finder_dump dump, void* dump_ud,float cost);
 int finder_movable(struct pathfinder * finder, int x, int z, int ignore);
 void finder_mask_set(struct pathfinder * finder, int mask_index, int enable);
 void finder_mask_reset(struct pathfinder * finder);
-struct node* search_node(struct pathfinder* finder, int x, int z, int extend, finder_dump dump, void* ud );
+struct node* search_node(struct pathfinder * finder, int x0, int z0, int x1, int z1, finder_dump dump, void* ud);
 
 #endif

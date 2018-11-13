@@ -80,24 +80,19 @@ isblock(pathfinder_t* finder, node_t* node) {
 }
 
 node_t*
-search_node(pathfinder_t* finder, int x, int z, int extend, finder_dump dump, void* ud) {
-	int i;
-	for ( i = 1; i <= extend; i++ ) {
-		int j;
-		for ( j = 0; j < 8; j++ ) {
-			int tx = x + DIRECTION[j][0] * i;
-			int tz = z + DIRECTION[j][1] * i;
-			node_t * node = find_node(finder, tx, tz);
-			if ( dump ) {
-				dump(ud, node->x, node->z);
-			}
-			
-			if ( !isblock(finder, node) ) {
-				return node;
-			}
-		}
-	}
-	return NULL;
+search_node(pathfinder_t* finder, int x0, int z0, int x1, int z1, finder_dump dump, void* ud) {
+	int rx, rz;
+	int stopx, stopz;
+	finder_mask_set(finder, 0, 0);
+	finder_mask_set(finder, 1, 1);
+	finder_mask_set(finder, 2, 1);
+	finder_mask_set(finder, 3, 1);
+	finder_raycast(finder, x1, z1, x0, z0, 0, &rx, &rz, &stopx, &stopz, dump, ud);
+	finder_mask_set(finder, 0, 1);
+	finder_mask_set(finder, 1, 0);
+	finder_mask_set(finder, 2, 0);
+	finder_mask_set(finder, 3, 0);
+	return find_node(finder, stopx, stopz);
 }
 
 static inline int
@@ -107,7 +102,7 @@ movable(pathfinder_t* finder, int x, int z, int ignore) {
 		return 0;
 	if ( ignore )
 		return !isblock(finder, node);
-	return finder->mask[node->block] != 1;
+	return finder->mask[node->block] == 1;
 }
 
 static inline void
@@ -272,7 +267,7 @@ build_path(pathfinder_t *finder, node_t *node, node_t *from, int smooth, finder_
 				path_node_t* check_node = &path.nodes[j];
 
 				int rx, rz;
-				finder_raycast(finder, start_node->x, start_node->z, check_node->x, check_node->z, 1, &rx, &rz, NULL, NULL);
+				finder_raycast(finder, start_node->x, start_node->z, check_node->x, check_node->z, 1, &rx, &rz, NULL, NULL, NULL, NULL);
 				if (rx == check_node->x && rz == check_node->z) {
 					last = j;
 				} else {
@@ -345,7 +340,7 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, f
 
 	node_t * to = find_node(finder, x1, z1);
 	if ( !to || isblock(finder, to) ) {
-		to = search_node(finder, x1, z1, 5, NULL, NULL);
+		to = search_node(finder, x0, z0, x1, z1, NULL, NULL);
 		if (!to) {
 			return ERROR_OVER_POINT;
 		}
@@ -405,7 +400,7 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, f
 }
 
 void
-raycast(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* resultx, int* resultz, finder_dump dump, void* ud) {
+raycast(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* resultx, int* resultz, int* stopx, int* stopz, finder_dump dump, void* ud) {
 	float fx0 = x0 + 0.5f;
 	float fz0 = z0 + 0.5f;
 	float fx1 = x1 + 0.5f;
@@ -420,6 +415,12 @@ raycast(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* r
 			if ( dump != NULL )
 				dump(ud, x0, z);
 			if ( movable(finder, x0, z, ignore) == 0 ) {
+				if ( stopx ) {
+					*stopx = x0;
+				}
+				if ( stopz ) {
+					*stopz = z;
+				}
 				founded = 1;
 				break;
 			}
@@ -440,6 +441,12 @@ raycast(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* r
 				if ( dump != NULL )
 					dump(ud, x, z);
 				if ( movable(finder, x, z, ignore) == 0 ) {
+					if ( stopx ) {
+						*stopx = x;
+					}
+					if ( stopz ) {
+						*stopz = z;
+					}
 					founded = 1;
 					break;
 				}
@@ -458,6 +465,12 @@ raycast(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* r
 				if ( dump != NULL )
 					dump(ud, x, z);
 				if ( movable(finder, x, z, ignore) == 0 ) {
+					if ( stopx ) {
+						*stopx = x;
+					}
+					if ( stopz ) {
+						*stopz = z;
+					}
 					founded = 1;
 					break;
 				}
@@ -482,7 +495,7 @@ swap(int* a, int *b) {
 
 //breshenham÷±œﬂÀ„∑®
 void
-raycast_breshenham(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* rx, int* rz, finder_dump dump, void* ud) {
+raycast_breshenham(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* rx, int* rz, int* stopx, int* stopz, finder_dump dump, void* ud) {
 	int dx = abs(x1 - x0);
 	int dz = abs(z1 - z0);
 
@@ -510,6 +523,12 @@ raycast_breshenham(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ign
 		
 		
 		if ( movable(finder, x, z, ignore) == 0 ) {
+			if (stopx) {
+				*stopx = x;
+			}
+			if ( stopz ) {
+				*stopz = z;
+			}
 			return;
 		}
 		*rx = x;
@@ -530,11 +549,11 @@ raycast_breshenham(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ign
 
 
 void 
-finder_raycast(struct pathfinder* finder, int x0, int z0, int x1, int z1, int ignore, int* resultx, int* resultz, finder_dump dump, void* ud) {
+finder_raycast(struct pathfinder* finder, int x0, int z0, int x1, int z1, int ignore, int* resultx, int* resultz, int* stopx, int* stopz, finder_dump dump, void* ud) {
 #ifdef RAYCAST_BRESHENHAM
-	raycast_breshenham(finder,x0,z0,x1,z1,ignore,resultx,resultz,dump,ud);
+	raycast_breshenham(finder,x0,z0,x1,z1,ignore,resultx,resultz,stopx,stopz,dump,ud);
 #else
-	raycast(finder, x0, z0, x1, z1, ignore, resultx, resultz, dump, ud);
+	raycast(finder, x0, z0, x1, z1, ignore, resultx, resultz, stopx, stopz, dump, ud);
 #endif
 }
 
