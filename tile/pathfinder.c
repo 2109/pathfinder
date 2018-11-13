@@ -156,7 +156,7 @@ heap_clear(struct element* elt) {
 }
 
 static inline void
-reset(pathfinder_t* finder) {
+finder_reset(pathfinder_t* finder) {
 	node_t * node = finder->closelist;
 	while ( node ) {
 		node_t * tmp = node;
@@ -366,7 +366,7 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, f
 
 		if ( node == to ) {
 			build_path(finder, node, from, smooth, cb, result_ud);
-			reset(finder);
+			finder_reset(finder);
 			return 0;
 		}
 
@@ -400,7 +400,7 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, f
 			nei->next = NULL;
 		}
 	}
-	reset(finder);
+	finder_reset(finder);
 	return ERROR_CANNOT_REACH;
 }
 
@@ -467,11 +467,6 @@ raycast(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* r
 				}
 			}
 		}
-	}
-
-	if ( founded == 0 && movable(finder, (int)fx1, (int)fz1, ignore) == 1 ) {
-		rx = (float)x1;
-		rz = (float)z1;
 	}
 
 	*resultx = (int)rx;
