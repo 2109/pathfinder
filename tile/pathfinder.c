@@ -323,7 +323,7 @@ finder_release(pathfinder_t* finder) {
 }
 
 int
-finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, finder_result cb, void* result_ud, finder_dump dump, void* dump_ud, float cost) {
+finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, finder_result result_cb, void* result_ud, finder_dump dump_cb, void* dump_ud, float cost) {
 	node_t * from = find_node(finder, x0, z0);
 	if (!from) {
 		return ERROR_START_POINT;
@@ -351,7 +351,7 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, f
 		node->closed = 1;
 
 		if ( node == to ) {
-			build_path(finder, node, from, smooth, cb, result_ud);
+			build_path(finder, node, from, smooth, result_cb, result_ud);
 			finder_reset(finder);
 			return 0;
 		}
@@ -377,8 +377,8 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, f
 				nei->H = GOAL_COST(nei, to, cost);
 				nei->F = nei->G + nei->H;
 				mh_push(&finder->openlist, &nei->elt);
-				if ( dump != NULL ) {
-					dump(dump_ud, nei->x, nei->z);
+				if ( dump_cb != NULL ) {
+					dump_cb(dump_ud, nei->x, nei->z);
 				}
 			}
 
