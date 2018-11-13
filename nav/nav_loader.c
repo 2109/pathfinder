@@ -170,7 +170,7 @@ init_mesh(struct nav_mesh_context* mesh_ctx) {
 #ifdef MINHEAP_USE_LIBEVENT
 	min_heap_ctor_(&mesh_ctx->openlist, node_cmp);
 #else
-	mesh_ctx->openlist = minheap_create(50 * 50, node_cmp);
+	minheap_ctor(&mesh_ctx->openlist, node_cmp);
 #endif
 	mesh_ctx->closelist = NULL;
 }
@@ -325,7 +325,7 @@ release_mesh(struct nav_mesh_context* ctx) {
 #ifdef MINHEAP_USE_LIBEVENT
 	min_heap_dtor_(&ctx->openlist);
 #else
-	minheap_release(ctx->openlist);
+	minheap_dtor(&ctx->openlist);
 #endif
 	if ( ctx->tile != NULL ) {
 		release_tile(ctx, ctx->tile);

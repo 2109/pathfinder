@@ -350,7 +350,7 @@ reset(struct nav_mesh_context* ctx) {
 #ifdef MINHEAP_USE_LIBEVENT
 	min_heap_clear_(&ctx->openlist, heap_clear);
 #else
-	minheap_clear(ctx->openlist, heap_clear);
+	minheap_clear(&ctx->openlist, heap_clear);
 #endif
 }
 
@@ -609,14 +609,14 @@ astar_find(struct nav_mesh_context* mesh_ctx, struct vector3* pt_start, struct v
 #ifdef MINHEAP_USE_LIBEVENT
 	min_heap_push_(&mesh_ctx->openlist, &node_start->elt);
 #else
-	minheap_push(mesh_ctx->openlist, &node_start->elt);
+	minheap_push(&mesh_ctx->openlist, &node_start->elt);
 #endif
 	struct nav_node* node = NULL;
 
 #ifdef MINHEAP_USE_LIBEVENT
 	while ( ( node = ( struct nav_node* )min_heap_pop_(&mesh_ctx->openlist) ) != NULL ) {
 #else
-	while ( ( node = ( struct nav_node* )minheap_pop(mesh_ctx->openlist) ) != NULL ) {
+	while ( ( node = ( struct nav_node* )minheap_pop(&mesh_ctx->openlist) ) != NULL ) {
 #endif
 		node->closed = 1;
 		node->next = mesh_ctx->closelist;
@@ -646,7 +646,7 @@ astar_find(struct nav_mesh_context* mesh_ctx, struct vector3* pt_start, struct v
 #ifdef MINHEAP_USE_LIBEVENT
 					min_heap_adjust_(&mesh_ctx->openlist, &linked_node->elt);
 #else
-					minheap_change(mesh_ctx->openlist, &linked_node->elt);
+					minheap_change(&mesh_ctx->openlist, &linked_node->elt);
 #endif
 				}
 			}
@@ -659,7 +659,7 @@ astar_find(struct nav_mesh_context* mesh_ctx, struct vector3* pt_start, struct v
 #ifdef MINHEAP_USE_LIBEVENT
 				min_heap_push_(&mesh_ctx->openlist, &linked_node->elt);
 #else
-				minheap_push(mesh_ctx->openlist, &linked_node->elt);
+				minheap_push(&mesh_ctx->openlist, &linked_node->elt);
 #endif
 				if ( dumper != NULL )
 					dumper(userdata, linked_node->id);

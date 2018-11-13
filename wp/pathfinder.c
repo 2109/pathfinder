@@ -27,7 +27,7 @@ typedef struct node {
 typedef struct pathfinder {
 	node_t *node;
 	uint32_t size;
-	struct minheap* openlist;
+	struct minheap openlist;
 	node_t *closelist;
 } pathfinder_t;
 
@@ -103,7 +103,7 @@ reset(pathfinder_t* finder) {
 		node = tmp->next;
 		clear_node(tmp);
 	}
-	minheap_clear(finder->openlist, heap_clear);
+	minheap_clear(&finder->openlist, heap_clear);
 }
 
 static inline int
@@ -168,7 +168,7 @@ finder_create(const char* file) {
 
 	fclose(fp);
 
-	finder->openlist = minheap_create(50 * 50, less);
+	minheap_ctor(&finder->openlist, less);
 	finder->closelist = NULL;
 
 	return finder;
@@ -184,7 +184,7 @@ finder_release(pathfinder_t* finder) {
 			free(node->link);
 	}
 	free(finder->node);
-	minheap_release(finder->openlist);
+	minheap_dtor(&finder->openlist);
 	free(finder);
 }
 
@@ -196,11 +196,11 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, finder_result
 	if ( !from || !to || from == to )
 		return -1;
 
-	minheap_push(finder->openlist, &from->elt);
+	minheap_push(&finder->openlist, &from->elt);
 
 	node_t * current = NULL;
 
-	while ( ( current = (node_t*)minheap_pop(finder->openlist) ) != NULL ) {
+	while ( ( current = (node_t*)minheap_pop(&finder->openlist) ) != NULL ) {
 		current->next = finder->closelist;
 		finder->closelist = current;
 		current->closed = 1;
@@ -223,7 +223,7 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, finder_result
 					node->G = nG;
 					node->F = node->G + node->H;
 					node->parent = current;
-					minheap_change(finder->openlist, &node->elt);
+					minheap_change(&finder->openlist, &node->elt);
 				}
 			}
 			else {
@@ -231,7 +231,7 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, finder_result
 				node->G = current->G + g_cost(current, node);
 				node->H = h_cost(node, to);
 				node->F = node->G + node->H;
-				minheap_push(finder->openlist, &node->elt);
+				minheap_push(&finder->openlist, &node->elt);
 				if ( dump != NULL )
 					dump(dump_ud, node->x, node->z);
 			}

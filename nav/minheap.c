@@ -6,32 +6,21 @@
 #define RIGHT(index) (index*2+1)
 
 
-struct minheap {
-	int cap;
-	int size;
-	int(*less)( struct element *l, struct element *r );
-	struct element **elts;
-};
-
-
-struct minheap *
-	minheap_create(int cap, int(*less)( struct element *l, struct element *r )) {
-		struct minheap *mh = ( struct minheap* )malloc(sizeof( *mh ));
-		memset(mh, 0, sizeof( *mh ));
-		mh->elts = ( struct element** )malloc(sizeof( struct element * ) * cap);
-		memset(mh->elts, 0, sizeof( struct element * ) * cap);
-		mh->cap = cap;
-		mh->size = 0;
-		mh->less = less;
-		return mh;
-	}
-
+#define DEFAULT_CAP 64
 
 void
-minheap_release(struct minheap *mh) {
-	free(mh->elts);
-	free(mh);
-	mh = NULL;
+minheap_ctor(struct minheap *mh, int(*less)( struct element *l, struct element *r )) {
+	memset(mh, 0, sizeof( *mh ));
+	mh->cap = DEFAULT_CAP;
+	mh->size = 0;
+	mh->less = less;
+	mh->elts = ( struct element** )malloc(sizeof( struct element * ) * mh->cap);
+	memset(mh->elts, 0, sizeof( struct element * ) * mh->cap);
+}
+
+void
+minheap_dtor(struct minheap *mh) {
+	free(mh->elts);;
 }
 
 void
@@ -47,14 +36,14 @@ minheap_clear(struct minheap * mh, void(*clear)( struct element *elt )) {
 }
 
 struct element *
-	minheap_top(struct minheap * mh) {
-		if ( mh->size > 0 ) {
-			return mh->elts[1];
-		}
-		else {
-			return NULL;
-		}
+minheap_top(struct minheap * mh) {
+	if ( mh->size > 0 ) {
+		return mh->elts[1];
 	}
+	else {
+		return NULL;
+	}
+}
 
 static inline void
 swap(struct minheap * mh, int index0, int index1) {
@@ -156,16 +145,16 @@ minheap_push(struct minheap * mh, struct element * elt) {
 }
 
 struct element *
-	minheap_pop(struct minheap * mh) {
-		if ( mh->size > 0 ) {
-			struct element * elt = mh->elts[1];
-			swap(mh, 1, mh->size);
-			mh->elts[mh->size] = NULL;
-			--mh->size;
-			down(mh, 1);
-			elt->index = 0;
-			return elt;
-		}
-		return NULL;
+minheap_pop(struct minheap * mh) {
+	if ( mh->size > 0 ) {
+		struct element * elt = mh->elts[1];
+		swap(mh, 1, mh->size);
+		mh->elts[mh->size] = NULL;
+		--mh->size;
+		down(mh, 1);
+		elt->index = 0;
+		return elt;
 	}
+	return NULL;
+}
 

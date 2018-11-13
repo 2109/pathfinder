@@ -9,7 +9,7 @@
 #include "minheap.h"
 #include "minheap-internal.h"
 
-#define MINHEAP_USE_LIBEVENT
+//#define MINHEAP_USE_LIBEVENT
 
 #ifdef _MSC_VER
 #define inline __inline
@@ -147,7 +147,7 @@ struct nav_mesh_context
 #ifdef MINHEAP_USE_LIBEVENT
 	min_heap_t openlist;
 #else
-	struct minheap* openlist;
+	struct minheap openlist;
 #endif
 	struct nav_node* closelist;
 };

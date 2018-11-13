@@ -18,11 +18,17 @@
 struct element {
 	int index;
 };
-struct minheap;
+
+struct minheap {
+	int cap;
+	int size;
+	int(*less)( struct element *l, struct element *r );
+	struct element **elts;
+};
 
 
-struct minheap * minheap_create(int cap, int(*less)(struct element *l, struct element *r));
-void minheap_release(struct minheap *mh);
+void minheap_ctor(struct minheap* mh, int(*less)( struct element *l, struct element *r ));
+void minheap_dtor(struct minheap *mh);
 void minheap_clear(struct minheap * mh, void(*clear)(struct element *elt));
 void minheap_push(struct minheap * mh, struct element * elt);
 void minheap_change(struct minheap * mh,struct element * elt);

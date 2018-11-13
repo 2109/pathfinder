@@ -361,7 +361,7 @@ void OnSearchDump(void* self, int index)
 	}
 	dc.Polygon(pt, node->size);
 	delete[] pt;
-	Sleep(5);
+	//Sleep(5);
 }
 
 void pathfinderDlg::OnPath()
