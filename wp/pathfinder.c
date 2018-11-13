@@ -11,7 +11,7 @@
 #include "pathfinder.h"
 
 typedef struct node {
-	struct element elt;
+	mh_elt_t elt;
 	struct node *next;
 	struct node *parent;
 	uint32_t *link;
@@ -27,7 +27,7 @@ typedef struct node {
 typedef struct pathfinder {
 	node_t *node;
 	uint32_t size;
-	struct minheap openlist;
+	mh_t openlist;
 	node_t *closelist;
 } pathfinder_t;
 
@@ -96,14 +96,14 @@ heap_clear(struct element* elt) {
 }
 
 static inline void
-reset(pathfinder_t* finder) {
+finder_reset(pathfinder_t* finder) {
 	node_t * node = finder->closelist;
 	while (node) {
 		node_t * tmp = node;
 		node = tmp->next;
 		clear_node(tmp);
 	}
-	minheap_clear(&finder->openlist, heap_clear);
+	mh_clear(&finder->openlist, heap_clear);
 }
 
 static inline int
@@ -111,6 +111,13 @@ less(struct element * left, struct element * right) {
 	node_t *l = (node_t*)( left );
 	node_t *r = (node_t*)( right );
 	return l->F < r->F;
+}
+
+static inline int
+great(struct element * left, struct element * right) {
+	node_t *l = (node_t*)( left );
+	node_t *r = (node_t*)( right );
+	return l->F > r->F;
 }
 
 void
@@ -168,7 +175,11 @@ finder_create(const char* file) {
 
 	fclose(fp);
 
-	minheap_ctor(&finder->openlist, less);
+#ifdef MINHEAP_USE_LIBEVENT
+	mh_ctor(&finder->openlist, great);
+#else
+	mh_ctor(&finder->openlist, less);
+#endif
 	finder->closelist = NULL;
 
 	return finder;
@@ -183,8 +194,8 @@ finder_release(pathfinder_t* finder) {
 		if (node->link)
 			free(node->link);
 	}
+	mh_dtor(&finder->openlist);
 	free(finder->node);
-	minheap_dtor(&finder->openlist);
 	free(finder);
 }
 
@@ -196,18 +207,18 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, finder_result
 	if ( !from || !to || from == to )
 		return -1;
 
-	minheap_push(&finder->openlist, &from->elt);
+	mh_push(&finder->openlist, &from->elt);
 
 	node_t * current = NULL;
 
-	while ( ( current = (node_t*)minheap_pop(&finder->openlist) ) != NULL ) {
+	while ( ( current = (node_t*)mh_pop(&finder->openlist) ) != NULL ) {
 		current->next = finder->closelist;
 		finder->closelist = current;
 		current->closed = 1;
 
 		if ( current == to ) {
 			make_path(finder, current, from, cb, result_ud);
-			reset(finder);
+			finder_reset(finder);
 			return 1;
 		}
 
@@ -217,13 +228,13 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, finder_result
 
 		while ( neighbors ) {
 			node_t* node = neighbors;
-			if ( node->elt.index ) {
+			if ( mh_elt_has_init(&node->elt) ) {
 				int nG = current->G + g_cost(current, node);
 				if ( nG < node->G ) {
 					node->G = nG;
 					node->F = node->G + node->H;
 					node->parent = current;
-					minheap_change(&finder->openlist, &node->elt);
+					mh_adjust(&finder->openlist, &node->elt);
 				}
 			}
 			else {
@@ -231,7 +242,7 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, finder_result
 				node->G = current->G + g_cost(current, node);
 				node->H = h_cost(node, to);
 				node->F = node->G + node->H;
-				minheap_push(&finder->openlist, &node->elt);
+				mh_push(&finder->openlist, &node->elt);
 				if ( dump != NULL )
 					dump(dump_ud, node->x, node->z);
 			}
@@ -240,7 +251,7 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, finder_result
 			node->next = NULL;
 		}
 	}
-	reset(finder);
+	finder_reset(finder);
 	return -1;
 }
 

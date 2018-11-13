@@ -48,7 +48,6 @@ typedef struct pathfinder {
 	int width;
 	int heigh;
 	node_t *node;
-	char *data;
 	char mask[MARK_MAX];
 
 	mh_t openlist;
@@ -290,10 +289,6 @@ finder_create(int width, int heigh, char* data) {
 	finder->node = (node_t*)malloc(width * heigh * sizeof( node_t ));
 	memset(finder->node, 0, width * heigh * sizeof( node_t ));
 
-	finder->data = (char*)malloc(width * heigh);
-	memset(finder->data, 0, width * heigh);
-	memcpy(finder->data, data, width * heigh);
-
 	int i = 0;
 	int j = 0;
 	for ( ; i < finder->width; ++i ) {
@@ -302,7 +297,7 @@ finder_create(int width, int heigh, char* data) {
 			node_t *node = &finder->node[index];
 			node->x = i;
 			node->z = j;
-			node->block = finder->data[index];
+			node->block = data[index];
 			mh_init(&node->elt);
 		}
 	}
@@ -324,7 +319,6 @@ void
 finder_release(pathfinder_t* finder) {
 	mh_dtor(&finder->openlist);
 	free(finder->node);
-	free(finder->data);
 	free(finder);
 }
 

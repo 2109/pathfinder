@@ -8,7 +8,7 @@
 #endif
 
 
-#include "minheap.h"
+#include "minheap-adapter.h"
 
 
 struct pathfinder;
