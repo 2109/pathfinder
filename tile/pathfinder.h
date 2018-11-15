@@ -7,17 +7,15 @@
 #define inline __inline
 #endif
 
-#include "minheap.h"
-#include "minheap-internal.h"
-
 #define MINHEAP_USE_LIBEVENT
 
 #include "minheap-adapter.h"
 
-#define ERROR_CANNOT_REACH	-1
-#define ERROR_START_POINT	-2
-#define ERROR_OVER_POINT	-3
-#define ERROR_SAME_POINT	-4
+#define FINDER_OK				 0
+#define FINDER_CANNOT_REACH		-1
+#define FINDER_START_ERROR		-2
+#define FINDER_OVER_ERROR		-3
+#define FINDER_SAME_POINT_ERROR	-4
 
 
 struct pathfinder;

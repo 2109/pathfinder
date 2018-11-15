@@ -14,7 +14,6 @@
 #define MARK_MAX 64
 #define INIT_PATH_SIZE 64
 
-#define SQUARE(val) (val*val)
 #define GOAL_COST(from,to,cost) (abs(from->x - to->x) * cost + abs(from->z - to->z) * cost)
 #define DX(A,B) (A->x - B->x)
 #define DZ(A,B) (A->z - B->z)
@@ -326,21 +325,22 @@ int
 finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, finder_result result_cb, void* result_ud, finder_dump dump_cb, void* dump_ud, float cost) {
 	node_t * from = find_node(finder, x0, z0);
 	if (!from) {
-		return ERROR_START_POINT;
+		return FINDER_START_ERROR;
 	}
 
 	node_t * to = find_node(finder, x1, z1);
 	if ( !to || isblock(finder, to) ) {
 		to = search_node(finder, x0, z0, x1, z1, NULL, NULL);
 		if (!to) {
-			return ERROR_OVER_POINT;
+			return FINDER_OVER_ERROR;
 		}
 	}
 
 	if ( from == to ) {
-		return ERROR_SAME_POINT;
+		return FINDER_SAME_POINT_ERROR;
 	}
 
+	int result = FINDER_CANNOT_REACH;
 
 	mh_push(&finder->openlist, &from->elt);
 	node_t * node = NULL;
@@ -352,8 +352,8 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, f
 
 		if ( node == to ) {
 			build_path(finder, node, from, smooth, result_cb, result_ud);
-			finder_reset(finder);
-			return 0;
+			result = FINDER_OK;
+			break;
 		}
 
 		node_t* neighbors = NULL;
@@ -387,7 +387,7 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, f
 		}
 	}
 	finder_reset(finder);
-	return ERROR_CANNOT_REACH;
+	return result;
 }
 
 void
