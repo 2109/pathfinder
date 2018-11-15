@@ -14,7 +14,6 @@
 #define MARK_MAX 64
 #define INIT_PATH_SIZE 64
 
-#define GOAL_COST(from,to,cost) (abs(from->x - to->x) * cost + abs(from->z - to->z) * cost)
 #define DX(A,B) (A->x - B->x)
 #define DZ(A,B) (A->z - B->z)
 
@@ -114,7 +113,7 @@ find_neighbors(pathfinder_t * finder, struct node * node, node_t **neighbours) {
 }
 
 static inline float
-neighbor_cost(node_t * from, node_t * to) {
+neighbor_estimate(node_t * from, node_t * to) {
 	int dx = from->x - to->x;
 	int dz = from->z - to->z;
 	int i;
@@ -123,8 +122,16 @@ neighbor_cost(node_t * from, node_t * to) {
 			break;
 	}
 	if ( i < 4 )
-		return 50.0f;
-	return 60.0f;
+		return 10.0f;
+	return 14.0f;
+}
+
+static inline float
+goal_estimate(node_t * from, node_t * to, float cost) {
+	if ( cost < 1 ) {
+		cost = 64;
+	}
+	return abs(from->x - to->x) * cost + abs(from->z - to->z) * cost;
 }
 
 static inline void
@@ -363,7 +370,7 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, f
 			node_t* nei = neighbors;
 
 			if ( mh_elt_has_init(&nei->elt)) {
-				int nG = node->G + neighbor_cost(node, nei);
+				int nG = node->G + neighbor_estimate(node, nei);
 				if ( nG < nei->G ) {
 					nei->G = nG;
 					nei->F = nei->G + nei->H;
@@ -373,8 +380,8 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, f
 			}
 			else {
 				nei->parent = node;
-				nei->G = node->G + neighbor_cost(node, nei);
-				nei->H = GOAL_COST(nei, to, cost);
+				nei->G = node->G + neighbor_estimate(node, nei);
+				nei->H = goal_estimate(nei, to, cost);
 				nei->F = nei->G + nei->H;
 				mh_push(&finder->openlist, &nei->elt);
 				if ( dump_cb != NULL ) {
