@@ -10,6 +10,7 @@
 
 #include "pathfinder.h"
 
+#include "minheap-adapter.h"
 
 #define MARK_MAX 64
 #define INIT_PATH_SIZE 64
@@ -40,6 +41,7 @@ typedef struct node {
 	float H;
 	float F;
 	int closed;
+	int recorded;
 } node_t;
 
 typedef struct pathfinder {
@@ -86,6 +88,74 @@ search_node(pathfinder_t* finder, int x0, int z0, int x1, int z1, finder_dump du
 	return find_node(finder, stopx, stopz);
 }
 
+void
+is_min_node(pathfinder_t* finder, int cx, int cz, int dx, int dz, int* dt_min, int* mx, int* mz, node_t** list, finder_dump dump, void* ud) {
+	node_t* node = find_node(finder, cx + dx, cz + dz);
+	if (node && !isblock(finder, node)) {
+		if (node->recorded == 0) {
+			node->recorded = 1;
+			node->next = *list;
+			*list = node;
+
+			if (dump) {
+				dump(ud, cx + dx, cz + dz);
+			}
+			
+			int dt = dx * dx + dz * dz;
+			if ( *dt_min < 0 || *dt_min > dt ) {
+				*dt_min = dt;
+				*mx = cx + dx;
+				*mz = cz + dz;
+			}
+		}
+	}
+}
+
+void 
+search_node_in_circle(struct pathfinder* finder, int x, int z, int r, int* rx, int* rz, finder_dump dump, void* ud) {
+	int min_dt = -1;
+
+	node_t* list = NULL;
+
+	for ( int i = 1; i <= r;i++ ) {
+		int tx = 0;
+		int tz = i;
+
+		int d = 3 - 2 * r;
+		while ( tx <= tz )
+		{
+			is_min_node(finder, x, z, tx, tz, &min_dt, rx, rz, &list, dump, ud);
+			is_min_node(finder, x, z, -tx, tz, &min_dt, rx, rz, &list, dump, ud);
+			is_min_node(finder, x, z, tx, -tz, &min_dt, rx, rz, &list, dump, ud);
+			is_min_node(finder, x, z, -tx, -tz, &min_dt, rx, rz, &list, dump, ud);
+			is_min_node(finder, x, z, tz, tx, &min_dt, rx, rz, &list, dump, ud);
+			is_min_node(finder, x, z, -tz, tx, &min_dt, rx, rz, &list, dump, ud);
+			is_min_node(finder, x, z, tz, -tx, &min_dt, rx, rz, &list, dump, ud);
+			is_min_node(finder, x, z, -tz, -tx, &min_dt, rx, rz, &list, dump, ud);
+			if ( d < 0 ) {
+				d = d + 4 * tx + 6;
+			}
+			else {
+				d = d + 4 * ( tx - tz ) + 10;
+				tz--;
+			}
+			tx++;
+		}
+		if ( min_dt != -1 ) {
+			break;
+		}
+	}
+
+	while ( list ) {
+		node_t* tmp = list;
+		tmp->recorded = 0;
+		list = tmp->next;
+		tmp->next = NULL;
+	}
+
+	return find_node(finder, rx, rz);
+}
+
 static inline int
 movable(pathfinder_t* finder, int x, int z, int ignore) {
 	node_t *node = find_node(finder, x, z);
@@ -128,9 +198,9 @@ neighbor_estimate(node_t * from, node_t * to) {
 
 static inline float
 goal_estimate(node_t * from, node_t * to, float cost) {
-	if ( cost < 1 ) {
+	//if ( cost < 1 ) {
 		cost = 64;
-	}
+	//}
 	return abs(from->x - to->x) * cost + abs(from->z - to->z) * cost;
 }
 
@@ -175,7 +245,6 @@ great(struct element * left, struct element * right) {
 	return l->F > r->F;
 }
 
-
 static inline void
 path_init(path_t* path) {
 	path->index = 0;
@@ -208,7 +277,7 @@ path_add(path_t* path, int x, int z) {
 }
 
 void
-build_path(pathfinder_t *finder, node_t *node, node_t *from, int smooth, finder_result cb, void* ud) {
+build_path(pathfinder_t *finder, node_t *node, node_t *from, int smooth, finder_result result_cb, void* result_ud) {
 	path_t path;
 	path_init(&path);
 
@@ -250,11 +319,11 @@ build_path(pathfinder_t *finder, node_t *node, node_t *from, int smooth, finder_
 		int i;
 		for ( i = path.index - 1; i >= 0;i-- ) {
 			path_node_t* node = &path.nodes[i];
-			cb(ud, node->x, node->z);
+			result_cb(result_ud, node->x, node->z);
 		}
 	} else {
 		path_node_t* node = &path.nodes[path.index - 1];
-		cb(ud, node->x, node->z);
+		result_cb(result_ud, node->x, node->z);
 
 		int i, j;
 		for ( i = path.index - 1; i >= 2; ) {
@@ -275,11 +344,11 @@ build_path(pathfinder_t *finder, node_t *node, node_t *from, int smooth, finder_
 			}
 			node = &path.nodes[last];
 			i = last;
-			cb(ud, node->x, node->z);
+			result_cb(result_ud, node->x, node->z);
 		}
 
 		node = &path.nodes[0];
-		cb(ud, node->x, node->z);
+		result_cb(result_ud, node->x, node->z);
 	}
 	path_release(&path);
 }
@@ -545,7 +614,6 @@ raycast_breshenham(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ign
 	}
 }
 
-
 void 
 finder_raycast(struct pathfinder* finder, int x0, int z0, int x1, int z1, int ignore, int* resultx, int* resultz, int* stopx, int* stopz, finder_dump dump, void* ud) {
 #ifdef RAYCAST_BRESHENHAM
@@ -558,6 +626,12 @@ finder_raycast(struct pathfinder* finder, int x0, int z0, int x1, int z1, int ig
 int
 finder_movable(pathfinder_t * finder, int x, int z, int ignore) {
 	return movable(finder, x, z, ignore);
+}
+
+void
+finder_bound(pathfinder_t * finder, int* width, int* heigh) {
+	*width = finder->width;
+	*heigh = finder->heigh;
 }
 
 void
