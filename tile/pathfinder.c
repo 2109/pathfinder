@@ -1,4 +1,4 @@
-
+﻿
 
 #include <math.h>
 #include <assert.h>
@@ -91,16 +91,16 @@ search_node(pathfinder_t* finder, int x0, int z0, int x1, int z1, finder_dump du
 void
 is_min_node(pathfinder_t* finder, int cx, int cz, int dx, int dz, int* dt_min, int* mx, int* mz, node_t** list, finder_dump dump, void* ud) {
 	node_t* node = find_node(finder, cx + dx, cz + dz);
-	if (node && !isblock(finder, node)) {
-		if (node->recorded == 0) {
+	if ( node && !isblock(finder, node) ) {
+		if ( node->recorded == 0 ) {
 			node->recorded = 1;
 			node->next = *list;
 			*list = node;
 
-			if (dump) {
+			if ( dump ) {
 				dump(ud, cx + dx, cz + dz);
 			}
-			
+
 			int dt = dx * dx + dz * dz;
 			if ( *dt_min < 0 || *dt_min > dt ) {
 				*dt_min = dt;
@@ -111,27 +111,23 @@ is_min_node(pathfinder_t* finder, int cx, int cz, int dx, int dz, int* dt_min, i
 	}
 }
 
-void 
+void
 search_node_in_circle(struct pathfinder* finder, int x, int z, int r, int* rx, int* rz, finder_dump dump, void* ud) {
 	int min_dt = -1;
 
 	node_t* list = NULL;
-
-	for ( int i = 1; i <= r;i++ ) {
+	int i;
+	for ( i = 1; i <= r; i++ ) {
 		int tx = 0;
 		int tz = i;
 
 		int d = 3 - 2 * r;
-		while ( tx <= tz )
-		{
-			is_min_node(finder, x, z, tx, tz, &min_dt, rx, rz, &list, dump, ud);
-			is_min_node(finder, x, z, -tx, tz, &min_dt, rx, rz, &list, dump, ud);
-			is_min_node(finder, x, z, tx, -tz, &min_dt, rx, rz, &list, dump, ud);
-			is_min_node(finder, x, z, -tx, -tz, &min_dt, rx, rz, &list, dump, ud);
-			is_min_node(finder, x, z, tz, tx, &min_dt, rx, rz, &list, dump, ud);
-			is_min_node(finder, x, z, -tz, tx, &min_dt, rx, rz, &list, dump, ud);
-			is_min_node(finder, x, z, tz, -tx, &min_dt, rx, rz, &list, dump, ud);
-			is_min_node(finder, x, z, -tz, -tx, &min_dt, rx, rz, &list, dump, ud);
+		while ( tx <= tz ) {
+			int dir[][2] = { { tx, tz }, { -tx, tz }, { tx, -tz }, { -tx, -tz }, { tz, tx }, { -tz, tx }, { tz, -tx }, { -tz, -tx } };
+			int j;
+			for ( j = 0; j < 8; j++ ) {
+				is_min_node(finder, x, z, dir[j][1], dir[j][2], &min_dt, rx, rz, &list, dump, ud);
+			}
 			if ( d < 0 ) {
 				d = d + 4 * tx + 6;
 			}
@@ -141,6 +137,7 @@ search_node_in_circle(struct pathfinder* finder, int x, int z, int r, int* rx, i
 			}
 			tx++;
 		}
+
 		if ( min_dt != -1 ) {
 			break;
 		}
@@ -152,8 +149,6 @@ search_node_in_circle(struct pathfinder* finder, int x, int z, int r, int* rx, i
 		list = tmp->next;
 		tmp->next = NULL;
 	}
-
-	return find_node(finder, rx, rz);
 }
 
 static inline int
@@ -198,9 +193,9 @@ neighbor_estimate(node_t * from, node_t * to) {
 
 static inline float
 goal_estimate(node_t * from, node_t * to, float cost) {
-	//if ( cost < 1 ) {
+	if ( cost < 1 ) {
 		cost = 64;
-	//}
+	}
 	return abs(from->x - to->x) * cost + abs(from->z - to->z) * cost;
 }
 
@@ -214,7 +209,7 @@ clear_node(node_t* node) {
 }
 
 static inline void
-heap_clear(struct element* elt) {
+heap_clear(mh_elt_t* elt) {
 	node_t *node = (node_t*)elt;
 	clear_node(node);
 }
@@ -232,14 +227,14 @@ finder_reset(pathfinder_t* finder) {
 }
 
 static inline int
-less(struct element * left, struct element * right) {
+less(mh_elt_t * left, mh_elt_t * right) {
 	node_t *l = (node_t*)left;
 	node_t *r = (node_t*)right;
 	return l->F < r->F;
 }
 
 static inline int
-great(struct element * left, struct element * right) {
+great(mh_elt_t * left, mh_elt_t * right) {
 	node_t *l = (node_t*)left;
 	node_t *r = (node_t*)right;
 	return l->F > r->F;
@@ -315,13 +310,14 @@ build_path(pathfinder_t *finder, node_t *node, node_t *from, int smooth, finder_
 		node = node->parent;
 	}
 
-	if (smooth == 0 || path.index == 2) {
+	if ( smooth == 0 || path.index == 2 ) {
 		int i;
-		for ( i = path.index - 1; i >= 0;i-- ) {
+		for ( i = path.index - 1; i >= 0; i-- ) {
 			path_node_t* node = &path.nodes[i];
 			result_cb(result_ud, node->x, node->z);
 		}
-	} else {
+	}
+	else {
 		path_node_t* node = &path.nodes[path.index - 1];
 		result_cb(result_ud, node->x, node->z);
 
@@ -330,15 +326,16 @@ build_path(pathfinder_t *finder, node_t *node, node_t *from, int smooth, finder_
 			int start = i;
 			int last = start - 1;
 
-			for ( j = i - 2; j >= 0;j-- ) {
+			for ( j = i - 2; j >= 0; j-- ) {
 				path_node_t* start_node = &path.nodes[start];
 				path_node_t* check_node = &path.nodes[j];
 
 				int rx, rz;
 				finder_raycast(finder, start_node->x, start_node->z, check_node->x, check_node->z, 1, &rx, &rz, NULL, NULL, NULL, NULL);
-				if (rx == check_node->x && rz == check_node->z) {
+				if ( rx == check_node->x && rz == check_node->z ) {
 					last = j;
-				} else {
+				}
+				else {
 					break;
 				}
 			}
@@ -400,14 +397,14 @@ finder_release(pathfinder_t* finder) {
 int
 finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, finder_result result_cb, void* result_ud, finder_dump dump_cb, void* dump_ud, float cost) {
 	node_t * from = find_node(finder, x0, z0);
-	if (!from) {
+	if ( !from ) {
 		return FINDER_START_ERROR;
 	}
 
 	node_t * to = find_node(finder, x1, z1);
 	if ( !to || isblock(finder, to) ) {
 		to = search_node(finder, x0, z0, x1, z1, NULL, NULL);
-		if (!to) {
+		if ( !to ) {
 			return FINDER_OVER_ERROR;
 		}
 	}
@@ -421,7 +418,7 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, f
 	mh_push(&finder->openlist, &from->elt);
 	node_t * node = NULL;
 
-	while ( ( node = ( node_t* )mh_pop(&finder->openlist) ) != NULL ) {
+	while ( ( node = (node_t*)mh_pop(&finder->openlist) ) != NULL ) {
 		node->next = finder->closelist;
 		finder->closelist = node;
 		node->closed = 1;
@@ -438,7 +435,7 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, f
 		while ( neighbors ) {
 			node_t* nei = neighbors;
 
-			if ( mh_elt_has_init(&nei->elt)) {
+			if ( mh_elt_has_init(&nei->elt) ) {
 				int nG = node->G + neighbor_estimate(node, nei);
 				if ( nG < nei->G ) {
 					nei->G = nG;
@@ -478,7 +475,7 @@ raycast(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* r
 
 	if ( fx0 == fx1 ) {
 		float z = z0;
-		for ( ; z0 < z1 ? z <= z1 : z >= z1; z0 < z1 ? z++ :z--) {
+		for ( ; z0 < z1 ? z <= z1 : z >= z1; z0 < z1 ? z++ : z-- ) {
 			if ( dump != NULL )
 				dump(ud, x0, z);
 			if ( movable(finder, x0, z, ignore) == 0 ) {
@@ -560,14 +557,14 @@ swap(int* a, int *b) {
 	*b = tmp;
 }
 
-//breshenhamֱ���㷨
+//breshenhamÖ±ÏßËã·¨
 void
 raycast_breshenham(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* rx, int* rz, int* stopx, int* stopz, finder_dump dump, void* ud) {
 	int dx = abs(x1 - x0);
 	int dz = abs(z1 - z0);
 
 	int steep = dz > dx ? 1 : 0;
-	if (steep) {
+	if ( steep ) {
 		swap(&x0, &z0);
 		swap(&x1, &z1);
 		swap(&dx, &dz);
@@ -580,17 +577,18 @@ raycast_breshenham(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ign
 
 	int dt;
 	for ( dt = dz - dx; xstep == 1 ? x0 <= x1 : x1 <= x0; ) {
-		if (steep) {
+		if ( steep ) {
 			x = z0;
 			z = x0;
-		} else {
+		}
+		else {
 			x = x0;
 			z = z0;
 		}
-		
-		
+
+
 		if ( movable(finder, x, z, ignore) == 0 ) {
-			if (stopx) {
+			if ( stopx ) {
 				*stopx = x;
 			}
 			if ( stopz ) {
@@ -605,7 +603,7 @@ raycast_breshenham(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ign
 			dump(ud, x, z);
 		}
 
-		if (dt >= 0) {
+		if ( dt >= 0 ) {
 			z0 += zstep;
 			dt -= dx;
 		}
@@ -614,10 +612,10 @@ raycast_breshenham(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ign
 	}
 }
 
-void 
+void
 finder_raycast(struct pathfinder* finder, int x0, int z0, int x1, int z1, int ignore, int* resultx, int* resultz, int* stopx, int* stopz, finder_dump dump, void* ud) {
 #ifdef RAYCAST_BRESHENHAM
-	raycast_breshenham(finder,x0,z0,x1,z1,ignore,resultx,resultz,stopx,stopz,dump,ud);
+	raycast_breshenham(finder, x0, z0, x1, z1, ignore, resultx, resultz, stopx, stopz, dump, ud);
 #else
 	raycast(finder, x0, z0, x1, z1, ignore, resultx, resultz, stopx, stopz, dump, ud);
 #endif
