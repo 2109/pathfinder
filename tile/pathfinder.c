@@ -50,8 +50,8 @@ typedef struct pathfinder {
 	int heigh;
 	node_t *node;
 
-	int size;
-	int* movable;
+	int unblock_size;
+	int* unblock;
 
 	char mask[MARK_MAX];
 
@@ -199,10 +199,7 @@ neighbor_estimate(node_t * from, node_t * to) {
 
 static inline float
 goal_estimate(node_t * from, node_t * to, float cost) {
-	if (cost < 1) {
-		cost = 64;
-	}
-	return abs(from->x - to->x) * cost + abs(from->z - to->z) * cost;
+	return abs(from->x - to->x) * 10 + abs(from->z - to->z) * 10;
 }
 
 static inline void
@@ -380,7 +377,7 @@ finder_create(int width, int heigh, char* data) {
 			mh_init(&node->elt);
 
 			if (!isblock(finder,node)) {
-				finder->size++;
+				finder->unblock_size++;
 			}
 		}
 	}
@@ -404,8 +401,8 @@ finder_release(pathfinder_t* finder) {
 
 	free(finder->node);
 
-	if (finder->movable)
-		free(finder->movable);
+	if (finder->unblock)
+		free(finder->unblock);
 
 	free(finder);
 }
@@ -427,6 +424,12 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, f
 
 	if (from == to) {
 		return FINDER_SAME_POINT_ERROR;
+	}
+
+	if (finder_raycast(finder,x0,z0,x1,z1,0,NULL,NULL,NULL,NULL,dump_cb,dump_ud) == 0) {
+		result_cb(result_ud, x0, z0);
+		result_cb(result_ud, x1, z1);
+		return FINDER_OK;
 	}
 
 	int result = FINDER_CANNOT_REACH;
@@ -479,7 +482,7 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, f
 	return result;
 }
 
-void
+int
 raycast(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* resultx, int* resultz, int* stopx, int* stopz, finder_dump dump, void* ud) {
 	float fx0 = x0 + 0.5f;
 	float fz0 = z0 + 0.5f;
@@ -487,7 +490,6 @@ raycast(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* r
 	float fz1 = z1 + 0.5f;
 	float rx = fx0;
 	float rz = fz0;
-	int founded = 0;
 
 	if (fx0 == fx1) {
 		float z = z0;
@@ -501,7 +503,6 @@ raycast(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* r
 				if (stopz) {
 					*stopz = z;
 				}
-				founded = 1;
 				break;
 			}
 			else {
@@ -515,7 +516,6 @@ raycast(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* r
 		if (abs(slope) < 1) {
 			float inc = fx1 >= fx0 ? 1 : -1;
 			float x = fx0;
-			founded = 0;
 			for (; fx1 >= fx0 ? x <= fx1 : x >= fx1; x += inc) {
 				float z = slope * (x - fx0) + fz0;
 				if (dump != NULL)
@@ -527,7 +527,6 @@ raycast(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* r
 					if (stopz) {
 						*stopz = z;
 					}
-					founded = 1;
 					break;
 				}
 				else {
@@ -539,7 +538,6 @@ raycast(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* r
 		else {
 			float inc = fz1 >= fz0 ? 1 : -1;
 			float z = fz0;
-			founded = 0;
 			for (; fz1 >= fz0 ? z <= fz1 : z >= fz1; z += inc) {
 				float x = (z - fz0) / slope + fx0;
 				if (dump != NULL)
@@ -551,7 +549,6 @@ raycast(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* r
 					if (stopz) {
 						*stopz = z;
 					}
-					founded = 1;
 					break;
 				}
 				else {
@@ -562,8 +559,17 @@ raycast(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* r
 		}
 	}
 
-	*resultx = (int)rx;
-	*resultz = (int)rz;
+	if (resultx) {
+		*resultx = rx;
+	}
+	if (resultz) {
+		*resultz = rz;
+	}
+
+	if ((int)rx == x1 && (int)rz == z1) {
+		return 0;
+	}
+	return -1;
 }
 
 static inline void
@@ -574,8 +580,11 @@ swap(int* a, int *b) {
 }
 
 //breshenhamÖ±ÏßËã·¨
-void
-raycast_breshenham(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* rx, int* rz, int* stopx, int* stopz, finder_dump dump, void* ud) {
+int
+raycast_breshenham(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ignore, int* resultx, int* resultz, int* stopx, int* stopz, finder_dump dump, void* ud) {
+	int rx = x0;
+	int rz = z0;
+
 	int dx = abs(x1 - x0);
 	int dz = abs(z1 - z0);
 
@@ -602,7 +611,6 @@ raycast_breshenham(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ign
 			z = z0;
 		}
 
-
 		if (movable(finder, x, z, ignore) == 0) {
 			if (stopx) {
 				*stopx = x;
@@ -610,10 +618,10 @@ raycast_breshenham(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ign
 			if (stopz) {
 				*stopz = z;
 			}
-			return;
+			break;
 		}
-		*rx = x;
-		*rz = z;
+		rx = x;
+		rz = z;
 
 		if (dump != NULL) {
 			dump(ud, x, z);
@@ -626,14 +634,26 @@ raycast_breshenham(pathfinder_t* finder, int x0, int z0, int x1, int z1, int ign
 		x0 += xstep;
 		dt += dz;
 	}
+
+	if (resultx) {
+		*resultx = rx;
+	}
+	if (resultz) {
+		*resultz = rz;
+	}
+
+	if (rx == x1 && rz == z1) {
+		return 0;
+	}
+	return -1;
 }
 
-void
+int
 finder_raycast(struct pathfinder* finder, int x0, int z0, int x1, int z1, int ignore, int* resultx, int* resultz, int* stopx, int* stopz, finder_dump dump, void* ud) {
 #ifdef RAYCAST_BRESHENHAM
-	raycast_breshenham(finder, x0, z0, x1, z1, ignore, resultx, resultz, stopx, stopz, dump, ud);
+	return raycast_breshenham(finder, x0, z0, x1, z1, ignore, resultx, resultz, stopx, stopz, dump, ud);
 #else
-	raycast(finder, x0, z0, x1, z1, ignore, resultx, resultz, stopx, stopz, dump, ud);
+	return raycast(finder, x0, z0, x1, z1, ignore, resultx, resultz, stopx, stopz, dump, ud);
 #endif
 }
 
@@ -668,20 +688,20 @@ finder_mask_reverse(pathfinder_t * finder) {
 }
 
 void finder_random(struct pathfinder * finder, int* x, int* z) {
-	if (finder->movable == NULL) {
-		finder->movable = malloc(sizeof(int)* finder->size);
+	if (finder->unblock == NULL) {
+		finder->unblock = malloc(sizeof(int)* finder->unblock_size);
 
 		int index = 0;
 		int i;
 		for (i = 0; i < finder->width * finder->heigh;i++) {
 			node_t* node = &finder->node[i];
 			if (!isblock(finder,node)) {
-				finder->movable[index++] = i;
+				finder->unblock[index++] = i;
 			}
 		}
 	}
 
-	node_t* node = &finder->node[finder->movable[random_index(finder->size)]];
+	node_t* node = &finder->node[finder->unblock[random_index(finder->unblock_size)]];
 
 	*x = node->x;
 	*z = node->z;
