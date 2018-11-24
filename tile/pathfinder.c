@@ -36,6 +36,7 @@ typedef struct node {
 	struct node *parent;
 	int x;
 	int z;
+	int index;
 	int	block;
 	float G;
 	float H;
@@ -90,6 +91,12 @@ movable(pathfinder_t* finder, int x, int z, int ignore) {
 	if (ignore)
 		return !isblock(finder, node);
 	return finder->mask[node->block] == 1;
+}
+
+static inline int
+random_index(int max) {
+	float ratio = (rand() % RAND_MAX) / (float)RAND_MAX;
+	return ratio * max;
 }
 
 node_t*
@@ -382,6 +389,7 @@ finder_create(int width, int heigh, char* data) {
 			node_t *node = &finder->node[index];
 			node->x = i;
 			node->z = j;
+			node->index = index;
 			node->block = data[index];
 			mh_init(&node->elt);
 
@@ -688,16 +696,64 @@ void finder_random(struct pathfinder * finder, int* x, int* z) {
 		}
 	}
 
-	float ratio = (rand() % RAND_MAX) / (float)RAND_MAX;
-	int index = ratio * finder->size;
-	node_t* node = &finder->node[finder->movable[index]];
+	node_t* node = &finder->node[finder->movable[random_index(finder->size)]];
 
 	*x = node->x;
 	*z = node->z;
 }
 
-void finder_random_in_circle(struct pathfinder * finder, int cx, int cz, int r, int* x, int* z) {
+int 
+finder_random_in_circle(struct pathfinder * finder, int cx, int cz, int r, int* x, int* z) {
+	int tx = 0;
+	int tz = r;
 
+	int* node_index = malloc((2 * r)*(2 * r) * sizeof(int));
+	int index = 0;
+
+	int d = 3 - 2 * r;
+	while (tx <= tz) {
+		int zi;
+		for (zi = tx; zi <= tz;zi++) {
+			int dir[][2] = { { tx, zi }, { -tx, zi }, { tx, -zi }, { -tx, -zi }, { zi, tx }, { -zi, tx }, { zi, -tx }, { -zi, -tx } };
+			int j;
+			for (j = 0; j < 8; j++) {
+				node_t* node = find_node(finder, cx + dir[j][0], cz + dir[j][1]);
+				if (node && node->recorded == 0) {
+					node->recorded = 1;
+					
+					if (!isblock(finder, node)) {
+						node_index[index++] = node->index;
+					}
+				}
+			}
+		}
+		
+		if (d < 0) {
+			d = d + 4 * tx + 6;
+		}
+		else {
+			d = d + 4 * (tx - tz) + 10;
+			tz--;
+		}
+		tx++;
+	}
+
+	if (index == 0) {
+		return -1;
+	}
+
+	node_t* node = &finder->node[node_index[random_index(index)]];
+
+	*x = node->x;
+	*z = node->z;
+
+	int i;
+	for (i = 0; i < index;i++) {
+		node_t* node = &finder->node[node_index[i]];
+		node->recorded = 0;
+	}
+	free(node_index);
+	return 0;
 }
 
 int
