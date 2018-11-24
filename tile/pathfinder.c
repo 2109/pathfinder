@@ -99,18 +99,8 @@ random_index(int max) {
 	return ratio * max;
 }
 
-node_t*
-search_node(pathfinder_t* finder, int x0, int z0, int x1, int z1, finder_dump dump, void* ud) {
-	int rx, rz;
-	int stopx, stopz;
-	finder_mask_reverse(finder);
-	finder_raycast(finder, x1, z1, x0, z0, 0, &rx, &rz, &stopx, &stopz, dump, ud);
-	finder_mask_reverse(finder);
-	return find_node(finder, stopx, stopz);
-}
-
 void
-is_min_node(pathfinder_t* finder, int cx, int cz, int dx, int dz, int* dt_min, int* mx, int* mz, node_t** list, finder_dump dump, void* ud) {
+is_min_node(pathfinder_t* finder, int cx, int cz, int dx, int dz, int* dt_min, int* mx, int* mz, node_t** list) {
 	int x = cx + dx;
 	int z = cz + dz;
 	if (movable(finder, x, z, 0)) {
@@ -119,10 +109,6 @@ is_min_node(pathfinder_t* finder, int cx, int cz, int dx, int dz, int* dt_min, i
 			node->recorded = 1;
 			node->next = *list;
 			*list = node;
-
-			if (dump) {
-				dump(ud, x, z);
-			}
 
 			int dt = dx * dx + dz * dz;
 			if (*dt_min < 0 || *dt_min > dt) {
@@ -135,7 +121,7 @@ is_min_node(pathfinder_t* finder, int cx, int cz, int dx, int dz, int* dt_min, i
 }
 
 node_t*
-search_node_in_circle(struct pathfinder* finder, int x, int z, int r, finder_dump dump, void* ud) {
+search_node(struct pathfinder* finder, int x, int z, int r) {
 	int min_dt = -1;
 	int rx, rz;
 
@@ -150,7 +136,7 @@ search_node_in_circle(struct pathfinder* finder, int x, int z, int r, finder_dum
 			int dir[][2] = { { tx, tz }, { -tx, tz }, { tx, -tz }, { -tx, -tz }, { tz, tx }, { -tz, tx }, { tz, -tx }, { -tz, -tx } };
 			int j;
 			for (j = 0; j < 8; j++) {
-				is_min_node(finder, x, z, dir[j][0], dir[j][1], &min_dt, &rx, &rz, &list, dump, ud);
+				is_min_node(finder, x, z, dir[j][0], dir[j][1], &min_dt, &rx, &rz, &list);
 			}
 			if (d < 0) {
 				d = d + 4 * tx + 6;
@@ -433,8 +419,7 @@ finder_find(pathfinder_t * finder, int x0, int z0, int x1, int z1, int smooth, f
 
 	node_t * to = find_node(finder, x1, z1);
 	if (!to || isblock(finder, to)) {
-		//to = search_node(finder, x0, z0, x1, z1, NULL, NULL);
-		to = search_node_in_circle(finder, x1, z1, 10, NULL, NULL);
+		to = search_node(finder, x1, z1, 10, NULL, NULL);
 		if (!to) {
 			return FINDER_OVER_ERROR;
 		}
