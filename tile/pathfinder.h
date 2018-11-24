@@ -33,5 +33,5 @@ void finder_mask_set(struct pathfinder * finder, int mask_index, int enable);
 void finder_mask_reset(struct pathfinder * finder);
 void finder_mask_reverse(struct pathfinder * finder);
 
-void search_node_in_circle(struct pathfinder* finder, int x, int z, int r, int* rx, int* rz, finder_dump dump, void* ud);
+
 #endif

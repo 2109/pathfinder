@@ -81,6 +81,7 @@ ON_BN_CLICKED(IDC_CHECK2, &CTilePathFinderDlg::OnBnClickedLineCheck)
 ON_BN_CLICKED(IDC_CHECK3, &CTilePathFinderDlg::OnBnClickedEditCheck)
 //ON_WM_LBUTTONDOWN()
 ON_BN_CLICKED(IDC_BUTTON3, &CTilePathFinderDlg::OnStraightLineEx)
+ON_BN_CLICKED(IDC_BUTTON4, &CTilePathFinderDlg::OnRandomPos)
 END_MESSAGE_MAP()
 
 
@@ -119,7 +120,7 @@ BOOL CTilePathFinderDlg::OnInitDialog()
 
 	m_offset_x = 200;
 	m_offset_z = 10;
-	m_scale = 2;
+	m_scale = 5;
 	m_cost = 50;
 	CString str;
 	str.Format(_T("%d"),m_offset_x);
@@ -653,4 +654,23 @@ void CTilePathFinderDlg::RayCast(int type)
 	to.y = ( ry + 0.5 ) * m_scale + m_offset_z;
 	dc.MoveTo(from);
 	dc.LineTo(to);
+}
+
+extern "C" void finder_random(struct pathfinder* finder, int* x, int* z);
+
+void CTilePathFinderDlg::OnRandomPos()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	CClientDC cdc(this);
+
+	for (int i = 0; i < 1000;i++)
+	{
+		int x, z;
+		finder_random(m_finder, &x, &z);
+		POINT pt;
+		pt.x = x * m_scale + m_offset_x;
+		pt.y = z * m_scale + m_offset_z;
+
+		cdc.Ellipse(pt.x - 1, pt.y - 1, pt.x + 1, pt.y + 1);
+	}
 }
