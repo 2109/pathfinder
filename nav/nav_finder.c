@@ -1,4 +1,4 @@
-#include "nav.h"
+﻿#include "nav.h"
 #include <float.h>
 
 inline double
@@ -732,46 +732,6 @@ around_movable(struct nav_mesh_context* ctx, double x, double z, int range, int*
 	return result;
 }
 
-#define INIT_RECORD_SIZE 8
-struct dt_poly_record {
-	int init[INIT_RECORD_SIZE];
-	int offset;
-	int size;
-	int* record;
-};
-
-static inline void
-dt_record_init(struct dt_poly_record* dt_record) {
-	dt_record->record = dt_record->init;
-	dt_record->offset = 0;
-	dt_record->size = INIT_RECORD_SIZE;
-}
-
-static inline void
-dt_record_add(struct dt_poly_record* dt_record, int poly) {
-	if ( dt_record->offset >= dt_record->size ) {
-		int nsize = dt_record->size * 2;
-		int* nrecord = (int*)malloc(sizeof(int)* nsize);
-		memcpy(nrecord, dt_record->record, sizeof(int)* dt_record->size);
-		if (dt_record->record != dt_record->init) {
-			free(dt_record->record);
-		}
-		dt_record->record = nrecord;
-		dt_record->size = nsize;
-	}
-
-	dt_record->record[dt_record->offset++] = poly;
-}
-
-static inline void
-dt_record_release(struct dt_poly_record* dt_record) {
-	if ( dt_record->record != dt_record->init ) {
-		free(dt_record->record);
-	}
-}
-
-#define MOVABLE_USE_RECORD
-
 bool
 point_movable(struct nav_mesh_context* ctx, double x, double z, double fix, double* dt_offset) {
 	if ( x < ctx->lt.x || x > ctx->br.x )
@@ -814,23 +774,17 @@ point_movable(struct nav_mesh_context* ctx, double x, double z, double fix, doub
 		return false;
 	}
 
-#ifdef MOVABLE_USE_RECORD
-	struct dt_poly_record dt_record;
-	dt_record_init(&dt_record);
-#endif
-
+	struct nav_node* search_node = NULL;
 	struct vector3 pt = { x, 0, z };
 	double dt_min = -1;
 
 	int x_axis;
-	for ( x_axis = x_index - 1; x_axis <= x_index + 1; x_axis++ )
-	{
+	for ( x_axis = x_index - 1; x_axis <= x_index + 1; x_axis++ ) {
 		if ( x_axis < 0 || x_axis >= ctx->tile_width ) {
 			continue;
 		}
 		int z_axis;
-		for ( z_axis = z_index - 1; z_axis <= z_index + 1; z_axis++ )
-		{
+		for ( z_axis = z_index - 1; z_axis <= z_index + 1; z_axis++ ) {
 			if ( z_axis < 0 || z_axis >= ctx->tile_heigh ) {
 				continue;
 			}
@@ -839,37 +793,28 @@ point_movable(struct nav_mesh_context* ctx, double x, double z, double fix, doub
 			int i;
 			for ( i = 0; i < tile->offset; i++ ) {
 				int poly_id = tile->node[i];
-#ifdef MOVABLE_USE_RECORD
+
 				node = get_node(ctx, poly_id);
 				if ( node->dt_recorded == 0 ) {
 					node->dt_recorded = 1;
-					dt_record_add(&dt_record, poly_id);
+					node->next = search_node;
+					search_node = node;
 					double dt = dot2poly(ctx, poly_id, &pt);
 					if ( dt_min < 0 || dt_min > dt ) {
 						dt_min = dt;
 					}
 				}
-#else
-				double dt = dot2poly(ctx, poly_id, &pt);
-				if ( dt_min < 0 || dt_min > dt ) {
-					dt_min = dt;
-				}
-#endif
-
 			}
 		}
 	}
 
-#ifdef MOVABLE_USE_RECORD
-	for ( i = 0; i < dt_record.offset; i++ )
-	{
-		int poly_id = dt_record.record[i];
-		node = get_node(ctx, poly_id);
-		assert(node->dt_recorded == 1);
-		node->dt_recorded = 0;
+	while (search_node) {
+		struct nav_node* current = search_node;
+		assert(current->dt_recorded == 1);
+		current->dt_recorded = 0;
+		search_node = search_node->next;
+		current->next = NULL;
 	}
-	dt_record_release(&dt_record);
-#endif
 
 	if (dt_offset) {
 		*dt_offset = dt_min;
@@ -1005,10 +950,10 @@ point_height(struct nav_mesh_context* ctx, double x, double z, double* height) {
 
 #else
 /*
-射线:p(t) = p0 + tu
-u:射线方向向量
-平量:n.(p - p0) = 0
-n:平面的法向量
+灏勭嚎:p(t) = p0 + tu
+u:灏勭嚎鏂瑰悜鍚戦噺
+骞抽噺:n.(p - p0) = 0
+n:骞抽潰鐨勬硶鍚戦噺
 t = n.(p1-p0)/n.u
 */
 bool
@@ -1018,9 +963,9 @@ point_height(struct nav_mesh_context* ctx, double x, double z, double* height) {
 		return false;
 	}
 
-	//射线起点
+	//灏勭嚎璧风偣
 	struct vector3 from = { x, 0, z };
-	//射线方向
+	//灏勭嚎鏂瑰悜
 	static const struct vector3 direction = { 0, 1, 0 };
 
 	int triangle[3] = { 0, 0, 0 };
@@ -1037,7 +982,7 @@ point_height(struct nav_mesh_context* ctx, double x, double z, double* height) {
 		return false;
 	}
 
-	//求平面法向量
+	//姹傚钩闈㈡硶鍚戦噺
 	struct vector3* PA = &ctx->vertices[triangle[0]];
 	struct vector3* PB = &ctx->vertices[triangle[1]];
 	struct vector3* PC = &ctx->vertices[triangle[2]];
