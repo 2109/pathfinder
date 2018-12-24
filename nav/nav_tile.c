@@ -1,4 +1,4 @@
-#include "nav.h"
+﻿#include "nav.h"
 
 #ifdef _WIN32
 #include <windows.h>

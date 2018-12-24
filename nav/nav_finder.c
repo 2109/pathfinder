@@ -274,7 +274,7 @@ raycast(struct nav_mesh_context* ctx, struct vector3* pt0, struct vector3* pt1, 
 			vector3_sub(pt3, pt0, &vt30);
 			vector3_sub(pt4, pt0, &vt40);
 
-			if ( vt_inside_vt(&vt10, &vt30, &vt40)) {
+			if ( vt_inside_vt(&vt10, &vt30, &vt40) ) {
 				int next = -1;
 				if ( border->node[0] != -1 ) {
 					if ( border->node[0] == node->id )
@@ -329,8 +329,8 @@ clear_node(struct nav_node* n) {
 }
 
 static inline void
-heap_clear(struct element* elt) {
-	struct nav_node *node = ( struct nav_node *)elt;
+heap_clear(mh_elt_t* elt) {
+	struct nav_node *node = ( struct nav_node * )elt;
 	clear_node(node);
 }
 

@@ -1,4 +1,4 @@
-
+ï»¿
 #ifndef NAV_H
 #define NAV_H
 #include <stdlib.h>
@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <math.h>
 
 #ifdef _MSC_VER
 #define inline __inline
@@ -25,10 +26,6 @@
 #define get_node(ctx,id) ((id < 0 || id >= ctx->node_size) ?NULL:&ctx->node[id])
 
 #define get_mask(ctx,index) (ctx.mask[index])
-
-#define max(a,b)    (((a) > (b)) ? (a) : (b))
-
-#define min(a,b)    (((a) < (b)) ? (a) : (b))
 
 struct vector3
 {
@@ -65,7 +62,7 @@ struct nav_node
 
 	double area;
 
-	//¶à±ßÐÎµÄÖÐÐÄµã
+	//å¤šè¾¹å½¢çš„ä¸­å¿ƒç‚¹
 	struct vector3 center;
 
 	double G;
@@ -75,7 +72,7 @@ struct nav_node
 	struct nav_node* next;
 	int closed;
 
-	//»º´æA*Ñ°Â·³öÀ´µÄÏàÁÚ¶à±ßÐÎºÍÓëÏàÁÚ¶à±ßÐÎ¹²±ßµÄ±ß
+	//ç¼“å­˜A*å¯»è·¯å‡ºæ¥çš„ç›¸é‚»å¤šè¾¹å½¢å’Œä¸Žç›¸é‚»å¤šè¾¹å½¢å…±è¾¹çš„è¾¹
 	struct nav_node* link_parent;
 	int link_border;
 
@@ -107,22 +104,22 @@ struct nav_tile
 
 struct nav_mesh_context
 {
-	//¶¥µã
+	//é¡¶ç‚¹
 	struct vector3 * vertices;
 	int vertices_size;
 
-	//ËùÓÐ±ß(Í¬Ò»Ìõ±ßÓÐabºÍbaÁ½Ìõ)
+	//æ‰€æœ‰è¾¹(åŒä¸€æ¡è¾¹æœ‰abå’Œbaä¸¤æ¡)
 	struct nav_border* borders;
 	int border_size;
 	int border_offset;
 
-	//¶à±ßÐÎ½Úµã
+	//å¤šè¾¹å½¢èŠ‚ç‚¹
 	struct nav_node* node;
 	int node_size;
 
 	double area;
 
-	//¸ñ×ÓÐÅÏ¢
+	//æ ¼å­ä¿¡æ¯
 	struct nav_tile* tile;
 	uint32_t tile_unit;
 	uint32_t tile_width;
@@ -134,10 +131,10 @@ struct nav_mesh_context
 	uint32_t width;
 	uint32_t heigh;
 
-	//¶à±ßÐÎ½ÚµãµÄmask
+	//å¤šè¾¹å½¢èŠ‚ç‚¹çš„mask
 	struct nav_mesh_mask mask_ctx;
 
-	//Ñ°Â·½á¹û»º´æ
+	//å¯»è·¯ç»“æžœç¼“å­˜
 	struct nav_path result;
 
 	mh_t openlist;

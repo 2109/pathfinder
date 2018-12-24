@@ -1,5 +1,5 @@
-
-// TilePathFinder.cpp : ÊµÏÖÎÄ¼ş
+ï»¿
+// TilePathFinder.cpp : å®ç°æ–‡ä»¶
 //
 
 #include "stdafx.h"
@@ -15,20 +15,20 @@
 #endif
 
 
-// ÓÃÓÚÓ¦ÓÃ³ÌĞò¡°¹ØÓÚ¡±²Ëµ¥ÏîµÄ CAboutDlg ¶Ô»°¿ò
+// ç”¨äºåº”ç”¨ç¨‹åºâ€œå…³äºâ€èœå•é¡¹çš„ CAboutDlg å¯¹è¯æ¡†
 
 class CAboutDlg : public CDialogEx
 {
 public:
 	CAboutDlg();
 
-// ¶Ô»°¿òÊı¾İ
+// å¯¹è¯æ¡†æ•°æ®
 	enum { IDD = IDD_ABOUTBOX };
 
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV Ö§³Ö
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV æ”¯æŒ
 
-// ÊµÏÖ
+// å®ç°
 protected:
 	DECLARE_MESSAGE_MAP()
 };
@@ -46,7 +46,7 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
-// CTilePathFinderDlg ¶Ô»°¿ò
+// CTilePathFinderDlg å¯¹è¯æ¡†
 
 
 
@@ -85,15 +85,15 @@ ON_BN_CLICKED(IDC_BUTTON4, &CTilePathFinderDlg::OnRandomPos)
 END_MESSAGE_MAP()
 
 
-// CTilePathFinderDlg ÏûÏ¢´¦Àí³ÌĞò
+// CTilePathFinderDlg æ¶ˆæ¯å¤„ç†ç¨‹åº
 
 BOOL CTilePathFinderDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	// ½«¡°¹ØÓÚ...¡±²Ëµ¥ÏîÌí¼Óµ½ÏµÍ³²Ëµ¥ÖĞ¡£
+	// å°†â€œå…³äº...â€èœå•é¡¹æ·»åŠ åˆ°ç³»ç»Ÿèœå•ä¸­ã€‚
 
-	// IDM_ABOUTBOX ±ØĞëÔÚÏµÍ³ÃüÁî·¶Î§ÄÚ¡£
+	// IDM_ABOUTBOX å¿…é¡»åœ¨ç³»ç»Ÿå‘½ä»¤èŒƒå›´å†…ã€‚
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
 
@@ -111,12 +111,12 @@ BOOL CTilePathFinderDlg::OnInitDialog()
 		}
 	}
 
-	// ÉèÖÃ´Ë¶Ô»°¿òµÄÍ¼±ê¡£µ±Ó¦ÓÃ³ÌĞòÖ÷´°¿Ú²»ÊÇ¶Ô»°¿òÊ±£¬¿ò¼Ü½«×Ô¶¯
-	//  Ö´ĞĞ´Ë²Ù×÷
-	SetIcon(m_hIcon, TRUE);			// ÉèÖÃ´óÍ¼±ê
-	SetIcon(m_hIcon, FALSE);		// ÉèÖÃĞ¡Í¼±ê
+	// è®¾ç½®æ­¤å¯¹è¯æ¡†çš„å›¾æ ‡ã€‚å½“åº”ç”¨ç¨‹åºä¸»çª—å£ä¸æ˜¯å¯¹è¯æ¡†æ—¶ï¼Œæ¡†æ¶å°†è‡ªåŠ¨
+	//  æ‰§è¡Œæ­¤æ“ä½œ
+	SetIcon(m_hIcon, TRUE);			// è®¾ç½®å¤§å›¾æ ‡
+	SetIcon(m_hIcon, FALSE);		// è®¾ç½®å°å›¾æ ‡
 
-	// TODO: ÔÚ´ËÌí¼Ó¶îÍâµÄ³õÊ¼»¯´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ é¢å¤–çš„åˆå§‹åŒ–ä»£ç 
 
 	m_offset_x = 200;
 	m_offset_z = 10;
@@ -180,7 +180,7 @@ BOOL CTilePathFinderDlg::OnInitDialog()
 	*stdout = *hf;
 
 
-	return TRUE;  // ³ı·Ç½«½¹µãÉèÖÃµ½¿Ø¼ş£¬·ñÔò·µ»Ø TRUE
+	return TRUE;  // é™¤éå°†ç„¦ç‚¹è®¾ç½®åˆ°æ§ä»¶ï¼Œå¦åˆ™è¿”å› TRUE
 }
 
 void CTilePathFinderDlg::OnSysCommand(UINT nID, LPARAM lParam)
@@ -196,19 +196,19 @@ void CTilePathFinderDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 }
 
-// Èç¹ûÏò¶Ô»°¿òÌí¼Ó×îĞ¡»¯°´Å¥£¬ÔòĞèÒªÏÂÃæµÄ´úÂë
-//  À´»æÖÆ¸ÃÍ¼±ê¡£¶ÔÓÚÊ¹ÓÃÎÄµµ/ÊÓÍ¼Ä£ĞÍµÄ MFC Ó¦ÓÃ³ÌĞò£¬
-//  Õâ½«ÓÉ¿ò¼Ü×Ô¶¯Íê³É¡£
+// å¦‚æœå‘å¯¹è¯æ¡†æ·»åŠ æœ€å°åŒ–æŒ‰é’®ï¼Œåˆ™éœ€è¦ä¸‹é¢çš„ä»£ç 
+//  æ¥ç»˜åˆ¶è¯¥å›¾æ ‡ã€‚å¯¹äºä½¿ç”¨æ–‡æ¡£/è§†å›¾æ¨¡å‹çš„ MFC åº”ç”¨ç¨‹åºï¼Œ
+//  è¿™å°†ç”±æ¡†æ¶è‡ªåŠ¨å®Œæˆã€‚
 
 void CTilePathFinderDlg::OnPaint()
 {
 	if (IsIconic())
 	{
-		CPaintDC dc(this); // ÓÃÓÚ»æÖÆµÄÉè±¸ÉÏÏÂÎÄ
+		CPaintDC dc(this); // ç”¨äºç»˜åˆ¶çš„è®¾å¤‡ä¸Šä¸‹æ–‡
 
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
-		// Ê¹Í¼±êÔÚ¹¤×÷Çø¾ØĞÎÖĞ¾ÓÖĞ
+		// ä½¿å›¾æ ‡åœ¨å·¥ä½œåŒºçŸ©å½¢ä¸­å±…ä¸­
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
 		CRect rect;
@@ -216,7 +216,7 @@ void CTilePathFinderDlg::OnPaint()
 		int x = (rect.Width() - cxIcon + 1) / 2;
 		int y = (rect.Height() - cyIcon + 1) / 2;
 
-		// »æÖÆÍ¼±ê
+		// ç»˜åˆ¶å›¾æ ‡
 		dc.DrawIcon(x, y, m_hIcon);
 	}
 	else
@@ -227,8 +227,8 @@ void CTilePathFinderDlg::OnPaint()
 	UpdateDialog();
 }
 
-//µ±ÓÃ»§ÍÏ¶¯×îĞ¡»¯´°¿ÚÊ±ÏµÍ³µ÷ÓÃ´Ëº¯ÊıÈ¡µÃ¹â±ê
-//ÏÔÊ¾¡£
+//å½“ç”¨æˆ·æ‹–åŠ¨æœ€å°åŒ–çª—å£æ—¶ç³»ç»Ÿè°ƒç”¨æ­¤å‡½æ•°å–å¾—å…‰æ ‡
+//æ˜¾ç¤ºã€‚
 HCURSOR CTilePathFinderDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
@@ -305,7 +305,7 @@ void LineDump(void* ud, int x, int z)
 
 void CTilePathFinderDlg::OnFindPath()
 {
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	m_path.clear();
 
 	CClientDC dc(this);
@@ -348,7 +348,7 @@ void CTilePathFinderDlg::OnFindPath()
 
 	double pathCost = (double)((over.QuadPart - start.QuadPart) * 1000) / (double)freq.QuadPart;
 	CString str;
-	str.Format(_T("ºÄÊ±:%fms"), pathCost);
+	str.Format(_T("è€—æ—¶:%fms"), pathCost);
 	m_time_cost->SetWindowText(str);
 }
 
@@ -438,7 +438,7 @@ void CTilePathFinderDlg::UpdateDialog()
 	dc.SelectObject(oopen);
 	
 	CString str;
-	str.Format(_T("Æğµã:%d,%d"), -1, -1);
+	str.Format(_T("èµ·ç‚¹:%d,%d"), -1, -1);
 	m_pos_start->SetWindowText(str);
 
 	CBrush brush_begin(RGB(0,255,0));
@@ -460,12 +460,12 @@ void CTilePathFinderDlg::UpdateDialog()
 
 		dc.Polygon(pt,4);
 
-		str.Format(_T("Æğµã:%d,%d"), m_begin_x, m_begin_z);
+		str.Format(_T("èµ·ç‚¹:%d,%d"), m_begin_x, m_begin_z);
 		m_pos_start->SetWindowText(str);
 	}
 	dc.SelectObject(obrush);
 
-	str.Format(_T("ÖÕµã:%d,%d"), -1, -1);
+	str.Format(_T("ç»ˆç‚¹:%d,%d"), -1, -1);
 	m_pos_over->SetWindowText(str);
 
 	CBrush brush_over(RGB(0,0,0));
@@ -487,15 +487,17 @@ void CTilePathFinderDlg::UpdateDialog()
 
 		dc.Polygon(pt,4);	
 
-		str.Format(_T("ÖÕµã:%d,%d"), m_over_x, m_over_z);
+		str.Format(_T("ç»ˆç‚¹:%d,%d"), m_over_x, m_over_z);
 		m_pos_over->SetWindowText(str);
 	}
 	dc.SelectObject(obrush);
 }
 
+extern "C" void finder_random_in_circle(struct pathfinder * finder, int cx, int cz, int radius, int* x, int* z);
+
 void CTilePathFinderDlg::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	// TODO: ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌĞò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO: åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 	if (Between(point))
 	{
 		if (m_edit)
@@ -509,7 +511,6 @@ void CTilePathFinderDlg::OnLButtonUp(UINT nFlags, CPoint point)
 		{
 			m_begin_x = (point.x - m_offset_x) / m_scale;
 			m_begin_z = (point.y - m_offset_z) / m_scale;
-
 		}
 
 		Invalidate();
@@ -521,7 +522,7 @@ void CTilePathFinderDlg::OnLButtonUp(UINT nFlags, CPoint point)
 
 void CTilePathFinderDlg::OnRButtonUp(UINT nFlags, CPoint point)
 {
-	// TODO: ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌĞò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO: åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 
 	if (Between(point))
 	{
@@ -554,7 +555,7 @@ void CTilePathFinderDlg::OnRButtonUp(UINT nFlags, CPoint point)
 
 void CTilePathFinderDlg::OnUpdateIddTileFindpathDialog(CCmdUI *pCmdUI)
 {
-	// TODO: ÔÚ´ËÌí¼ÓÃüÁî¸üĞÂÓÃ»§½çÃæ´¦Àí³ÌĞò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ å‘½ä»¤æ›´æ–°ç”¨æˆ·ç•Œé¢å¤„ç†ç¨‹åºä»£ç 
 	UpdateDialog();
 }
 
@@ -589,27 +590,27 @@ void CTilePathFinderDlg::OnBnClickedPathCheck()
 
 void CTilePathFinderDlg::OnBnClickedLineCheck()
 {
-	// TODO:  ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO:  åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	m_show_line_search = ((CButton*)GetDlgItem(IDC_CHECK2))->GetCheck();
 }
 
 
 void CTilePathFinderDlg::OnBnClickedEditCheck()
 {
-	// TODO:  ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO:  åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	m_edit = ((CButton*)GetDlgItem(IDC_CHECK3))->GetCheck();
 }
 
 void CTilePathFinderDlg::OnStraightLine()
 {
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	RayCast(0);
 }
 
 
 void CTilePathFinderDlg::OnStraightLineEx()
 {
-	// TODO:  ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO:  åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	RayCast(1);
 }
 
@@ -643,7 +644,7 @@ void CTilePathFinderDlg::RayCast(int type)
 
 	double pathCost = (double)( ( over.QuadPart - start.QuadPart ) * 1000 ) / (double)freq.QuadPart;
 	CString str;
-	str.Format(_T("ºÄÊ±:%fms"), pathCost);
+	str.Format(_T("è€—æ—¶:%fms"), pathCost);
 	m_time_cost->SetWindowText(str);
 
 	POINT from;
@@ -660,7 +661,7 @@ extern "C" void finder_random(struct pathfinder* finder, int* x, int* z);
 
 void CTilePathFinderDlg::OnRandomPos()
 {
-	// TODO:  ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO:  åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	CClientDC cdc(this);
 
 	for (int i = 0; i < 1000;i++)

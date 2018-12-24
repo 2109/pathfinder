@@ -1,5 +1,5 @@
-
-// PathFinderTestDlg.cpp : ÊµÏÖÎÄ¼ş
+ï»¿
+// PathFinderTestDlg.cpp : å®ç°æ–‡ä»¶
 //
 
 #include "stdafx.h"
@@ -15,22 +15,22 @@
 #endif
 
 
-// ÓÃÓÚÓ¦ÓÃ³ÌĞò¡°¹ØÓÚ¡±²Ëµ¥ÏîµÄ CAboutDlg ¶Ô»°¿ò
+// ç”¨äºåº”ç”¨ç¨‹åºâ€œå…³äºâ€èœå•é¡¹çš„ CAboutDlg å¯¹è¯æ¡†
 
 class CAboutDlg : public CDialogEx
 {
 public:
 	CAboutDlg();
 
-	// ¶Ô»°¿òÊı¾İ
+	// å¯¹è¯æ¡†æ•°æ®
 	enum {
 		IDD = IDD_ABOUTBOX
 	};
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV Ö§³Ö
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV æ”¯æŒ
 
-	// ÊµÏÖ
+	// å®ç°
 protected:
 	DECLARE_MESSAGE_MAP()
 };
@@ -48,7 +48,7 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
-// pathfinderDlg ¶Ô»°¿ò
+// pathfinderDlg å¯¹è¯æ¡†
 
 
 
@@ -90,15 +90,15 @@ BEGIN_MESSAGE_MAP(pathfinderDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
-// pathfinderDlg ÏûÏ¢´¦Àí³ÌĞò
+// pathfinderDlg æ¶ˆæ¯å¤„ç†ç¨‹åº
 
 BOOL pathfinderDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 	//_CrtSetBreakAlloc(3850);
-	// ½«¡°¹ØÓÚ...¡±²Ëµ¥ÏîÌí¼Óµ½ÏµÍ³²Ëµ¥ÖĞ¡£
+	// å°†â€œå…³äº...â€èœå•é¡¹æ·»åŠ åˆ°ç³»ç»Ÿèœå•ä¸­ã€‚
 
-	// IDM_ABOUTBOX ±ØĞëÔÚÏµÍ³ÃüÁî·¶Î§ÄÚ¡£
+	// IDM_ABOUTBOX å¿…é¡»åœ¨ç³»ç»Ÿå‘½ä»¤èŒƒå›´å†…ã€‚
 	ASSERT(( IDM_ABOUTBOX & 0xFFF0 ) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
 
@@ -116,12 +116,12 @@ BOOL pathfinderDlg::OnInitDialog()
 		}
 	}
 
-	// ÉèÖÃ´Ë¶Ô»°¿òµÄÍ¼±ê¡£  µ±Ó¦ÓÃ³ÌĞòÖ÷´°¿Ú²»ÊÇ¶Ô»°¿òÊ±£¬¿ò¼Ü½«×Ô¶¯
-	//  Ö´ĞĞ´Ë²Ù×÷
-	SetIcon(m_hIcon, TRUE);			// ÉèÖÃ´óÍ¼±ê
-	SetIcon(m_hIcon, FALSE);		// ÉèÖÃĞ¡Í¼±ê
+	// è®¾ç½®æ­¤å¯¹è¯æ¡†çš„å›¾æ ‡ã€‚  å½“åº”ç”¨ç¨‹åºä¸»çª—å£ä¸æ˜¯å¯¹è¯æ¡†æ—¶ï¼Œæ¡†æ¶å°†è‡ªåŠ¨
+	//  æ‰§è¡Œæ­¤æ“ä½œ
+	SetIcon(m_hIcon, TRUE);			// è®¾ç½®å¤§å›¾æ ‡
+	SetIcon(m_hIcon, FALSE);		// è®¾ç½®å°å›¾æ ‡
 
-	// TODO:  ÔÚ´ËÌí¼Ó¶îÍâµÄ³õÊ¼»¯´úÂë
+	// TODO:  åœ¨æ­¤æ·»åŠ é¢å¤–çš„åˆå§‹åŒ–ä»£ç 
 
 	CString nav_tile;
 	nav_tile.Format(_T("./nav/%s"), AfxGetApp()->m_lpCmdLine);
@@ -260,7 +260,7 @@ BOOL pathfinderDlg::OnInitDialog()
 
 	printf("load tile time:%ld\n", time(NULL) - now);
 
-	return TRUE;  // ³ı·Ç½«½¹µãÉèÖÃµ½¿Ø¼ş£¬·ñÔò·µ»Ø TRUE
+	return TRUE;  // é™¤éå°†ç„¦ç‚¹è®¾ç½®åˆ°æ§ä»¶ï¼Œå¦åˆ™è¿”å› TRUE
 }
 
 void pathfinderDlg::OnSysCommand(UINT nID, LPARAM lParam)
@@ -276,19 +276,19 @@ void pathfinderDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 }
 
-// Èç¹ûÏò¶Ô»°¿òÌí¼Ó×îĞ¡»¯°´Å¥£¬ÔòĞèÒªÏÂÃæµÄ´úÂë
-//  À´»æÖÆ¸ÃÍ¼±ê¡£  ¶ÔÓÚÊ¹ÓÃÎÄµµ/ÊÓÍ¼Ä£ĞÍµÄ MFC Ó¦ÓÃ³ÌĞò£¬
-//  Õâ½«ÓÉ¿ò¼Ü×Ô¶¯Íê³É¡£
+// å¦‚æœå‘å¯¹è¯æ¡†æ·»åŠ æœ€å°åŒ–æŒ‰é’®ï¼Œåˆ™éœ€è¦ä¸‹é¢çš„ä»£ç 
+//  æ¥ç»˜åˆ¶è¯¥å›¾æ ‡ã€‚  å¯¹äºä½¿ç”¨æ–‡æ¡£/è§†å›¾æ¨¡å‹çš„ MFC åº”ç”¨ç¨‹åºï¼Œ
+//  è¿™å°†ç”±æ¡†æ¶è‡ªåŠ¨å®Œæˆã€‚
 
 void pathfinderDlg::OnPaint()
 {
 	if ( IsIconic() )
 	{
-		CPaintDC dc(this); // ÓÃÓÚ»æÖÆµÄÉè±¸ÉÏÏÂÎÄ
+		CPaintDC dc(this); // ç”¨äºç»˜åˆ¶çš„è®¾å¤‡ä¸Šä¸‹æ–‡
 
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>( dc.GetSafeHdc() ), 0);
 
-		// Ê¹Í¼±êÔÚ¹¤×÷Çø¾ØĞÎÖĞ¾ÓÖĞ
+		// ä½¿å›¾æ ‡åœ¨å·¥ä½œåŒºçŸ©å½¢ä¸­å±…ä¸­
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
 		CRect rect;
@@ -296,7 +296,7 @@ void pathfinderDlg::OnPaint()
 		int x = ( rect.Width() - cxIcon + 1 ) / 2;
 		int y = ( rect.Height() - cyIcon + 1 ) / 2;
 
-		// »æÖÆÍ¼±ê
+		// ç»˜åˆ¶å›¾æ ‡
 		dc.DrawIcon(x, y, m_hIcon);
 
 
@@ -309,8 +309,8 @@ void pathfinderDlg::OnPaint()
 	DrawMap();
 }
 
-//µ±ÓÃ»§ÍÏ¶¯×îĞ¡»¯´°¿ÚÊ±ÏµÍ³µ÷ÓÃ´Ëº¯ÊıÈ¡µÃ¹â±ê
-//ÏÔÊ¾¡£
+//å½“ç”¨æˆ·æ‹–åŠ¨æœ€å°åŒ–çª—å£æ—¶ç³»ç»Ÿè°ƒç”¨æ­¤å‡½æ•°å–å¾—å…‰æ ‡
+//æ˜¾ç¤ºã€‚
 HCURSOR pathfinderDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>( m_hIcon );
@@ -366,18 +366,18 @@ void OnSearchDump(void* self, int index)
 
 void pathfinderDlg::OnPath()
 {
-	// TODO:  ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO:  åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 
 	if ( m_poly_begin == -1 )
 	{
 		CString str;
-		str.Format(_T("Ê¼µã»¹Ã»ÉèÖÃ"));
+		str.Format(_T("å§‹ç‚¹è¿˜æ²¡è®¾ç½®"));
 		MessageBox(str);
 	}
 	else if ( m_poly_over == -1 )
 	{
 		CString str;
-		str.Format(_T("ÖÕµã»¹Ã»ÉèÖÃ"));
+		str.Format(_T("ç»ˆç‚¹è¿˜æ²¡è®¾ç½®"));
 		MessageBox(str);
 	}
 	else
@@ -410,7 +410,7 @@ void pathfinderDlg::OnPath()
 
 int pathfinderDlg::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
 {
-	// TODO:  ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌĞò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO:  åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 
 	return CDialogEx::OnMouseActivate(pDesktopWnd, nHitTest, message);
 }
@@ -528,7 +528,7 @@ void pathfinderDlg::DrawMap()
 		int index = x + z * m_mesh->tile_width;
 		struct nav_tile* tile = &m_mesh->tile[index];
 
-		//¸ñ×Ó¿çÔ¾¶àÉÙ¸ö¶à±ßĞÎ
+		//æ ¼å­è·¨è·ƒå¤šå°‘ä¸ªå¤šè¾¹å½¢
 		/*	for (int i = 0;i < tile->offset;i++)
 			{
 			int node_id = tile->node[i];
@@ -649,7 +649,8 @@ void pathfinderDlg::DrawOver(CPoint& pos)
 
 	struct nav_node* node = NULL;
 	int node_index;
-	if ( !point_movable(m_mesh, nav_x, nav_z, 10, NULL) )
+	double offset;
+	if ( !point_movable(m_mesh, nav_x, nav_z, 10, &offset) )
 	{
 		vector3* vt = around_movable(m_mesh, nav_x, nav_z, 5, &node_index, OnAroundDump, this);
 		if ( !vt ) {
@@ -722,7 +723,7 @@ void pathfinderDlg::DrawOver(CPoint& pos)
 
 void pathfinderDlg::OnUpdateIddPathfindertestDialog(CCmdUI *pCmdUI)
 {
-	// TODO:  ÔÚ´ËÌí¼ÓÃüÁî¸üĞÂÓÃ»§½çÃæ´¦Àí³ÌĞò´úÂë
+	// TODO:  åœ¨æ­¤æ·»åŠ å‘½ä»¤æ›´æ–°ç”¨æˆ·ç•Œé¢å¤„ç†ç¨‹åºä»£ç 
 	DrawMap();
 }
 
@@ -730,17 +731,17 @@ void pathfinderDlg::OnUpdateIddPathfindertestDialog(CCmdUI *pCmdUI)
 
 void pathfinderDlg::Straightline()
 {
-	// TODO:  ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO:  åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	if ( m_poly_begin == -1 )
 	{
 		CString str;
-		str.Format(_T("Ê¼µã»¹Ã»ÉèÖÃ"));
+		str.Format(_T("å§‹ç‚¹è¿˜æ²¡è®¾ç½®"));
 		MessageBox(str);
 	}
 	else if ( m_poly_over == -1 )
 	{
 		CString str;
-		str.Format(_T("ÖÕµã»¹Ã»ÉèÖÃ"));
+		str.Format(_T("ç»ˆç‚¹è¿˜æ²¡è®¾ç½®"));
 		MessageBox(str);
 	}
 	else
@@ -785,7 +786,7 @@ void pathfinderDlg::Straightline()
 
 void pathfinderDlg::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	// TODO:  ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌĞò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO:  åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 
 	CDialogEx::OnLButtonDown(nFlags, point);
 }
@@ -793,7 +794,7 @@ void pathfinderDlg::OnLButtonDown(UINT nFlags, CPoint point)
 
 void pathfinderDlg::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	// TODO:  ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌĞò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO:  åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 
 
 	this->DrawBegin(point);
@@ -805,17 +806,17 @@ void pathfinderDlg::OnLButtonUp(UINT nFlags, CPoint point)
 
 void pathfinderDlg::OnIgnoreLine()
 {
-	// TODO:  ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO:  åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	if ( m_poly_begin == NULL )
 	{
 		CString str;
-		str.Format(_T("Ê¼µã»¹Ã»ÉèÖÃ"));
+		str.Format(_T("å§‹ç‚¹è¿˜æ²¡è®¾ç½®"));
 		MessageBox(str);
 	}
 	else if ( m_poly_over == NULL )
 	{
 		CString str;
-		str.Format(_T("ÖÕµã»¹Ã»ÉèÖÃ"));
+		str.Format(_T("ç»ˆç‚¹è¿˜æ²¡è®¾ç½®"));
 		MessageBox(str);
 	}
 	else
@@ -860,14 +861,14 @@ void pathfinderDlg::OnIgnoreLine()
 
 void pathfinderDlg::OnEnChangeEdit2()
 {
-	// TODO:  Èç¹û¸Ã¿Ø¼şÊÇ RICHEDIT ¿Ø¼ş£¬Ëü½«²»
-	// ·¢ËÍ´ËÍ¨Öª£¬³ı·ÇÖØĞ´ CDialogEx::OnInitDialog()
-	// º¯Êı²¢µ÷ÓÃ CRichEditCtrl().SetEventMask()£¬
-	// Í¬Ê±½« ENM_CHANGE ±êÖ¾¡°»ò¡±ÔËËãµ½ÑÚÂëÖĞ¡£
+	// TODO:  å¦‚æœè¯¥æ§ä»¶æ˜¯ RICHEDIT æ§ä»¶ï¼Œå®ƒå°†ä¸
+	// å‘é€æ­¤é€šçŸ¥ï¼Œé™¤éé‡å†™ CDialogEx::OnInitDialog()
+	// å‡½æ•°å¹¶è°ƒç”¨ CRichEditCtrl().SetEventMask()ï¼Œ
+	// åŒæ—¶å°† ENM_CHANGE æ ‡å¿—â€œæˆ–â€è¿ç®—åˆ°æ©ç ä¸­ã€‚
 
 
 
-	// TODO:  ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO:  åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	CString str;
 	( (CEdit*)GetDlgItem(IDC_EDIT2) )->GetWindowTextW(str);
 	m_offset_x = _ttoi(str);
@@ -877,14 +878,14 @@ void pathfinderDlg::OnEnChangeEdit2()
 
 void pathfinderDlg::OnEnChangeEdit3()
 {
-	// TODO:  Èç¹û¸Ã¿Ø¼şÊÇ RICHEDIT ¿Ø¼ş£¬Ëü½«²»
-	// ·¢ËÍ´ËÍ¨Öª£¬³ı·ÇÖØĞ´ CDialogEx::OnInitDialog()
-	// º¯Êı²¢µ÷ÓÃ CRichEditCtrl().SetEventMask()£¬
-	// Í¬Ê±½« ENM_CHANGE ±êÖ¾¡°»ò¡±ÔËËãµ½ÑÚÂëÖĞ¡£
+	// TODO:  å¦‚æœè¯¥æ§ä»¶æ˜¯ RICHEDIT æ§ä»¶ï¼Œå®ƒå°†ä¸
+	// å‘é€æ­¤é€šçŸ¥ï¼Œé™¤éé‡å†™ CDialogEx::OnInitDialog()
+	// å‡½æ•°å¹¶è°ƒç”¨ CRichEditCtrl().SetEventMask()ï¼Œ
+	// åŒæ—¶å°† ENM_CHANGE æ ‡å¿—â€œæˆ–â€è¿ç®—åˆ°æ©ç ä¸­ã€‚
 
 
 
-	// TODO:  ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO:  åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	CString str;
 	( (CEdit*)GetDlgItem(IDC_EDIT3) )->GetWindowTextW(str);
 	m_offset_z = _ttoi(str);
@@ -894,17 +895,17 @@ void pathfinderDlg::OnEnChangeEdit3()
 
 void pathfinderDlg::OnEnChangeEdit4()
 {
-	// TODO:  Èç¹û¸Ã¿Ø¼şÊÇ RICHEDIT ¿Ø¼ş£¬Ëü½«²»
-	// ·¢ËÍ´ËÍ¨Öª£¬³ı·ÇÖØĞ´ CDialogEx::OnInitDialog()
-	// º¯Êı²¢µ÷ÓÃ CRichEditCtrl().SetEventMask()£¬
-	// Í¬Ê±½« ENM_CHANGE ±êÖ¾¡°»ò¡±ÔËËãµ½ÑÚÂëÖĞ¡£
+	// TODO:  å¦‚æœè¯¥æ§ä»¶æ˜¯ RICHEDIT æ§ä»¶ï¼Œå®ƒå°†ä¸
+	// å‘é€æ­¤é€šçŸ¥ï¼Œé™¤éé‡å†™ CDialogEx::OnInitDialog()
+	// å‡½æ•°å¹¶è°ƒç”¨ CRichEditCtrl().SetEventMask()ï¼Œ
+	// åŒæ—¶å°† ENM_CHANGE æ ‡å¿—â€œæˆ–â€è¿ç®—åˆ°æ©ç ä¸­ã€‚
 
 	CString str;
 	( (CEdit*)GetDlgItem(IDC_EDIT4) )->GetWindowTextW(str);
 	m_scale = _ttof(str);
 	Invalidate();
 
-	// TODO:  ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO:  åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 }
 
 
@@ -913,13 +914,13 @@ void pathfinderDlg::OnIgnorePath()
 	if ( m_poly_begin == -1 )
 	{
 		CString str;
-		str.Format(_T("Ê¼µã»¹Ã»ÉèÖÃ"));
+		str.Format(_T("å§‹ç‚¹è¿˜æ²¡è®¾ç½®"));
 		MessageBox(str);
 	}
 	else if ( m_poly_over == -1 )
 	{
 		CString str;
-		str.Format(_T("ÖÕµã»¹Ã»ÉèÖÃ"));
+		str.Format(_T("ç»ˆç‚¹è¿˜æ²¡è®¾ç½®"));
 		MessageBox(str);
 	}
 	else
@@ -947,7 +948,7 @@ void pathfinderDlg::OnIgnorePath()
 
 void pathfinderDlg::OnRButtonUp(UINT nFlags, CPoint point)
 {
-	// TODO:  ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌĞò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO:  åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 	this->DrawOver(point);
 	CDialogEx::OnRButtonUp(nFlags, point);
 }
@@ -955,7 +956,7 @@ void pathfinderDlg::OnRButtonUp(UINT nFlags, CPoint point)
 
 void pathfinderDlg::OnClose()
 {
-	// TODO:  ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌĞò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO:  åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 	release_mesh(m_mesh);
 	_CrtDumpMemoryLeaks();
 	CDialogEx::OnClose();
@@ -963,37 +964,37 @@ void pathfinderDlg::OnClose()
 
 void pathfinderDlg::OnCheck()
 {
-	// TODO:  ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO:  åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	Invalidate();
 }
 
 void pathfinderDlg::OnEnChangeEdit5()
 {
-	// TODO:  Èç¹û¸Ã¿Ø¼şÊÇ RICHEDIT ¿Ø¼ş£¬Ëü½«²»
-	// ·¢ËÍ´ËÍ¨Öª£¬³ı·ÇÖØĞ´ CDialogEx::OnInitDialog()
-	// º¯Êı²¢µ÷ÓÃ CRichEditCtrl().SetEventMask()£¬
-	// Í¬Ê±½« ENM_CHANGE ±êÖ¾¡°»ò¡±ÔËËãµ½ÑÚÂëÖĞ¡£
+	// TODO:  å¦‚æœè¯¥æ§ä»¶æ˜¯ RICHEDIT æ§ä»¶ï¼Œå®ƒå°†ä¸
+	// å‘é€æ­¤é€šçŸ¥ï¼Œé™¤éé‡å†™ CDialogEx::OnInitDialog()
+	// å‡½æ•°å¹¶è°ƒç”¨ CRichEditCtrl().SetEventMask()ï¼Œ
+	// åŒæ—¶å°† ENM_CHANGE æ ‡å¿—â€œæˆ–â€è¿ç®—åˆ°æ©ç ä¸­ã€‚
 
-	// TODO:  ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO:  åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	
 }
 
 
 void pathfinderDlg::OnEnChangeEdit6()
 {
-	// TODO:  Èç¹û¸Ã¿Ø¼şÊÇ RICHEDIT ¿Ø¼ş£¬Ëü½«²»
-	// ·¢ËÍ´ËÍ¨Öª£¬³ı·ÇÖØĞ´ CDialogEx::OnInitDialog()
-	// º¯Êı²¢µ÷ÓÃ CRichEditCtrl().SetEventMask()£¬
-	// Í¬Ê±½« ENM_CHANGE ±êÖ¾¡°»ò¡±ÔËËãµ½ÑÚÂëÖĞ¡£
+	// TODO:  å¦‚æœè¯¥æ§ä»¶æ˜¯ RICHEDIT æ§ä»¶ï¼Œå®ƒå°†ä¸
+	// å‘é€æ­¤é€šçŸ¥ï¼Œé™¤éé‡å†™ CDialogEx::OnInitDialog()
+	// å‡½æ•°å¹¶è°ƒç”¨ CRichEditCtrl().SetEventMask()ï¼Œ
+	// åŒæ—¶å°† ENM_CHANGE æ ‡å¿—â€œæˆ–â€è¿ç®—åˆ°æ©ç ä¸­ã€‚
 
-	// TODO:  ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO:  åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 
 }
 
 
 BOOL pathfinderDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 {
-	// TODO:  ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌĞò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO:  åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 	if ( zDelta > 0 )
 	{
 		m_scale += 0.001;
@@ -1014,7 +1015,7 @@ BOOL pathfinderDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 
 void pathfinderDlg::OnMButtonUp(UINT nFlags, CPoint point)
 {
-	// TODO:  ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌĞò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO:  åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 
 	CDialogEx::OnMButtonUp(nFlags, point);
 	m_mouse_state = true;
@@ -1027,7 +1028,7 @@ void pathfinderDlg::OnMButtonUp(UINT nFlags, CPoint point)
 
 void pathfinderDlg::OnMButtonDown(UINT nFlags, CPoint point)
 {
-	// TODO:  ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌĞò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO:  åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 
 	CDialogEx::OnMButtonDown(nFlags, point);
 
@@ -1038,7 +1039,7 @@ void pathfinderDlg::OnMButtonDown(UINT nFlags, CPoint point)
 
 void pathfinderDlg::OnMouseMove(UINT nFlags, CPoint point)
 {
-	// TODO:  ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌĞò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO:  åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 
 	CDialogEx::OnMouseMove(nFlags, point);
 	if ( m_mouse_state == false ) {
