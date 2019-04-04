@@ -717,7 +717,7 @@ void finder_random(struct pathfinder * finder, int* x, int* z) {
 
 //圆内随机一个点
 int
-finder_random_in_circle(struct pathfinder * finder, int cx, int cz, int radius, int* x, int* z) {
+finder_random_in_circle(struct pathfinder * finder, int cx, int cz, int radius, int* x, int* z, finder_dump dump, void* ud) {
 	int tx = 0;
 	int tz = radius;
 	int diameter = 2 * radius;
@@ -742,11 +742,14 @@ finder_random_in_circle(struct pathfinder * finder, int cx, int cz, int radius, 
 			int i;
 			for ( i = 0; i < 8; i++ ) {
 				node_t* node = find_node(finder, cx + range[i][0], cz + range[i][1]);
-				if ( node && node->recorded == 0 ) {
-					node->recorded = 1;
-
-					if ( !isblock(finder, node) )
+				if ( node && !isblock(finder, node) ) {
+					if ( node->recorded == 0 ) {
+						node->recorded = 1;
 						node_index[index++] = node->index;
+						if ( dump ) {
+							dump(ud, node->x, node->z);
+						}
+					}
 				}
 			}
 		}

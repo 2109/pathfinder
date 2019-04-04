@@ -266,7 +266,7 @@ void OnSearchDump(void* ud, int x, int z)
 
 	cdc->SelectObject(obrush);
 
-	Sleep(1);
+	Sleep(10);
 }
 
 void OnPathDump(void* ud, int x, int z)
@@ -493,7 +493,7 @@ void CTilePathFinderDlg::UpdateDialog()
 	dc.SelectObject(obrush);
 }
 
-extern "C" void finder_random_in_circle(struct pathfinder * finder, int cx, int cz, int radius, int* x, int* z);
+extern "C" void finder_random_in_circle(struct pathfinder * finder, int cx, int cz, int radius, int* x, int* z, finder_dump dump, void* ud);
 
 void CTilePathFinderDlg::OnLButtonUp(UINT nFlags, CPoint point)
 {
@@ -511,9 +511,17 @@ void CTilePathFinderDlg::OnLButtonUp(UINT nFlags, CPoint point)
 		{
 			m_begin_x = (point.x - m_offset_x) / m_scale;
 			m_begin_z = (point.y - m_offset_z) / m_scale;
+
+			CClientDC dc(this);
+			DumpArgs args;
+			args.self = this;
+			args.cdc = &dc;
+
+			int x, z;
+			finder_random_in_circle(m_finder, m_begin_x, m_begin_z, 5,&x,&z, OnSearchDump, &args);
 		}
 
-		Invalidate();
+		//Invalidate();
 	}
 
 	CDialogEx::OnLButtonUp(nFlags, point);

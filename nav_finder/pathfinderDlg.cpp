@@ -652,6 +652,7 @@ void pathfinderDlg::DrawOver(CPoint& pos)
 	double offset;
 	if ( !point_movable(m_mesh, nav_x, nav_z, 10, &offset) )
 	{
+		printf("offset:%f\n", offset);
 		vector3* vt = around_movable(m_mesh, nav_x, nav_z, 5, &node_index, OnAroundDump, this);
 		if ( !vt ) {
 			printf("%f,%f\n", nav_x, nav_z);
