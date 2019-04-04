@@ -720,7 +720,7 @@ int
 finder_random_in_circle(struct pathfinder * finder, int cx, int cz, int radius, int* x, int* z, finder_dump dump, void* ud) {
 	int tx = 0;
 	int tz = radius;
-	int diameter = 2 * radius;
+	int diameter = 2 * radius + 1;
 
 	int* node_index = malloc(diameter * diameter * sizeof( int ));
 	int index = 0;
