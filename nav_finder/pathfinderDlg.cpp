@@ -125,6 +125,9 @@ BOOL pathfinderDlg::OnInitDialog()
 
 	CString nav_tile;
 	nav_tile.Format(_T("./nav/%s"), AfxGetApp()->m_lpCmdLine);
+	USES_CONVERSION;
+	m_finder = NavPathFinder::LoadMeshEx(T2A(nav_tile.GetBuffer(0)));
+	m_finder->CreateTile(100);
 	FILE* fp = _wfopen(nav_tile.GetBuffer(0), _T("rb"));
 
 	UINT32 vertex_count;
@@ -453,18 +456,18 @@ void pathfinderDlg::DrawMap()
 
 	obrush = dc.SelectObject(&brush);
 	CBrush brush_empty0(RGB(255, 255, 0));
-	CBrush brush_empty1(RGB(255, 0, 0));
+	CBrush brush_empty1(RGB(0, 0, 0));
 	CBrush brush_empty2(RGB(88, 88, 0));
 
 	int check = ( (CButton *)GetDlgItem(IDC_CHECK1) )->GetCheck();
 	if ( check )
 	{
-		for ( int i = 0; i < m_mesh->tile_width * m_mesh->tile_heigh; i++ )
+		for (int i = 0; i < m_finder->mesh_->tileWidth_ * m_finder->mesh_->tileHeight_; i++)
 		{
-			struct nav_tile* tile = &m_mesh->tile[i];
+			NavTile* tile = &m_finder->mesh_->tile_[i];
 			CPoint pt[4];
 
-			if ( tile->offset == 0 )
+			if ( tile->node_.size() == 0 )
 				dc.SelectObject(&brush_empty0);
 			else
 				dc.SelectObject(&brush_empty1);
@@ -472,7 +475,7 @@ void pathfinderDlg::DrawMap()
 
 			for ( int j = 0; j < 4; j++ )
 			{
-				struct vector3* pos = &tile->pos[j];
+				Math::Vector3* pos = &tile->pos_[j];
 
 				pt[j].x = pos->x*m_scale + m_offset_x;
 				pt[j].y = pos->z*m_scale + m_offset_z;
@@ -584,56 +587,19 @@ void pathfinderDlg::DrawMap()
 
 }
 
-void pathfinderDlg::DrawBegin(CPoint& pos)
-{
-	double nav_x = (double)( pos.x - m_offset_x ) / m_scale;
-	double nav_z = (double)( pos.y - m_offset_z ) / m_scale;
-
-	printf("nav begin:%f,%f\n", nav_x, nav_z);
-
-	struct nav_node* node = search_node(m_mesh, nav_x, 0, nav_z);
-	if ( node == NULL )
-		return;
-
-	if ( m_pt_begin != NULL ) {
-		free(m_pt_begin);
-		m_pt_begin = NULL;
-	}
-
-	m_poly_begin = node->id;
-
-	m_pt_begin = (vector3*)malloc(sizeof( *m_pt_begin ));
-	m_pt_begin->x = pos.x;
-	m_pt_begin->z = pos.y;
-
-	
-	printf("nav node:%d\n", node->id);
-	for ( int i = 0; i < node->size;i++ )
-		printf("%d\t", node->poly[i]);
-	printf("\n");
-
-	double height;
-	if ( point_height(m_mesh, nav_x, nav_z, &height) ) {
-		printf("heigh:%f\n", height);
-	}
-	Invalidate();
-}
-
-void OnAroundDump(void* self, int index)
-{
+void OnAroundDump(void* self, int index) {
 	pathfinderDlg* dlgPtr = (pathfinderDlg*)self;
 	CClientDC dc(dlgPtr);
 	CBrush brush(RGB(66, 66, 66));
 
-	struct nav_tile* tile = &dlgPtr->m_mesh->tile[index];
+	NavTile* tile = &dlgPtr->m_finder->mesh_->tile_[index];
 	CPoint pt[4];
 
 
 	CBrush* obrush = dc.SelectObject(&brush);
 
-	for ( int j = 0; j < 4; j++ )
-	{
-		struct vector3* pos = &tile->pos[j];
+	for (int j = 0; j < 4; j++) {
+		Math::Vector3* pos = &tile->pos_[j];
 
 		pt[j].x = pos->x*dlgPtr->m_scale + dlgPtr->m_offset_x;
 		pt[j].y = pos->z*dlgPtr->m_scale + dlgPtr->m_offset_z;
@@ -642,25 +608,95 @@ void OnAroundDump(void* self, int index)
 	dc.SelectObject(obrush);
 }
 
+void pathfinderDlg::DrawBegin(CPoint& pos)
+{
+	double nav_x = (double)( pos.x - m_offset_x ) / m_scale;
+	double nav_z = (double)( pos.y - m_offset_z ) / m_scale;
+
+	printf("nav begin:%f,%f\n", nav_x, nav_z);
+
+	//struct nav_node* node = search_node(m_mesh, nav_x, 0, nav_z);
+	m_finder->SetDebugTileFunc(OnAroundDump, this);
+	m_finder->SetDebugNodeFunc(OnSearchDump, this);
+	NavNode* node = m_finder->SearchNode(Math::Vector3(nav_x, 0, nav_z), 20);
+	if ( node == NULL )
+		return;
+
+	if ( m_pt_begin != NULL ) {
+		free(m_pt_begin);
+		m_pt_begin = NULL;
+	}
+
+	m_finder->Dot2Node(Math::Vector3(nav_x, 0, nav_z), node->id_);
+
+	m_poly_begin = node->id_;
+
+	m_pt_begin = (vector3*)malloc(sizeof( *m_pt_begin ));
+	m_pt_begin->x = pos.x;
+	m_pt_begin->z = pos.y;
+
+	
+	printf("nav node:%d\n", node->id_);
+	for ( int i = 0; i < node->size_;i++ )
+		printf("%d,%f\t", node->vertice_[i], m_finder->mesh_->vertice_[node->vertice_[i]].y);
+	printf("\n");
+
+	double height;
+	if ( point_height0(m_mesh, nav_x, nav_z, &height) ) {
+		printf("heigh:%f\n", height);
+	}
+	if (point_height1(m_mesh, nav_x, nav_z, &height)) {
+		printf("heigh:%f\n", height);
+	}
+	if (point_height2(m_mesh, nav_x, nav_z, &height)) {
+		printf("heigh:%f\n", height);
+	}
+
+	float h = m_finder->GetHeight(Math::Vector3(nav_x, 0, nav_z));
+	printf("heigh:%f\n", h);
+	
+
+	CClientDC dc(this);
+	for (int i = 0; i < 1; i++) {
+		Math::Vector3 result;
+		//Math::Vector3 result = m_finder->RandomMovable(-1);
+		if (m_finder->RandomInCircle(result, Math::Vector3(nav_x, 0, nav_z), 2000)) {
+			printf("%f,%f\n", result.x*m_scale + m_offset_x, result.z*m_scale + m_offset_z);
+			dc.SetPixel(result.x*m_scale + m_offset_x, result.z*m_scale + m_offset_z, RGB(255, 111, 250));
+		}
+		
+	}
+
+	
+	//Invalidate();
+}
+
+
+
 void pathfinderDlg::DrawOver(CPoint& pos)
 {
 	double nav_x = (double)( pos.x - m_offset_x ) / m_scale;
 	double nav_z = (double)( pos.y - m_offset_z ) / m_scale;
 
-	struct nav_node* node = NULL;
+	NavNode* node = NULL;
 	int node_index;
-	double offset;
-	if ( !point_movable(m_mesh, nav_x, nav_z, 10, &offset) )
+	float offset;
+
+	if ( !m_finder->Movable(Math::Vector3(nav_x, 0, nav_z), 10, &offset) )
 	{
 		printf("offset:%f\n", offset);
-		vector3* vt = around_movable(m_mesh, nav_x, nav_z, 5, &node_index, OnAroundDump, this);
-		if ( !vt ) {
+
+		m_finder->SetDebugTileFunc(OnAroundDump, this);
+
+		int nodeIndex = 0;
+		Math::Vector3* vt = m_finder->SearchInCircle(Math::Vector3(nav_x, 0, nav_z), 5, &nodeIndex);
+		if (!vt) {
 			printf("%f,%f\n", nav_x, nav_z);
 			return;
 		}
 			
 			
-		node = get_node(m_mesh, node_index);
+		node = m_finder->GetNode(nodeIndex);
 		
 		CBrush brush(RGB(66, 88, 188));
 		CClientDC dc(this);
@@ -681,21 +717,21 @@ void pathfinderDlg::DrawOver(CPoint& pos)
 		m_pt_over->z = vt->z*m_scale + m_offset_z;
 
 		printf("nav over:%f,%f\n", vt->x, vt->z);
-		printf("nav node:%d\n", node->id);
+		printf("nav node:%d\n", node->id_);
 
-		vector3 start;
-		start.x = nav_x;
-		start.z = nav_z;
-		vector3 result;
-		bool ok = raycast(m_mesh, vt, &start, &result, NULL, this);
-		if ( ok ){
-			dc.Ellipse(result.x*m_scale + m_offset_x - 3, result.z*m_scale + m_offset_z - 3, result.x*m_scale + m_offset_x + 3, result.z*m_scale + m_offset_z + 3);
-			dc.SelectObject(obrush);
-		}
+		//vector3 start;
+		//start.x = nav_x;
+		//start.z = nav_z;
+		//vector3 result;
+		//bool ok = raycast(m_mesh, vt, &start, &result, NULL, this);
+		//if ( ok ){
+		//	dc.Ellipse(result.x*m_scale + m_offset_x - 3, result.z*m_scale + m_offset_z - 3, result.x*m_scale + m_offset_x + 3, result.z*m_scale + m_offset_z + 3);
+		//	dc.SelectObject(obrush);
+		//}
 	}
 	else
 	{
-		node = search_node(m_mesh, nav_x, 0, nav_z);
+		node = m_finder->SearchNode(Math::Vector3(nav_x, 0, nav_z), 5);
 
 		if ( m_pt_over != NULL )
 		{
@@ -708,16 +744,16 @@ void pathfinderDlg::DrawOver(CPoint& pos)
 		m_pt_over->z = pos.y;
 
 		printf("nav over:%f,%f\n", nav_x,nav_z);
-		printf("nav node:%d\n", node->id);
+		printf("nav node:%d\n", node->id_);
 
 		Invalidate();
 	}
 
-	for ( int i = 0; i < node->size; i++ )
-		printf("%d\t", node->poly[i]);
+	for ( int i = 0; i < node->size_; i++ )
+		printf("%d\t", node->vertice_[i]);
 	printf("\n");
 
-	m_poly_over = node->id;
+	m_poly_over = node->id_;
 
 	
 }
@@ -775,9 +811,13 @@ void pathfinderDlg::Straightline()
 		vector3 vt;
 		bool ok = raycast(m_mesh, &vt0, &vt1, &vt, NULL, this);
 
+		Math::Vector3 result;
+		m_finder->Raycast(Math::Vector3(vt0.x, vt0.y, vt0.z), Math::Vector3(vt1.x, vt1.y, vt1.z), result);
+
+
 		POINT to;
-		to.x = vt.x*m_scale + m_offset_x;
-		to.y = vt.z*m_scale + m_offset_z;
+		to.x = result.x*m_scale + m_offset_x;
+		to.y = result.z*m_scale + m_offset_z;
 
 		dc.LineTo(to);
 		dc.SelectObject(open);
@@ -837,16 +877,20 @@ void pathfinderDlg::OnIgnoreLine()
 		vt1.z = (double)( m_pt_over->z - m_offset_z ) / m_scale;
 
 
-		vector3 vt;
-		bool ok = raycast(m_mesh, &vt0, &vt1, &vt, OnSearchDump, this);
+		//vector3 vt;
+		//bool ok = raycast(m_mesh, &vt0, &vt1, &vt, OnSearchDump, this);
+
+		m_finder->SetDebugNodeFunc(OnSearchDump, this);
+		Math::Vector3 result;
+		m_finder->Raycast(Math::Vector3(vt0.x, vt0.y, vt0.z), Math::Vector3(vt1.x, vt1.y, vt1.z), result);
 
 		POINT from;
 		from.x = vt0.x*m_scale + m_offset_x;
 		from.y = vt0.z*m_scale + m_offset_z;
 
 		POINT to;
-		to.x = vt.x*m_scale + m_offset_x;
-		to.y = vt.z*m_scale + m_offset_z;
+		to.x = result.x*m_scale + m_offset_x;
+		to.y = result.z*m_scale + m_offset_z;
 
 		CPen pen(PS_SOLID, 1, RGB(255, 255, 255));
 		CClientDC dc(this);

@@ -13,6 +13,7 @@ extern "C"
 #include "nav.h"
 };
 
+#include "NavMeshFinder.h"
 #include <vector>
 // pathfinderDlg ¶Ô»°¿ò
 class pathfinderDlg : public CDialogEx
@@ -48,7 +49,7 @@ public:
 	void DrawPath(struct vector3* path,int size);
 
 public:
-
+	NavPathFinder* m_finder;
 	nav_mesh_context* m_mesh;
 	int m_offset_x;
 	int m_offset_z;

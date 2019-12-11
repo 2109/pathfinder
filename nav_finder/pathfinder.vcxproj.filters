@@ -138,6 +138,27 @@
     <ClInclude Include="..\nav\nav.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Intersect.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Math.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector2.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector3.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryStream.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Util.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="NavMeshFinder.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -159,6 +180,33 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\nav\nav_tile.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Intersect.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector2.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector3.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Math.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryStream.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Util.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="NavMeshFinder.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="NavMeshLoader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="NavMeshSearcher.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
