@@ -4,7 +4,7 @@
 
 #include "stdafx.h"
 #include "tile_findpath.h"
-#include "TilePathFinder.h"
+#include "TilePathFinderDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

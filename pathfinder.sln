@@ -11,8 +11,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nav_finder", "nav_finder\pa
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tile_finder", "tile_finder\tile_findpath.vcxproj", "{646EC273-7E27-4B35-A333-0121A9653BE9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tile", "tile\tile.vcxproj", "{E6E521D5-ACBF-428A-AA32-439DF3824405}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "navcxx", "navcxx\navcxx.vcxproj", "{F94B6B16-D94E-4511-9367-C9EBC29A694F}"
 EndProject
 Global
@@ -37,10 +35,6 @@ Global
 		{646EC273-7E27-4B35-A333-0121A9653BE9}.Debug|Win32.Build.0 = Debug|Win32
 		{646EC273-7E27-4B35-A333-0121A9653BE9}.Release|Win32.ActiveCfg = Release|Win32
 		{646EC273-7E27-4B35-A333-0121A9653BE9}.Release|Win32.Build.0 = Release|Win32
-		{E6E521D5-ACBF-428A-AA32-439DF3824405}.Debug|Win32.ActiveCfg = Debug|Win32
-		{E6E521D5-ACBF-428A-AA32-439DF3824405}.Debug|Win32.Build.0 = Debug|Win32
-		{E6E521D5-ACBF-428A-AA32-439DF3824405}.Release|Win32.ActiveCfg = Release|Win32
-		{E6E521D5-ACBF-428A-AA32-439DF3824405}.Release|Win32.Build.0 = Release|Win32
 		{F94B6B16-D94E-4511-9367-C9EBC29A694F}.Debug|Win32.ActiveCfg = Debug|Win32
 		{F94B6B16-D94E-4511-9367-C9EBC29A694F}.Debug|Win32.Build.0 = Debug|Win32
 		{F94B6B16-D94E-4511-9367-C9EBC29A694F}.Release|Win32.ActiveCfg = Release|Win32
