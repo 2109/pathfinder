@@ -432,25 +432,19 @@ void CTilePathFinderDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 
 			DrawBegin();
 
-			int x, z;
-
 			CClientDC dc(this);
 			DumpArgs args;
 			args.self = this;
 			args.cdc = &dc;
 
-			m_tile_finder->SetDebugCallback(OnSearchDump, &args);
+			//m_tile_finder->SetDebugCallback(OnSearchDump, &args);
 
-			/*	for (int i = 0; i < 1000;i++) {
-					Math::Vector2 result;
-					m_tile_finder->RandomInCircle(m_begin_x, m_begin_z, 16, result);
+			for (int i = 0; i < 1000; i++) {
+				Math::Vector2 result;
+				m_tile_finder->RandomInCircle(m_begin_x, m_begin_z, 16, result);
+				dc.SetPixel((result.x + (Math::Rand((float)0, (float)1))) * (float)m_scale + m_offset_x, (result.y + (Math::Rand((float)0, (float)1))) * (float)m_scale + m_offset_z, RGB(255, 255, 250));
+			}
 
-
-					dc.SetPixel((result.x + (Math::Rand((float)0, (float)1))) * (float)m_scale + m_offset_x, (result.y + (Math::Rand((float)0, (float)1))) * (float)m_scale + m_offset_z, RGB(255, 255, 250));
-					}*/
-
-			//m_tile_finder->SearchInCircle(m_begin_x, m_begin_z, Math::Rand(1, 8));
-			//m_tile_finder->SearchInReactangle(m_begin_x, m_begin_z, 5);
 		}
 	}
 
