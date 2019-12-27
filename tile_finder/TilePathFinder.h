@@ -10,6 +10,7 @@ extern "C"{
 #include "pathfinder.h"
 }
 
+#include "TilePathFinderEx.h"
 // CTilePathFinderDlg ¶Ô»°¿ò
 class CTilePathFinderDlg : public CDialogEx
 {
@@ -45,6 +46,10 @@ public:
 	void UpdateDialog();
 
 	void RayCast(int type);
+
+	void DrawBegin();
+
+	void DrawOver();
 public:
 	int m_width;
 	int m_heigh;
@@ -69,7 +74,8 @@ public:
 
 	float m_cost;
 
-	struct pathfinder* m_finder;
+	TilePathFinder* m_tile_finder;
+	//struct pathfinder* m_finder;
 	CStatic* m_time_cost;
 	CStatic* m_pos_start;
 	CStatic* m_pos_over;

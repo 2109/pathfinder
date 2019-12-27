@@ -7,11 +7,8 @@
 #include <vector>
 #include <set>
 #include <map>
-extern "C"
-{
-#include "nav.h"
-#include "pathfinder.h"
-}
+#include "NavMeshFinder.h"
+#include "WpPathFinder.h"
 
 struct WayPoint {
 	std::set<int> link;
@@ -49,7 +46,7 @@ public:
 	void mesh2editor(CPoint* from, CPoint* to);
 
 public:
-	nav_mesh_context* m_mesh;
+	NavPathFinder* m_mesh_finder;
 	int m_offset_x;
 	int m_offset_z;
 	double m_scale;
@@ -58,7 +55,7 @@ public:
 
 	std::map<int, WayPoint*> m_wp_list;
 
-	pathfinder* m_finder;
+	WpPathFinder* m_finder;
 	CPoint* m_start;
 	CPoint* m_over;
 	std::vector<CPoint> m_path;

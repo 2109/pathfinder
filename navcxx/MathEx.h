@@ -1,0 +1,76 @@
+﻿#ifndef MATH_H
+#define MATH_H
+#include <stdint.h>
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
+#include <algorithm>
+#include <assert.h>
+#include <sstream>
+#include <stdlib.h>
+
+#define PI (float)3.14159265358979323846
+
+namespace Math {
+	class Vector2;
+	class Vector3;
+
+	inline float Rad(float angle) {
+		return angle * (PI / 180);
+	}
+
+	inline float Deg(float radian) {
+		return (radian)* (180 / PI);
+	}
+
+	inline float Clamp(float value, float min, float max) {
+		if (value < min) {
+			value = min;
+		} else if (value > max) {
+			value = max;
+		}
+		return value;
+	}
+
+	inline float Clamp01(float value) {
+		return Clamp(value, 0, 1);
+	}
+
+	inline float Min(float a, float b) {
+		return a <= b ? a : b;
+	}
+
+	inline float Max(float a, float b) {
+		return a >= b ? a : b;
+	}
+
+	inline int Rand(int min, int max) {
+		return (int)((float)rand() / RAND_MAX * (max - min)) + min;
+	}
+
+	inline float Rand(float min, float max) {
+		return (float)rand() / RAND_MAX * (max - min) + min;
+	}
+
+	bool InsideVector(const Math::Vector3& lhs, const Math::Vector3& rhs, const Math::Vector3& pos);
+
+	bool InsidePoly(std::vector<Math::Vector3>& vertice, const Math::Vector3& pos);
+
+	float SqrDistancePointToSegment(const Vector3& a, const Vector3& u, const Vector3& b);
+
+	float DistancePointToSegment(const Vector3& start, const Vector3& over, const Vector3& p);
+
+	float CalcPolyArea(std::vector<const Vector3*>& vertice);
+
+	Vector3 RandomInCircle(const Vector3& center, float radius);
+
+	Vector3 RandomInRectangle(const Vector3& center, float length, float width, float angle);
+
+	Vector3 RandomInTriangle(const Vector3& a, const Vector3& b, const Vector3& c, Vector3& pos);
+
+	Vector3 RandomInPoly(std::vector<const Vector3*>& vertice, float area);
+
+
+}
+
+#endif

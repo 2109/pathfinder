@@ -33,12 +33,6 @@
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\nav\nav.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\nav\minheap.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="waypoint_editor.cpp">
@@ -48,18 +42,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\nav\nav_tile.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\nav\nav_loader.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\nav\nav_finder.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\nav\minheap.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

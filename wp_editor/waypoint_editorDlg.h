@@ -6,10 +6,7 @@
 #include <vector>
 #include <set>
 #include <map>
-extern "C"
-{
-#include "nav.h"
-}
+#include "NavMeshFinder.h"
 
 struct WayPoint {
 	std::set<int> link;
@@ -57,7 +54,7 @@ protected:
 	void editor2mesh(CPoint& from, CPoint& to);
 	void mesh2editor(CPoint& from, CPoint& to);
 private:
-	nav_mesh_context* m_mesh;
+	NavPathFinder* m_finder;
 	int m_offset_x;
 	int m_offset_z;
 	double m_scale;

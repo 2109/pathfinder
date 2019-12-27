@@ -5,13 +5,6 @@
 #pragma once
 
 
-extern "C"
-{
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-#include "nav.h"
-};
 
 #include "NavMeshFinder.h"
 #include <vector>
@@ -46,11 +39,10 @@ public:
 	void DrawBegin(CPoint& pos);
 	void DrawOver(CPoint& pos);
 
-	void DrawPath(struct vector3* path,int size);
+	void DrawPath(std::vector<const Math::Vector3*>& path);
 
 public:
 	NavPathFinder* m_finder;
-	nav_mesh_context* m_mesh;
 	int m_offset_x;
 	int m_offset_z;
 	double m_scale;
@@ -58,9 +50,9 @@ public:
 	CPoint* m_mouse_point;
 
 	int m_poly_begin;
-	vector3* m_pt_begin;
+	Math::Vector3* m_pt_begin;
 	int m_poly_over;
-	vector3* m_pt_over;
+	Math::Vector3* m_pt_over;
 	struct lua_State* L;
 public:
 	afx_msg void OnUpdateIddPathfindertestDialog(CCmdUI *pCmdUI);

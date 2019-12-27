@@ -17,8 +17,7 @@
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
-class CAboutDlg : public CDialogEx
-{
+class CAboutDlg : public CDialogEx {
 public:
 	CAboutDlg();
 
@@ -35,12 +34,10 @@ protected:
 	DECLARE_MESSAGE_MAP()
 };
 
-CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD)
-{
+CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD) {
 }
 
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
-{
+void CAboutDlg::DoDataExchange(CDataExchange* pDX) {
 	CDialogEx::DoDataExchange(pDX);
 }
 
@@ -53,14 +50,12 @@ END_MESSAGE_MAP()
 
 
 pathfinderDlg::pathfinderDlg(CWnd* pParent /*=NULL*/)
-: CDialogEx(pathfinderDlg::IDD, pParent)
-{
+	: CDialogEx(pathfinderDlg::IDD, pParent) {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
 }
 
-void pathfinderDlg::DoDataExchange(CDataExchange* pDX)
-{
+void pathfinderDlg::DoDataExchange(CDataExchange* pDX) {
 	CDialogEx::DoDataExchange(pDX);
 }
 
@@ -92,25 +87,22 @@ END_MESSAGE_MAP()
 
 // pathfinderDlg 消息处理程序
 
-BOOL pathfinderDlg::OnInitDialog()
-{
+BOOL pathfinderDlg::OnInitDialog() {
 	CDialogEx::OnInitDialog();
 	//_CrtSetBreakAlloc(3850);
 	// 将“关于...”菜单项添加到系统菜单中。
 
 	// IDM_ABOUTBOX 必须在系统命令范围内。
-	ASSERT(( IDM_ABOUTBOX & 0xFFF0 ) == IDM_ABOUTBOX);
+	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
 
 	CMenu* pSysMenu = GetSystemMenu(FALSE);
-	if ( pSysMenu != NULL )
-	{
+	if (pSysMenu != NULL) {
 		BOOL bNameValid;
 		CString strAboutMenu;
 		bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
 		ASSERT(bNameValid);
-		if ( !strAboutMenu.IsEmpty() )
-		{
+		if (!strAboutMenu.IsEmpty()) {
 			pSysMenu->AppendMenu(MF_SEPARATOR);
 			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
 		}
@@ -128,101 +120,6 @@ BOOL pathfinderDlg::OnInitDialog()
 	USES_CONVERSION;
 	m_finder = NavPathFinder::LoadMeshEx(T2A(nav_tile.GetBuffer(0)));
 	m_finder->CreateTile(100);
-	FILE* fp = _wfopen(nav_tile.GetBuffer(0), _T("rb"));
-
-	UINT32 vertex_count;
-	fread(&vertex_count, sizeof( UINT32 ), 1, fp);
-
-	double** v_ptr = (double**)malloc(sizeof( *v_ptr ) * vertex_count);
-	for ( int i = 0; i < vertex_count; i++ )
-	{
-		v_ptr[i] = (double*)malloc(sizeof(double)* 3);
-		for ( int j = 0; j < 3;j++ )
-		{
-			float val;
-			fread(&val, sizeof( float ), 1, fp);
-			v_ptr[i][j] = val;
-		}
-	}
-
-	UINT32 poly_count;
-	fread(&poly_count, sizeof( UINT32 ), 1, fp);
-
-	int** p_ptr = (int**)malloc(sizeof( *p_ptr ) * poly_count);
-	for ( int i = 0; i < poly_count; i++ )
-	{
-		UINT8 index_count;
-		fread(&index_count, sizeof( UINT8 ), 1, fp);
-
-		p_ptr[i] = (int*)malloc(sizeof(int)*( index_count + 1 ));
-		p_ptr[i][0] = index_count;
-		for ( int j = 1; j <= index_count;j++ )
-		{
-			UINT16 val;
-			fread(&val, sizeof( UINT16 ), 1, fp);
-			p_ptr[i][j] = val;
-		}
-	}
-	fclose(fp);
-
-	int now = time(NULL);
-//#define EDITOR_TILE
-	this->m_mesh = load_mesh(v_ptr, vertex_count, p_ptr, poly_count);
-#ifdef EDITOR_TILE
-	this->m_mesh->tile = create_tile(this->m_mesh, 400);
-#else
-	CString tile_file;
-	tile_file.Format(_T("./nav/%s.tile"), AfxGetApp()->m_lpCmdLine);
-	fp = _wfopen(tile_file.GetBuffer(0), _T("rb"));
-
-	uint32_t tile_unit;
-	fread(&tile_unit, sizeof( uint32_t ), 1, fp);
-
-	uint32_t count = 0;
-	fread(&count, sizeof( uint32_t ), 1, fp);
-
-	this->m_mesh->tile = ( struct nav_tile* )malloc(sizeof( struct nav_tile )*count);
-	memset(this->m_mesh->tile, 0, sizeof( struct nav_tile )*count);
-
-	uint32_t i;
-	for ( i = 0; i < count; i++ ) {
-
-		struct nav_tile* tile = &this->m_mesh->tile[i];
-
-		uint32_t size;
-		fread(&size, sizeof( uint32_t ), 1, fp);
-
-		tile->offset = tile->size = size;
-		tile->node = NULL;
-		if ( tile->offset != 0 ) {
-			tile->node = (int*)malloc(sizeof(int)*tile->offset);
-			uint32_t j;
-			for ( j = 0; j < size; j++ ) {
-				uint32_t val;
-				fread(&val, sizeof( uint32_t ), 1, fp);
-				tile->node[j] = val;
-			}
-		}
-
-		float x, z;
-		fread(&x, sizeof( float ), 1, fp);
-		fread(&z, sizeof( float ), 1, fp);
-
-		tile->center.x = x;
-		tile->center.y = 0;
-		tile->center.z = z;
-
-		int center_node;
-		fread(&center_node, sizeof( int ), 1, fp);
-		tile->center_node = center_node;
-	}
-	fclose(fp);
-
-	this->m_mesh->tile_unit = tile_unit;
-	this->m_mesh->tile_width = this->m_mesh->width / tile_unit + 1;
-	this->m_mesh->tile_heigh = this->m_mesh->heigh / tile_unit + 1;
-
-#endif
 
 	m_offset_x = 100;
 	m_offset_z = -100;
@@ -233,27 +130,16 @@ BOOL pathfinderDlg::OnInitDialog()
 
 	m_poly_begin = -1;
 	m_poly_over = -1;
-	
-	m_pt_over = m_pt_begin = NULL;
 
-	for ( int i = 0; i < vertex_count; i++ )
-	{
-		free(v_ptr[i]);
-	}
-	free(v_ptr);
-	for ( int i = 0; i < poly_count; i++ )
-	{
-		free(p_ptr[i]);
-	}
-	free(p_ptr);
+	m_pt_over = m_pt_begin = NULL;
 
 	CString str;
 	str.Format(_T("%d"), m_offset_x);
-	( (CEdit*)GetDlgItem(IDC_EDIT2) )->SetWindowTextW(str);
+	((CEdit*)GetDlgItem(IDC_EDIT2))->SetWindowTextW(str);
 	str.Format(_T("%d"), m_offset_z);
-	( (CEdit*)GetDlgItem(IDC_EDIT3) )->SetWindowTextW(str);
+	((CEdit*)GetDlgItem(IDC_EDIT3))->SetWindowTextW(str);
 	str.Format(_T("%f"), m_scale);
-	( (CEdit*)GetDlgItem(IDC_EDIT4) )->SetWindowTextW(str);
+	((CEdit*)GetDlgItem(IDC_EDIT4))->SetWindowTextW(str);
 
 	AllocConsole();
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -261,20 +147,14 @@ BOOL pathfinderDlg::OnInitDialog()
 	FILE * hf = _fdopen(hCrt, "w");
 	*stdout = *hf;
 
-	printf("load tile time:%ld\n", time(NULL) - now);
-
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
-void pathfinderDlg::OnSysCommand(UINT nID, LPARAM lParam)
-{
-	if ( ( nID & 0xFFF0 ) == IDM_ABOUTBOX )
-	{
+void pathfinderDlg::OnSysCommand(UINT nID, LPARAM lParam) {
+	if ((nID & 0xFFF0) == IDM_ABOUTBOX) {
 		CAboutDlg dlgAbout;
 		dlgAbout.DoModal();
-	}
-	else
-	{
+	} else {
 		CDialogEx::OnSysCommand(nID, lParam);
 	}
 }
@@ -283,29 +163,25 @@ void pathfinderDlg::OnSysCommand(UINT nID, LPARAM lParam)
 //  来绘制该图标。  对于使用文档/视图模型的 MFC 应用程序，
 //  这将由框架自动完成。
 
-void pathfinderDlg::OnPaint()
-{
-	if ( IsIconic() )
-	{
+void pathfinderDlg::OnPaint() {
+	if (IsIconic()) {
 		CPaintDC dc(this); // 用于绘制的设备上下文
 
-		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>( dc.GetSafeHdc() ), 0);
+		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
 		// 使图标在工作区矩形中居中
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
 		CRect rect;
 		GetClientRect(&rect);
-		int x = ( rect.Width() - cxIcon + 1 ) / 2;
-		int y = ( rect.Height() - cyIcon + 1 ) / 2;
+		int x = (rect.Width() - cxIcon + 1) / 2;
+		int y = (rect.Height() - cyIcon + 1) / 2;
 
 		// 绘制图标
 		dc.DrawIcon(x, y, m_hIcon);
 
 
-	}
-	else
-	{
+	} else {
 		CDialogEx::OnPaint();
 	}
 
@@ -314,113 +190,82 @@ void pathfinderDlg::OnPaint()
 
 //当用户拖动最小化窗口时系统调用此函数取得光标
 //显示。
-HCURSOR pathfinderDlg::OnQueryDragIcon()
-{
-	return static_cast<HCURSOR>( m_hIcon );
+HCURSOR pathfinderDlg::OnQueryDragIcon() {
+	return static_cast<HCURSOR>(m_hIcon);
 }
 
-void pathfinderDlg::DrawPath(struct vector3* path, int size)
-{
-	CClientDC dc(this);
-	CPen pen(PS_SOLID, 1, RGB(255, 255, 255));
-	CPen* open = dc.SelectObject(&pen);
-
-
-	dc.MoveTo(path[0].x*m_scale + m_offset_x, path[0].z*m_scale + m_offset_z);
-	for ( int i = 1; i < size; i++ )
-	{
-		dc.LineTo(path[i].x*m_scale + m_offset_x, path[i].z*m_scale + m_offset_z);
-		dc.MoveTo(path[i].x*m_scale + m_offset_x, path[i].z*m_scale + m_offset_z);
-	}
-
-	dc.SelectObject(open);
-}
-
-
-int lua_draw(lua_State* L)
-{
-	pathfinderDlg* self = (pathfinderDlg*)lua_touserdata(L, 1);
-	struct nav_path* path = (nav_path*)lua_touserdata(L, 2);
-
-	self->DrawPath(path->wp, path->offset);
-	return 0;
-}
-
-
-void OnSearchDump(void* self, int index)
-{
+void OnSearchDump(void* self, int index) {
 	pathfinderDlg* dlgPtr = (pathfinderDlg*)self;
 	CClientDC dc(dlgPtr);
 	CBrush brush(RGB(123, 255, 0));
 	dc.SelectObject(&brush);
 
-	struct nav_node* node = get_node(dlgPtr->m_mesh, index);
-	CPoint* pt = new CPoint[node->size];
-	for ( int j = 0; j < node->size; j++ )
-	{
-		struct vector3* pos = &dlgPtr->m_mesh->vertices[node->poly[j]];
+	NavNode* node = dlgPtr->m_finder->GetNode(index);
+	CPoint* pt = new CPoint[node->size_];
+	for (int j = 0; j < node->size_; j++) {
+		Math::Vector3* pos = &dlgPtr->m_finder->mesh_->vertice_[node->vertice_[j]];
 		pt[j].x = pos->x*dlgPtr->m_scale + dlgPtr->m_offset_x;
 		pt[j].y = pos->z*dlgPtr->m_scale + dlgPtr->m_offset_z;
 	}
-	dc.Polygon(pt, node->size);
+	dc.Polygon(pt, node->size_);
 	delete[] pt;
 	//Sleep(5);
 }
 
-void pathfinderDlg::OnPath()
-{
+void OnOverlayDump(void* self, std::vector<const Math::Vector3*>& poly) {
+	pathfinderDlg* dlgPtr = (pathfinderDlg*)self;
+	CClientDC dc(dlgPtr);
+	CBrush brush(RGB(123, 255, 0));
+	dc.SelectObject(&brush);
+
+	CPoint* pt = new CPoint[poly.size()];
+	for (int j = 0; j < poly.size(); j++) {
+		const Math::Vector3* pos = poly[j];
+		pt[j].x = pos->x*dlgPtr->m_scale + dlgPtr->m_offset_x;
+		pt[j].y = pos->z*dlgPtr->m_scale + dlgPtr->m_offset_z;
+	}
+	dc.Polygon(pt, poly.size());
+	delete[] pt;
+	//Sleep(5);
+}
+
+void pathfinderDlg::OnPath() {
 	// TODO:  在此添加控件通知处理程序代码
 
-	if ( m_poly_begin == -1 )
-	{
+	if (m_poly_begin == -1) {
 		CString str;
 		str.Format(_T("始点还没设置"));
 		MessageBox(str);
-	}
-	else if ( m_poly_over == -1 )
-	{
+	} else if (m_poly_over == -1) {
 		CString str;
 		str.Format(_T("终点还没设置"));
 		MessageBox(str);
-	}
-	else
-	{
-		for ( int i = 0; i < 8; i++ )
-		{
-			set_mask(&m_mesh->mask_ctx, i, 1);
+	} else {
+		for (int i = 0; i < 8; i++) {
+			m_finder->SetMask(i, 1);
 		}
-		//set_mask(&m_mesh->mask_ctx,1,0);
+		m_finder->SetMask(1, 0);
 
-		struct vector3 ptBegin;
-		ptBegin.x = (double)( m_pt_begin->x - m_offset_x ) / m_scale;
-		ptBegin.z = (double)( m_pt_begin->z - m_offset_z ) / m_scale;
-		struct vector3 ptOver;
-		ptOver.x = (double)( m_pt_over->x - m_offset_x ) / m_scale;
-		ptOver.z = (double)( m_pt_over->z - m_offset_z ) / m_scale;
+		Math::Vector3 begin((m_pt_begin->x - m_offset_x) / m_scale, 0, (m_pt_begin->z - m_offset_z) / m_scale);
+		Math::Vector3 over((m_pt_over->x - m_offset_x) / m_scale, 0, (m_pt_over->z - m_offset_z) / m_scale);
 
-		vector3 vt;
-		struct nav_path* path = astar_find(m_mesh, &ptBegin, &ptOver, NULL, NULL);
-
-		if (path)
-		{
-			DrawPath(path->wp, path->offset);
+		std::vector<const Math::Vector3*> result;
+		if (m_finder->Find(begin, over, result) >= 0) {
+			DrawPath(result);
 		}
-		
-
+		DrawPath(result);
 	}
 }
 
 
-int pathfinderDlg::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
-{
+int pathfinderDlg::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	return CDialogEx::OnMouseActivate(pDesktopWnd, nHitTest, message);
 }
 
 
-void pathfinderDlg::DrawMap()
-{
+void pathfinderDlg::DrawMap() {
 	CPen pen(PS_SOLID, 1, RGB(0, 0, 0));
 	CClientDC dc(this);
 	CPen *pOldPen = dc.SelectObject(&pen);
@@ -429,27 +274,22 @@ void pathfinderDlg::DrawMap()
 	CBrush *obrush = dc.SelectObject(&brush);
 
 	CBrush brushDoor(RGB(88, 88, 0));
-	for ( int i = 0; i < m_mesh->node_size; i++ )
-	{
-		struct nav_node* node = get_node(m_mesh, i);
-		CPoint* pt = new CPoint[node->size];
+	for (int i = 0; i < m_finder->mesh_->node_.size(); i++) {
+		NavNode* node = m_finder->GetNode(i);
+		CPoint* pt = new CPoint[node->size_];
 
-		if ( node->mask == 0 )
-		{
+		if (node->mask_ == 0) {
 			dc.SelectObject(&brush);
-		}
-		else
-		{
+		} else {
 			dc.SelectObject(&brushDoor);
 		}
-		for ( int j = 0; j < node->size; j++ )
-		{
-			struct vector3* pos = &m_mesh->vertices[node->poly[j]];
+		for (int j = 0; j < node->size_; j++) {
+			Math::Vector3* pos = &m_finder->mesh_->vertice_[node->vertice_[j]];
 
 			pt[j].x = pos->x*m_scale + m_offset_x;
 			pt[j].y = pos->z*m_scale + m_offset_z;
 		}
-		dc.Polygon(pt, node->size);
+		dc.Polygon(pt, node->size_);
 		delete[] pt;
 		dc.SelectObject(obrush);
 	}
@@ -459,22 +299,19 @@ void pathfinderDlg::DrawMap()
 	CBrush brush_empty1(RGB(0, 0, 0));
 	CBrush brush_empty2(RGB(88, 88, 0));
 
-	int check = ( (CButton *)GetDlgItem(IDC_CHECK1) )->GetCheck();
-	if ( check )
-	{
-		for (int i = 0; i < m_finder->mesh_->tileWidth_ * m_finder->mesh_->tileHeight_; i++)
-		{
+	int check = ((CButton *)GetDlgItem(IDC_CHECK1))->GetCheck();
+	if (check) {
+		for (int i = 0; i < m_finder->mesh_->tileWidth_ * m_finder->mesh_->tileHeight_; i++) {
 			NavTile* tile = &m_finder->mesh_->tile_[i];
 			CPoint pt[4];
 
-			if ( tile->node_.size() == 0 )
+			if (tile->node_.size() == 0)
 				dc.SelectObject(&brush_empty0);
 			else
 				dc.SelectObject(&brush_empty1);
 
 
-			for ( int j = 0; j < 4; j++ )
-			{
+			for (int j = 0; j < 4; j++) {
 				Math::Vector3* pos = &tile->pos_[j];
 
 				pt[j].x = pos->x*m_scale + m_offset_x;
@@ -486,50 +323,44 @@ void pathfinderDlg::DrawMap()
 
 	dc.SelectObject(obrush);
 
-	if ( m_poly_begin != -1 )
-	{
+	if (m_poly_begin != -1) {
 		CBrush brush(RGB(0, 255, 0));
 		dc.SelectObject(&brush);
-
-		struct nav_node* node = get_node(m_mesh, m_poly_begin);
-		CPoint* pt = new CPoint[node->size];
-		for ( int j = 0; j < node->size; j++ )
-		{
-			struct vector3* pos = &m_mesh->vertices[node->poly[j]];
+		NavNode* node = m_finder->GetNode(m_poly_begin);
+		CPoint* pt = new CPoint[node->size_];
+		for (int j = 0; j < node->size_; j++) {
+			Math::Vector3* pos = &m_finder->mesh_->vertice_[node->vertice_[j]];
 			pt[j].x = pos->x*m_scale + m_offset_x;
 			pt[j].y = pos->z*m_scale + m_offset_z;
 		}
-		dc.Polygon(pt, node->size);
+		dc.Polygon(pt, node->size_);
 		delete[] pt;
 	}
 
-	if ( m_poly_over != -1 )
-	{
+	if (m_poly_over != -1) {
 		CBrush brush(RGB(0, 0, 255));
 		dc.SelectObject(&brush);
 
-		struct nav_node* node = get_node(m_mesh, m_poly_over);
-		CPoint* pt = new CPoint[node->size];
-		for ( int j = 0; j < node->size; j++ )
-		{
-			struct vector3* pos = &m_mesh->vertices[node->poly[j]];
+		NavNode* node = m_finder->GetNode(m_poly_over);
+		CPoint* pt = new CPoint[node->size_];
+		for (int j = 0; j < node->size_; j++) {
+			Math::Vector3* pos = &m_finder->mesh_->vertice_[node->vertice_[j]];
 			pt[j].x = pos->x*m_scale + m_offset_x;
 			pt[j].y = pos->z*m_scale + m_offset_z;
 		}
-		dc.Polygon(pt, node->size);
+		dc.Polygon(pt, node->size_);
 		delete[] pt;
 	}
 
 
-	if ( m_pt_begin != NULL )
-	{
+	if (m_pt_begin != NULL) {
 		CBrush brush(RGB(50, 50, 50));
 		dc.SelectObject(&brush);
 		dc.Ellipse(m_pt_begin->x - 3, m_pt_begin->z - 3, m_pt_begin->x + 3, m_pt_begin->z + 3);
-		int x = ( ( m_pt_begin->x - m_offset_x ) / m_scale - m_mesh->lt.x ) / m_mesh->tile_unit;
-		int z = ( ( m_pt_begin->z - m_offset_z ) / m_scale - m_mesh->lt.z ) / m_mesh->tile_unit;
-		int index = x + z * m_mesh->tile_width;
-		struct nav_tile* tile = &m_mesh->tile[index];
+		int x = ((m_pt_begin->x - m_offset_x) / m_scale - m_finder->mesh_->lt_.x) / m_finder->mesh_->tileUnit_;
+		int z = ((m_pt_begin->z - m_offset_z) / m_scale - m_finder->mesh_->lt_.z) / m_finder->mesh_->tileUnit_;
+		int index = x + z * m_finder->mesh_->tileWidth_;
+		NavTile* tile = &m_finder->mesh_->tile_[index];
 
 		//格子跨跃多少个多边形
 		/*	for (int i = 0;i < tile->offset;i++)
@@ -575,8 +406,7 @@ void pathfinderDlg::DrawMap()
 		//dc.Polygon(pt,4);
 	}
 
-	if ( m_pt_over != NULL )
-	{
+	if (m_pt_over != NULL) {
 		CBrush brush(RGB(250, 50, 50));
 		dc.SelectObject(&brush);
 		dc.Ellipse(m_pt_over->x - 3, m_pt_over->z - 3, m_pt_over->x + 3, m_pt_over->z + 3);
@@ -608,21 +438,19 @@ void OnAroundDump(void* self, int index) {
 	dc.SelectObject(obrush);
 }
 
-void pathfinderDlg::DrawBegin(CPoint& pos)
-{
-	double nav_x = (double)( pos.x - m_offset_x ) / m_scale;
-	double nav_z = (double)( pos.y - m_offset_z ) / m_scale;
+void pathfinderDlg::DrawBegin(CPoint& pos) {
+	double nav_x = (double)(pos.x - m_offset_x) / m_scale;
+	double nav_z = (double)(pos.y - m_offset_z) / m_scale;
 
 	printf("nav begin:%f,%f\n", nav_x, nav_z);
 
-	//struct nav_node* node = search_node(m_mesh, nav_x, 0, nav_z);
-	m_finder->SetDebugTileFunc(OnAroundDump, this);
-	m_finder->SetDebugNodeFunc(OnSearchDump, this);
+	/*m_finder->SetDebugTileFunc(OnAroundDump, this);
+	m_finder->SetDebugNodeFunc(OnSearchDump, this);*/
 	NavNode* node = m_finder->SearchNode(Math::Vector3(nav_x, 0, nav_z), 20);
-	if ( node == NULL )
+	if (node == NULL)
 		return;
 
-	if ( m_pt_begin != NULL ) {
+	if (m_pt_begin != NULL) {
 		free(m_pt_begin);
 		m_pt_begin = NULL;
 	}
@@ -631,59 +459,46 @@ void pathfinderDlg::DrawBegin(CPoint& pos)
 
 	m_poly_begin = node->id_;
 
-	m_pt_begin = (vector3*)malloc(sizeof( *m_pt_begin ));
+	m_pt_begin = new Math::Vector3();
 	m_pt_begin->x = pos.x;
 	m_pt_begin->z = pos.y;
 
-	
+
 	printf("nav node:%d\n", node->id_);
-	for ( int i = 0; i < node->size_;i++ )
+	for (int i = 0; i < node->size_; i++)
 		printf("%d,%f\t", node->vertice_[i], m_finder->mesh_->vertice_[node->vertice_[i]].y);
 	printf("\n");
 
-	double height;
-	if ( point_height0(m_mesh, nav_x, nav_z, &height) ) {
-		printf("heigh:%f\n", height);
-	}
-	if (point_height1(m_mesh, nav_x, nav_z, &height)) {
-		printf("heigh:%f\n", height);
-	}
-	if (point_height2(m_mesh, nav_x, nav_z, &height)) {
-		printf("heigh:%f\n", height);
-	}
-
 	float h = m_finder->GetHeight(Math::Vector3(nav_x, 0, nav_z));
 	printf("heigh:%f\n", h);
-	
 
-	CClientDC dc(this);
-	for (int i = 0; i < 1; i++) {
-		Math::Vector3 result;
-		//Math::Vector3 result = m_finder->RandomMovable(-1);
-		if (m_finder->RandomInCircle(result, Math::Vector3(nav_x, 0, nav_z), 2000)) {
-			printf("%f,%f\n", result.x*m_scale + m_offset_x, result.z*m_scale + m_offset_z);
-			dc.SetPixel(result.x*m_scale + m_offset_x, result.z*m_scale + m_offset_z, RGB(255, 111, 250));
-		}
-		
-	}
+	//m_finder->SetDebugOverlapFunc(OnOverlayDump, this);
 
-	
-	//Invalidate();
+	//CClientDC dc(this);
+	//for (int i = 0; i < 1; i++) {
+	//	Math::Vector3 result;
+	//	//Math::Vector3 result = m_finder->RandomMovable(-1);
+	//	if (m_finder->RandomInCircle(result, Math::Vector3(nav_x, 0, nav_z), 2000)) {
+	//		printf("%f,%f\n", result.x*m_scale + m_offset_x, result.z*m_scale + m_offset_z);
+	//		dc.SetPixel(result.x*m_scale + m_offset_x, result.z*m_scale + m_offset_z, RGB(255, 111, 250));
+	//	}
+
+	//}
+
+	Invalidate();
 }
 
 
 
-void pathfinderDlg::DrawOver(CPoint& pos)
-{
-	double nav_x = (double)( pos.x - m_offset_x ) / m_scale;
-	double nav_z = (double)( pos.y - m_offset_z ) / m_scale;
+void pathfinderDlg::DrawOver(CPoint& pos) {
+	double nav_x = (double)(pos.x - m_offset_x) / m_scale;
+	double nav_z = (double)(pos.y - m_offset_z) / m_scale;
 
 	NavNode* node = NULL;
 	int node_index;
 	float offset;
 
-	if ( !m_finder->Movable(Math::Vector3(nav_x, 0, nav_z), 10, &offset) )
-	{
+	if (!m_finder->Movable(Math::Vector3(nav_x, 0, nav_z), 10, &offset)) {
 		printf("offset:%f\n", offset);
 
 		m_finder->SetDebugTileFunc(OnAroundDump, this);
@@ -694,10 +509,10 @@ void pathfinderDlg::DrawOver(CPoint& pos)
 			printf("%f,%f\n", nav_x, nav_z);
 			return;
 		}
-			
-			
+
+
 		node = m_finder->GetNode(nodeIndex);
-		
+
 		CBrush brush(RGB(66, 88, 188));
 		CClientDC dc(this);
 		CBrush* obrush = dc.SelectObject(&brush);
@@ -706,13 +521,12 @@ void pathfinderDlg::DrawOver(CPoint& pos)
 		pos.x = vt->x*m_scale + m_offset_x;
 		pos.y = vt->z*m_scale + m_offset_z;
 
-		if ( m_pt_over != NULL )
-		{
+		if (m_pt_over != NULL) {
 			free(m_pt_over);
 			m_pt_over = NULL;
 		}
 
-		m_pt_over = (vector3*)malloc(sizeof( *m_pt_over ));
+		m_pt_over = new Math::Vector3();
 		m_pt_over->x = vt->x*m_scale + m_offset_x;
 		m_pt_over->z = vt->z*m_scale + m_offset_z;
 
@@ -728,92 +542,71 @@ void pathfinderDlg::DrawOver(CPoint& pos)
 		//	dc.Ellipse(result.x*m_scale + m_offset_x - 3, result.z*m_scale + m_offset_z - 3, result.x*m_scale + m_offset_x + 3, result.z*m_scale + m_offset_z + 3);
 		//	dc.SelectObject(obrush);
 		//}
-	}
-	else
-	{
+	} else {
 		node = m_finder->SearchNode(Math::Vector3(nav_x, 0, nav_z), 5);
 
-		if ( m_pt_over != NULL )
-		{
+		if (m_pt_over != NULL) {
 			free(m_pt_over);
 			m_pt_over = NULL;
 		}
 
-		m_pt_over = (vector3*)malloc(sizeof( *m_pt_over ));
+		m_pt_over = new Math::Vector3();
 		m_pt_over->x = pos.x;
 		m_pt_over->z = pos.y;
 
-		printf("nav over:%f,%f\n", nav_x,nav_z);
+		printf("nav over:%f,%f\n", nav_x, nav_z);
 		printf("nav node:%d\n", node->id_);
 
 		Invalidate();
 	}
 
-	for ( int i = 0; i < node->size_; i++ )
+	for (int i = 0; i < node->size_; i++)
 		printf("%d\t", node->vertice_[i]);
 	printf("\n");
 
 	m_poly_over = node->id_;
 
-	
+
 }
 
-void pathfinderDlg::OnUpdateIddPathfindertestDialog(CCmdUI *pCmdUI)
-{
+void pathfinderDlg::OnUpdateIddPathfindertestDialog(CCmdUI *pCmdUI) {
 	// TODO:  在此添加命令更新用户界面处理程序代码
 	DrawMap();
 }
 
 
 
-void pathfinderDlg::Straightline()
-{
+void pathfinderDlg::Straightline() {
 	// TODO:  在此添加控件通知处理程序代码
-	if ( m_poly_begin == -1 )
-	{
+	if (m_poly_begin == -1) {
 		CString str;
 		str.Format(_T("始点还没设置"));
 		MessageBox(str);
-	}
-	else if ( m_poly_over == -1 )
-	{
+	} else if (m_poly_over == -1) {
 		CString str;
 		str.Format(_T("终点还没设置"));
 		MessageBox(str);
-	}
-	else
-	{
-		for ( int i = 0; i < 8; i++ )
-		{
-			set_mask(&m_mesh->mask_ctx, i, 1);
+	} else {
+		for (int i = 0; i < 8; i++) {
+			m_finder->SetMask(i, 1);
 		}
-		set_mask(&m_mesh->mask_ctx, 1, 0);
+		m_finder->SetMask(1, 0);
 
-		vector3 vt0;
-		vt0.x = (double)( m_pt_begin->x - m_offset_x ) / m_scale;
-		vt0.y = 0;
-		vt0.z = (double)( m_pt_begin->z - m_offset_z ) / m_scale;
 
-		vector3 vt1;
-		vt1.x = (double)( m_pt_over->x - m_offset_x ) / m_scale;
-		vt1.y = 0;
-		vt1.z = (double)( m_pt_over->z - m_offset_z ) / m_scale;
+		Math::Vector3 begin((m_pt_begin->x - m_offset_x) / m_scale, 0, (m_pt_begin->z - m_offset_z) / m_scale);
+		Math::Vector3 over((m_pt_over->x - m_offset_x) / m_scale, 0, (m_pt_over->z - m_offset_z) / m_scale);
 
 		POINT from;
-		from.x = vt0.x*m_scale + m_offset_x;
-		from.y = vt0.z*m_scale + m_offset_z;
+		from.x = begin.x*m_scale + m_offset_x;
+		from.y = begin.z*m_scale + m_offset_z;
 
 		CPen pen(PS_SOLID, 1, RGB(255, 255, 255));
 		CClientDC dc(this);
 		CPen *open = dc.SelectObject(&pen);
 		dc.MoveTo(from);
 
-		vector3 vt;
-		bool ok = raycast(m_mesh, &vt0, &vt1, &vt, NULL, this);
-
 		Math::Vector3 result;
-		m_finder->Raycast(Math::Vector3(vt0.x, vt0.y, vt0.z), Math::Vector3(vt1.x, vt1.y, vt1.z), result);
-
+		m_finder->Raycast(begin, over, result);
 
 		POINT to;
 		to.x = result.x*m_scale + m_offset_x;
@@ -825,16 +618,14 @@ void pathfinderDlg::Straightline()
 }
 
 
-void pathfinderDlg::OnLButtonDown(UINT nFlags, CPoint point)
-{
+void pathfinderDlg::OnLButtonDown(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	CDialogEx::OnLButtonDown(nFlags, point);
 }
 
 
-void pathfinderDlg::OnLButtonUp(UINT nFlags, CPoint point)
-{
+void pathfinderDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 
@@ -845,67 +636,51 @@ void pathfinderDlg::OnLButtonUp(UINT nFlags, CPoint point)
 
 
 
-void pathfinderDlg::OnIgnoreLine()
-{
+void pathfinderDlg::OnIgnoreLine() {
 	// TODO:  在此添加控件通知处理程序代码
-	if ( m_poly_begin == NULL )
-	{
+	if (m_poly_begin == -1) {
 		CString str;
 		str.Format(_T("始点还没设置"));
 		MessageBox(str);
-	}
-	else if ( m_poly_over == NULL )
-	{
+	} else if (m_poly_over == -1) {
 		CString str;
 		str.Format(_T("终点还没设置"));
 		MessageBox(str);
-	}
-	else
-	{
-		for ( int i = 0; i < 8; i++ )
-		{
-			set_mask(&m_mesh->mask_ctx, i, 1);
+	} else {
+		for (int i = 0; i < 8; i++) {
+			m_finder->SetMask(i, 1);
 		}
-		vector3 vt0;
-		vt0.x = (double)( m_pt_begin->x - m_offset_x ) / m_scale;
-		vt0.y = 0;
-		vt0.z = (double)( m_pt_begin->z - m_offset_z ) / m_scale;
-
-		vector3 vt1;
-		vt1.x = (double)( m_pt_over->x - m_offset_x ) / m_scale;
-		vt1.y = 0;
-		vt1.z = (double)( m_pt_over->z - m_offset_z ) / m_scale;
-
-
-		//vector3 vt;
-		//bool ok = raycast(m_mesh, &vt0, &vt1, &vt, OnSearchDump, this);
+		m_finder->SetMask(1, 0);
 
 		m_finder->SetDebugNodeFunc(OnSearchDump, this);
-		Math::Vector3 result;
-		m_finder->Raycast(Math::Vector3(vt0.x, vt0.y, vt0.z), Math::Vector3(vt1.x, vt1.y, vt1.z), result);
+		Math::Vector3 begin((m_pt_begin->x - m_offset_x) / m_scale, 0, (m_pt_begin->z - m_offset_z) / m_scale);
+		Math::Vector3 over((m_pt_over->x - m_offset_x) / m_scale, 0, (m_pt_over->z - m_offset_z) / m_scale);
 
 		POINT from;
-		from.x = vt0.x*m_scale + m_offset_x;
-		from.y = vt0.z*m_scale + m_offset_z;
-
-		POINT to;
-		to.x = result.x*m_scale + m_offset_x;
-		to.y = result.z*m_scale + m_offset_z;
+		from.x = begin.x*m_scale + m_offset_x;
+		from.y = begin.z*m_scale + m_offset_z;
 
 		CPen pen(PS_SOLID, 1, RGB(255, 255, 255));
 		CClientDC dc(this);
 		CPen *open = dc.SelectObject(&pen);
 		dc.MoveTo(from);
+
+		Math::Vector3 result;
+		m_finder->Raycast(begin, over, result);
+
+		POINT to;
+		to.x = result.x*m_scale + m_offset_x;
+		to.y = result.z*m_scale + m_offset_z;
+
 		dc.LineTo(to);
 		dc.SelectObject(open);
 
-		set_mask(&m_mesh->mask_ctx, 0, 1);
+		m_finder->SetDebugNodeFunc(NULL, NULL);
 	}
 }
 
 
-void pathfinderDlg::OnEnChangeEdit2()
-{
+void pathfinderDlg::OnEnChangeEdit2() {
 	// TODO:  如果该控件是 RICHEDIT 控件，它将不
 	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
 	// 函数并调用 CRichEditCtrl().SetEventMask()，
@@ -915,14 +690,13 @@ void pathfinderDlg::OnEnChangeEdit2()
 
 	// TODO:  在此添加控件通知处理程序代码
 	CString str;
-	( (CEdit*)GetDlgItem(IDC_EDIT2) )->GetWindowTextW(str);
+	((CEdit*)GetDlgItem(IDC_EDIT2))->GetWindowTextW(str);
 	m_offset_x = _ttoi(str);
 	Invalidate();
 }
 
 
-void pathfinderDlg::OnEnChangeEdit3()
-{
+void pathfinderDlg::OnEnChangeEdit3() {
 	// TODO:  如果该控件是 RICHEDIT 控件，它将不
 	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
 	// 函数并调用 CRichEditCtrl().SetEventMask()，
@@ -932,101 +706,88 @@ void pathfinderDlg::OnEnChangeEdit3()
 
 	// TODO:  在此添加控件通知处理程序代码
 	CString str;
-	( (CEdit*)GetDlgItem(IDC_EDIT3) )->GetWindowTextW(str);
+	((CEdit*)GetDlgItem(IDC_EDIT3))->GetWindowTextW(str);
 	m_offset_z = _ttoi(str);
 	Invalidate();
 }
 
 
-void pathfinderDlg::OnEnChangeEdit4()
-{
+void pathfinderDlg::OnEnChangeEdit4() {
 	// TODO:  如果该控件是 RICHEDIT 控件，它将不
 	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
 	// 函数并调用 CRichEditCtrl().SetEventMask()，
 	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
 
 	CString str;
-	( (CEdit*)GetDlgItem(IDC_EDIT4) )->GetWindowTextW(str);
+	((CEdit*)GetDlgItem(IDC_EDIT4))->GetWindowTextW(str);
 	m_scale = _ttof(str);
 	Invalidate();
 
 	// TODO:  在此添加控件通知处理程序代码
 }
 
+void pathfinderDlg::DrawPath(std::vector<const Math::Vector3*>& path) {
+	CClientDC dc(this);
+	CPen pen(PS_SOLID, 1, RGB(255, 255, 255));
+	CPen* open = dc.SelectObject(&pen);
 
-void pathfinderDlg::OnIgnorePath()
-{
-	if ( m_poly_begin == -1 )
-	{
+
+	dc.MoveTo(path[0]->x*m_scale + m_offset_x, path[0]->z*m_scale + m_offset_z);
+	for (int i = 1; i < path.size(); i++) {
+		dc.LineTo(path[i]->x*m_scale + m_offset_x, path[i]->z*m_scale + m_offset_z);
+		dc.MoveTo(path[i]->x*m_scale + m_offset_x, path[i]->z*m_scale + m_offset_z);
+	}
+
+	dc.SelectObject(open);
+}
+
+void pathfinderDlg::OnIgnorePath() {
+	if (m_poly_begin == -1) {
 		CString str;
 		str.Format(_T("始点还没设置"));
 		MessageBox(str);
-	}
-	else if ( m_poly_over == -1 )
-	{
+	} else if (m_poly_over == -1) {
 		CString str;
 		str.Format(_T("终点还没设置"));
 		MessageBox(str);
-	}
-	else
-	{
-		for ( int i = 0; i < 8; i++ )
-			set_mask(&m_mesh->mask_ctx, i, 1);
-
-		struct vector3 ptBegin;
-		ptBegin.x = (double)( m_pt_begin->x - m_offset_x ) / m_scale;
-		ptBegin.z = (double)( m_pt_begin->z - m_offset_z ) / m_scale;
-		struct vector3 ptOver;
-		ptOver.x = (double)( m_pt_over->x - m_offset_x ) / m_scale;
-		ptOver.z = (double)( m_pt_over->z - m_offset_z ) / m_scale;
-
-		vector3 vt;
-		struct nav_path* path = astar_find(m_mesh, &ptBegin, &ptOver, OnSearchDump, this);
-
-		if ( path )
-		{
-			DrawPath(path->wp, path->offset);
+	} else {
+		for (int i = 0; i < 8; i++) {
+			m_finder->SetMask(i, 1);
 		}
+
+		m_finder->SetDebugNodeFunc(OnSearchDump, this);
+
+		Math::Vector3 begin((m_pt_begin->x - m_offset_x) / m_scale, 0, (m_pt_begin->z - m_offset_z) / m_scale);
+		Math::Vector3 over((m_pt_over->x - m_offset_x) / m_scale, 0, (m_pt_over->z - m_offset_z) / m_scale);
+
+		std::vector<const Math::Vector3*> result;
+		if (m_finder->Find(begin, over, result) >= 0) {
+			DrawPath(result);
+		}
+
+		m_finder->SetDebugNodeFunc(NULL, NULL);
 	}
 }
 
 
-void pathfinderDlg::OnRButtonUp(UINT nFlags, CPoint point)
-{
+void pathfinderDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 	this->DrawOver(point);
 	CDialogEx::OnRButtonUp(nFlags, point);
 }
 
 
-void pathfinderDlg::OnClose()
-{
+void pathfinderDlg::OnClose() {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
-	release_mesh(m_mesh);
-	_CrtDumpMemoryLeaks();
 	CDialogEx::OnClose();
 }
 
-void pathfinderDlg::OnCheck()
-{
+void pathfinderDlg::OnCheck() {
 	// TODO:  在此添加控件通知处理程序代码
 	Invalidate();
 }
 
-void pathfinderDlg::OnEnChangeEdit5()
-{
-	// TODO:  如果该控件是 RICHEDIT 控件，它将不
-	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
-	// 函数并调用 CRichEditCtrl().SetEventMask()，
-	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
-
-	// TODO:  在此添加控件通知处理程序代码
-	
-}
-
-
-void pathfinderDlg::OnEnChangeEdit6()
-{
+void pathfinderDlg::OnEnChangeEdit5() {
 	// TODO:  如果该控件是 RICHEDIT 控件，它将不
 	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
 	// 函数并调用 CRichEditCtrl().SetEventMask()，
@@ -1037,42 +798,48 @@ void pathfinderDlg::OnEnChangeEdit6()
 }
 
 
-BOOL pathfinderDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
-{
+void pathfinderDlg::OnEnChangeEdit6() {
+	// TODO:  如果该控件是 RICHEDIT 控件，它将不
+	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
+	// 函数并调用 CRichEditCtrl().SetEventMask()，
+	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
+
+	// TODO:  在此添加控件通知处理程序代码
+
+}
+
+
+BOOL pathfinderDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
-	if ( zDelta > 0 )
-	{
+	if (zDelta > 0) {
 		m_scale += 0.001;
-	}
-	else {
+	} else {
 		m_scale -= 0.001;
 	}
 
 	CString str;
 	str.Format(_T("%f"), m_scale);
 
-	( (CEdit*)GetDlgItem(IDC_EDIT4) )->SetWindowTextW(str);
+	((CEdit*)GetDlgItem(IDC_EDIT4))->SetWindowTextW(str);
 
 	Invalidate();
 	return CDialogEx::OnMouseWheel(nFlags, zDelta, pt);
 }
 
 
-void pathfinderDlg::OnMButtonUp(UINT nFlags, CPoint point)
-{
+void pathfinderDlg::OnMButtonUp(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	CDialogEx::OnMButtonUp(nFlags, point);
 	m_mouse_state = true;
-	if ( m_mouse_point ) {
+	if (m_mouse_point) {
 		delete m_mouse_point;
 		m_mouse_point = NULL;
 	}
 }
 
 
-void pathfinderDlg::OnMButtonDown(UINT nFlags, CPoint point)
-{
+void pathfinderDlg::OnMButtonDown(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	CDialogEx::OnMButtonDown(nFlags, point);
@@ -1082,23 +849,22 @@ void pathfinderDlg::OnMButtonDown(UINT nFlags, CPoint point)
 }
 
 
-void pathfinderDlg::OnMouseMove(UINT nFlags, CPoint point)
-{
+void pathfinderDlg::OnMouseMove(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	CDialogEx::OnMouseMove(nFlags, point);
-	if ( m_mouse_state == false ) {
+	if (m_mouse_state == false) {
 		m_offset_x = point.x - m_mouse_point->x;
 		m_offset_z = point.y - m_mouse_point->y;
 
 		CString str;
 		str.Format(_T("%d"), m_offset_x);
 
-		( (CEdit*)GetDlgItem(IDC_EDIT2) )->SetWindowTextW(str);
+		((CEdit*)GetDlgItem(IDC_EDIT2))->SetWindowTextW(str);
 
 		str.Format(_T("%d"), m_offset_z);
 
-		( (CEdit*)GetDlgItem(IDC_EDIT3) )->SetWindowTextW(str);
+		((CEdit*)GetDlgItem(IDC_EDIT3))->SetWindowTextW(str);
 
 		Invalidate();
 	}

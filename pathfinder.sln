@@ -1,34 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lua", "lua\lua.vcxproj", "{676123CA-0CE1-4882-A1E1-2F543AE9CAF5}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nav", "nav\nav.vcxproj", "{06C1E8FE-7F90-430F-ACF8-8B998D6505BC}"
-	ProjectSection(ProjectDependencies) = postProject
-		{676123CA-0CE1-4882-A1E1-2F543AE9CAF5} = {676123CA-0CE1-4882-A1E1-2F543AE9CAF5}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "luafilesystem", "luafilesystem\luafilesystem.vcxproj", "{A78428F3-B5F0-422D-B714-F3629115A208}"
-	ProjectSection(ProjectDependencies) = postProject
-		{676123CA-0CE1-4882-A1E1-2F543AE9CAF5} = {676123CA-0CE1-4882-A1E1-2F543AE9CAF5}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wp", "wp\wp.vcxproj", "{1C2DE909-31E8-4E22-808E-BC8C47AA6964}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wp_editor", "wp_editor\waypoint_editor.vcxproj", "{4833AE44-C18C-4B12-A6B8-0FFBE7F43C77}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wp_finder", "wp_finder\wp_finder.vcxproj", "{2BC2BC43-4359-4191-B8F6-0F2C3778F9F3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nav_finder", "nav_finder\pathfinder.vcxproj", "{639688DC-CEC1-45D4-900A-AEE56C4EBEED}"
-	ProjectSection(ProjectDependencies) = postProject
-		{676123CA-0CE1-4882-A1E1-2F543AE9CAF5} = {676123CA-0CE1-4882-A1E1-2F543AE9CAF5}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tile_finder", "tile_finder\tile_findpath.vcxproj", "{646EC273-7E27-4B35-A333-0121A9653BE9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tile", "tile\tile.vcxproj", "{E6E521D5-ACBF-428A-AA32-439DF3824405}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "navcxx", "navcxx\navcxx.vcxproj", "{F94B6B16-D94E-4511-9367-C9EBC29A694F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,22 +21,6 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{676123CA-0CE1-4882-A1E1-2F543AE9CAF5}.Debug|Win32.ActiveCfg = Debug|Win32
-		{676123CA-0CE1-4882-A1E1-2F543AE9CAF5}.Debug|Win32.Build.0 = Debug|Win32
-		{676123CA-0CE1-4882-A1E1-2F543AE9CAF5}.Release|Win32.ActiveCfg = Release|Win32
-		{676123CA-0CE1-4882-A1E1-2F543AE9CAF5}.Release|Win32.Build.0 = Release|Win32
-		{06C1E8FE-7F90-430F-ACF8-8B998D6505BC}.Debug|Win32.ActiveCfg = Debug|Win32
-		{06C1E8FE-7F90-430F-ACF8-8B998D6505BC}.Debug|Win32.Build.0 = Debug|Win32
-		{06C1E8FE-7F90-430F-ACF8-8B998D6505BC}.Release|Win32.ActiveCfg = Release|Win32
-		{06C1E8FE-7F90-430F-ACF8-8B998D6505BC}.Release|Win32.Build.0 = Release|Win32
-		{A78428F3-B5F0-422D-B714-F3629115A208}.Debug|Win32.ActiveCfg = Debug|Win32
-		{A78428F3-B5F0-422D-B714-F3629115A208}.Debug|Win32.Build.0 = Debug|Win32
-		{A78428F3-B5F0-422D-B714-F3629115A208}.Release|Win32.ActiveCfg = Release|Win32
-		{A78428F3-B5F0-422D-B714-F3629115A208}.Release|Win32.Build.0 = Release|Win32
-		{1C2DE909-31E8-4E22-808E-BC8C47AA6964}.Debug|Win32.ActiveCfg = Debug|Win32
-		{1C2DE909-31E8-4E22-808E-BC8C47AA6964}.Debug|Win32.Build.0 = Debug|Win32
-		{1C2DE909-31E8-4E22-808E-BC8C47AA6964}.Release|Win32.ActiveCfg = Release|Win32
-		{1C2DE909-31E8-4E22-808E-BC8C47AA6964}.Release|Win32.Build.0 = Release|Win32
 		{4833AE44-C18C-4B12-A6B8-0FFBE7F43C77}.Debug|Win32.ActiveCfg = Debug|Win32
 		{4833AE44-C18C-4B12-A6B8-0FFBE7F43C77}.Debug|Win32.Build.0 = Debug|Win32
 		{4833AE44-C18C-4B12-A6B8-0FFBE7F43C77}.Release|Win32.ActiveCfg = Release|Win32
@@ -72,6 +41,10 @@ Global
 		{E6E521D5-ACBF-428A-AA32-439DF3824405}.Debug|Win32.Build.0 = Debug|Win32
 		{E6E521D5-ACBF-428A-AA32-439DF3824405}.Release|Win32.ActiveCfg = Release|Win32
 		{E6E521D5-ACBF-428A-AA32-439DF3824405}.Release|Win32.Build.0 = Release|Win32
+		{F94B6B16-D94E-4511-9367-C9EBC29A694F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F94B6B16-D94E-4511-9367-C9EBC29A694F}.Debug|Win32.Build.0 = Debug|Win32
+		{F94B6B16-D94E-4511-9367-C9EBC29A694F}.Release|Win32.ActiveCfg = Release|Win32
+		{F94B6B16-D94E-4511-9367-C9EBC29A694F}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
