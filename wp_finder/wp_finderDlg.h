@@ -27,12 +27,12 @@ struct WayPoint {
 	}
 };
 
-// Cwp_finderDlg 对话框
-class Cwp_finderDlg : public CDialogEx
+// CWpFinderDlg 对话框
+class CWpFinderDlg : public CDialogEx
 {
 // 构造
 public:
-	Cwp_finderDlg(CWnd* pParent = NULL);	// 标准构造函数
+	CWpFinderDlg(CWnd* pParent = NULL);	// 标准构造函数
 
 // 对话框数据
 	enum { IDD = IDD_WP_FINDER_DIALOG };

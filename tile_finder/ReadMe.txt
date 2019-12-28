@@ -34,7 +34,7 @@ res\tile_findpath.rc2
 应用程序向导创建一个对话框类：
 
 TilePathFinder.h、TilePathFinder.cpp - 对话框
-    这些文件包含 CTilePathFinderDlg 类。此类定义应用程序的主对话框的行为。对话框模板包含在 tile_findpath.rc 中，该文件可以在 Microsoft Visual C++ 中编辑。
+    这些文件包含 CTileCNavDlg 类。此类定义应用程序的主对话框的行为。对话框模板包含在 tile_findpath.rc 中，该文件可以在 Microsoft Visual C++ 中编辑。
 
 /////////////////////////////////////////////////////////////////////////////
 

@@ -11,14 +11,14 @@
 #include "resource.h"		// 主符号
 
 
-// CWaypointEditorApp: 
+// CWpEditorApp: 
 // 有关此类的实现，请参阅 waypoint_editor.cpp
 //
 
-class CWaypointEditorApp : public CWinApp
+class CWpEditorApp : public CWinApp
 {
 public:
-	CWaypointEditorApp();
+	CWpEditorApp();
 
 // 重写
 public:
@@ -29,4 +29,4 @@ public:
 	DECLARE_MESSAGE_MAP()
 };
 
-extern CWaypointEditorApp theApp;
+extern CWpEditorApp theApp;

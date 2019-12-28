@@ -44,20 +44,20 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
-// Cwp_finderDlg 对话框
+// CWpFinderDlg 对话框
 
 
 
-Cwp_finderDlg::Cwp_finderDlg(CWnd* pParent /*=NULL*/)
-	: CDialogEx(Cwp_finderDlg::IDD, pParent) {
+CWpFinderDlg::CWpFinderDlg(CWnd* pParent /*=NULL*/)
+	: CDialogEx(CWpFinderDlg::IDD, pParent) {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
-void Cwp_finderDlg::DoDataExchange(CDataExchange* pDX) {
+void CWpFinderDlg::DoDataExchange(CDataExchange* pDX) {
 	CDialogEx::DoDataExchange(pDX);
 }
 
-BEGIN_MESSAGE_MAP(Cwp_finderDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(CWpFinderDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
@@ -67,13 +67,13 @@ BEGIN_MESSAGE_MAP(Cwp_finderDlg, CDialogEx)
 	ON_WM_MBUTTONDOWN()
 	ON_WM_LBUTTONUP()
 	ON_WM_RBUTTONUP()
-	ON_BN_CLICKED(IDC_BUTTON1, &Cwp_finderDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON1, &CWpFinderDlg::OnBnClickedButton1)
 END_MESSAGE_MAP()
 
 
-// Cwp_finderDlg 消息处理程序
+// CWpFinderDlg 消息处理程序
 
-BOOL Cwp_finderDlg::OnInitDialog() {
+BOOL CWpFinderDlg::OnInitDialog() {
 	CDialogEx::OnInitDialog();
 
 	// 将“关于...”菜单项添加到系统菜单中。
@@ -100,6 +100,11 @@ BOOL Cwp_finderDlg::OnInitDialog() {
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO:  在此添加额外的初始化代码
+	AllocConsole();
+	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	int hCrt = _open_osfhandle((long)handle, _O_TEXT);
+	FILE * hf = _fdopen(hCrt, "w");
+	*stdout = *hf;
 
 	CString navTile;
 	navTile.Format(_T("./nav/%s"), AfxGetApp()->m_lpCmdLine);
@@ -110,14 +115,14 @@ BOOL Cwp_finderDlg::OnInitDialog() {
 
 	m_mesh_finder = NavPathFinder::LoadMeshEx(pFileName);
 
-	m_offset_x = -100;
-	m_offset_z = -100;
-	m_scale = 0.02;
-
 	CString wpFile;
 	wpFile.Format(_T("./wp/%s.wp"), AfxGetApp()->m_lpCmdLine);
 	pFileName = T2A(wpFile);
 	m_finder = new WpPathFinder((const char*)pFileName);
+
+	m_offset_x = -100;
+	m_offset_z = -100;
+	m_scale = 0.02;
 
 	m_wp_list.clear();
 
@@ -137,19 +142,13 @@ BOOL Cwp_finderDlg::OnInitDialog() {
 
 	m_start = m_over = NULL;
 
-	AllocConsole();
-	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	int hCrt = _open_osfhandle((long)handle, _O_TEXT);
-	FILE * hf = _fdopen(hCrt, "w");
-	*stdout = *hf;
-
 	m_mouse_state = true;
 	m_mouse_point = NULL;
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
-void Cwp_finderDlg::OnSysCommand(UINT nID, LPARAM lParam) {
+void CWpFinderDlg::OnSysCommand(UINT nID, LPARAM lParam) {
 	if ((nID & 0xFFF0) == IDM_ABOUTBOX) {
 		CAboutDlg dlgAbout;
 		dlgAbout.DoModal();
@@ -162,7 +161,7 @@ void Cwp_finderDlg::OnSysCommand(UINT nID, LPARAM lParam) {
 //  来绘制该图标。  对于使用文档/视图模型的 MFC 应用程序，
 //  这将由框架自动完成。
 
-void Cwp_finderDlg::OnPaint() {
+void CWpFinderDlg::OnPaint() {
 	if (IsIconic()) {
 		CPaintDC dc(this); // 用于绘制的设备上下文
 
@@ -186,11 +185,11 @@ void Cwp_finderDlg::OnPaint() {
 
 //当用户拖动最小化窗口时系统调用此函数取得光标
 //显示。
-HCURSOR Cwp_finderDlg::OnQueryDragIcon() {
+HCURSOR CWpFinderDlg::OnQueryDragIcon() {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-void Cwp_finderDlg::UpdateMesh() {
+void CWpFinderDlg::UpdateMesh() {
 	CPen pen(PS_SOLID, 1, RGB(0, 0, 0));
 	CClientDC dc(this);
 	CPen *open = dc.SelectObject(&pen);
@@ -308,17 +307,17 @@ void Cwp_finderDlg::UpdateMesh() {
 	}
 }
 
-void Cwp_finderDlg::editor2mesh(CPoint* from, CPoint* to) {
+void CWpFinderDlg::editor2mesh(CPoint* from, CPoint* to) {
 	to->x = (from->x - m_offset_x) / m_scale;
 	to->y = (from->y - m_offset_z) / m_scale;
 }
 
-void Cwp_finderDlg::mesh2editor(CPoint* from, CPoint* to) {
+void CWpFinderDlg::mesh2editor(CPoint* from, CPoint* to) {
 	to->x = from->x * m_scale + m_offset_x;
 	to->y = from->y * m_scale + m_offset_z;
 }
 
-void Cwp_finderDlg::OnMouseMove(UINT nFlags, CPoint point) {
+void CWpFinderDlg::OnMouseMove(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	CDialogEx::OnMouseMove(nFlags, point);
@@ -331,7 +330,7 @@ void Cwp_finderDlg::OnMouseMove(UINT nFlags, CPoint point) {
 }
 
 
-BOOL Cwp_finderDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
+BOOL CWpFinderDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 	if (zDelta > 0) {
 		m_scale += 0.001;
@@ -343,7 +342,7 @@ BOOL Cwp_finderDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 }
 
 
-void Cwp_finderDlg::OnMButtonUp(UINT nFlags, CPoint point) {
+void CWpFinderDlg::OnMButtonUp(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 	m_mouse_state = true;
 	if (m_mouse_point) {
@@ -354,7 +353,7 @@ void Cwp_finderDlg::OnMButtonUp(UINT nFlags, CPoint point) {
 }
 
 
-void Cwp_finderDlg::OnMButtonDown(UINT nFlags, CPoint point) {
+void CWpFinderDlg::OnMButtonDown(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 	m_mouse_state = false;
 	m_mouse_point = new CPoint(point);
@@ -362,7 +361,7 @@ void Cwp_finderDlg::OnMButtonDown(UINT nFlags, CPoint point) {
 }
 
 
-void Cwp_finderDlg::OnLButtonUp(UINT nFlags, CPoint point) {
+void CWpFinderDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	CDialogEx::OnLButtonUp(nFlags, point);
@@ -377,7 +376,7 @@ void Cwp_finderDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 }
 
 
-void Cwp_finderDlg::OnRButtonUp(UINT nFlags, CPoint point) {
+void CWpFinderDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	CDialogEx::OnRButtonUp(nFlags, point);
@@ -391,16 +390,16 @@ void Cwp_finderDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 }
 
 void OnPathDump(void* ud, int x, int z) {
-	Cwp_finderDlg* self = (Cwp_finderDlg*)ud;
+	CWpFinderDlg* self = (CWpFinderDlg*)ud;
 	self->m_path.push_back(CPoint(x, z));
 }
 
 void OnSearchDump(void* ud, const Math::Vector2& pos) {
-	Cwp_finderDlg* self = (Cwp_finderDlg*)ud;
+	CWpFinderDlg* self = (CWpFinderDlg*)ud;
 	self->m_search.push_back(CPoint(pos.x, pos.y));
 }
 
-void Cwp_finderDlg::OnBnClickedButton1() {
+void CWpFinderDlg::OnBnClickedButton1() {
 	// TODO:  在此添加控件通知处理程序代码
 	if (m_start == NULL) {
 		CString str;

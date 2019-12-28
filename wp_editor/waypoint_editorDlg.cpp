@@ -44,41 +44,41 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
-// Cwaypoint_editorDlg 对话框
+// CWpEditorDlg 对话框
 
 
 
-Cwaypoint_editorDlg::Cwaypoint_editorDlg(CWnd* pParent /*=NULL*/)
-	: CDialogEx(Cwaypoint_editorDlg::IDD, pParent) {
+CWpEditorDlg::CWpEditorDlg(CWnd* pParent /*=NULL*/)
+	: CDialogEx(CWpEditorDlg::IDD, pParent) {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
-void Cwaypoint_editorDlg::DoDataExchange(CDataExchange* pDX) {
+void CWpEditorDlg::DoDataExchange(CDataExchange* pDX) {
 	CDialogEx::DoDataExchange(pDX);
 }
 
-BEGIN_MESSAGE_MAP(Cwaypoint_editorDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(CWpEditorDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_UPDATE_COMMAND_UI(IDD_WAYPOINT_EDITOR_DIALOG, &Cwaypoint_editorDlg::OnUpdateIddWaypointEditorDialog)
+	ON_UPDATE_COMMAND_UI(IDD_WAYPOINT_EDITOR_DIALOG, &CWpEditorDlg::OnUpdateIddWaypointEditorDialog)
 	ON_WM_MOUSEMOVE()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
 	//	ON_WM_MOUSEHWHEEL()
 	ON_WM_MOUSEWHEEL()
 	ON_WM_RBUTTONUP()
-	ON_BN_CLICKED(IDC_BUTTON1, &Cwaypoint_editorDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON1, &CWpEditorDlg::OnBnClickedButton1)
 	ON_WM_MOUSEHWHEEL()
 	ON_WM_MBUTTONDOWN()
 	ON_WM_MBUTTONUP()
-	ON_BN_CLICKED(IDC_BUTTON2, &Cwaypoint_editorDlg::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_BUTTON2, &CWpEditorDlg::OnBnClickedButton2)
 END_MESSAGE_MAP()
 
 
-// Cwaypoint_editorDlg 消息处理程序
+// CWpEditorDlg 消息处理程序
 
-BOOL Cwaypoint_editorDlg::OnInitDialog() {
+BOOL CWpEditorDlg::OnInitDialog() {
 	CDialogEx::OnInitDialog();
 
 	// 将“关于...”菜单项添加到系统菜单中。
@@ -132,7 +132,7 @@ BOOL Cwaypoint_editorDlg::OnInitDialog() {
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
-void Cwaypoint_editorDlg::OnSysCommand(UINT nID, LPARAM lParam) {
+void CWpEditorDlg::OnSysCommand(UINT nID, LPARAM lParam) {
 	if ((nID & 0xFFF0) == IDM_ABOUTBOX) {
 		CAboutDlg dlgAbout;
 		dlgAbout.DoModal();
@@ -145,7 +145,7 @@ void Cwaypoint_editorDlg::OnSysCommand(UINT nID, LPARAM lParam) {
 //  来绘制该图标。  对于使用文档/视图模型的 MFC 应用程序，
 //  这将由框架自动完成。
 
-void Cwaypoint_editorDlg::OnPaint() {
+void CWpEditorDlg::OnPaint() {
 	if (IsIconic()) {
 		CPaintDC dc(this); // 用于绘制的设备上下文
 
@@ -169,16 +169,16 @@ void Cwaypoint_editorDlg::OnPaint() {
 
 //当用户拖动最小化窗口时系统调用此函数取得光标
 //显示。
-HCURSOR Cwaypoint_editorDlg::OnQueryDragIcon() {
+HCURSOR CWpEditorDlg::OnQueryDragIcon() {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-void Cwaypoint_editorDlg::OnUpdateIddWaypointEditorDialog(CCmdUI *pCmdUI) {
+void CWpEditorDlg::OnUpdateIddWaypointEditorDialog(CCmdUI *pCmdUI) {
 	// TODO:  在此添加命令更新用户界面处理程序代码
 	UpdateMesh();
 }
 
-void Cwaypoint_editorDlg::UpdateMesh() {
+void CWpEditorDlg::UpdateMesh() {
 	CPen pen(PS_SOLID, 1, RGB(0, 0, 0));
 	CClientDC dc(this);
 	CPen *open = dc.SelectObject(&pen);
@@ -243,17 +243,17 @@ void Cwaypoint_editorDlg::UpdateMesh() {
 	}
 }
 
-void Cwaypoint_editorDlg::editor2mesh(CPoint& from, CPoint& to) {
+void CWpEditorDlg::editor2mesh(CPoint& from, CPoint& to) {
 	to.x = (from.x - m_offset_x) / m_scale;
 	to.y = (from.y - m_offset_z) / m_scale;
 }
 
-void Cwaypoint_editorDlg::mesh2editor(CPoint& from, CPoint& to) {
+void CWpEditorDlg::mesh2editor(CPoint& from, CPoint& to) {
 	to.x = from.x * m_scale + m_offset_x;
 	to.y = from.y * m_scale + m_offset_z;
 }
 
-void Cwaypoint_editorDlg::OnMouseMove(UINT nFlags, CPoint point) {
+void CWpEditorDlg::OnMouseMove(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	CDialogEx::OnMouseMove(nFlags, point);
@@ -265,14 +265,14 @@ void Cwaypoint_editorDlg::OnMouseMove(UINT nFlags, CPoint point) {
 }
 
 
-void Cwaypoint_editorDlg::OnLButtonDown(UINT nFlags, CPoint point) {
+void CWpEditorDlg::OnLButtonDown(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	CDialogEx::OnLButtonDown(nFlags, point);
 }
 
 
-void Cwaypoint_editorDlg::OnLButtonUp(UINT nFlags, CPoint point) {
+void CWpEditorDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 
@@ -324,7 +324,7 @@ void Cwaypoint_editorDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 
 }
 
-BOOL Cwaypoint_editorDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
+BOOL CWpEditorDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 	if (zDelta > 0) {
 		m_scale += 0.001;
@@ -335,7 +335,7 @@ BOOL Cwaypoint_editorDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 	return CDialogEx::OnMouseWheel(nFlags, zDelta, pt);
 }
 
-void Cwaypoint_editorDlg::OnRButtonUp(UINT nFlags, CPoint point) {
+void CWpEditorDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	CDialogEx::OnRButtonUp(nFlags, point);
@@ -379,7 +379,7 @@ void Cwaypoint_editorDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 	}
 }
 
-void Cwaypoint_editorDlg::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt) {
+void CWpEditorDlg::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt) {
 	// 此功能要求 Windows Vista 或更高版本。
 	// _WIN32_WINNT 符号必须 >= 0x0600。
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
@@ -388,7 +388,7 @@ void Cwaypoint_editorDlg::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt) {
 }
 
 
-void Cwaypoint_editorDlg::OnMButtonDown(UINT nFlags, CPoint point) {
+void CWpEditorDlg::OnMButtonDown(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 	CDialogEx::OnMButtonDown(nFlags, point);
 
@@ -397,7 +397,7 @@ void Cwaypoint_editorDlg::OnMButtonDown(UINT nFlags, CPoint point) {
 }
 
 
-void Cwaypoint_editorDlg::OnMButtonUp(UINT nFlags, CPoint point) {
+void CWpEditorDlg::OnMButtonUp(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	CDialogEx::OnMButtonUp(nFlags, point);
@@ -408,7 +408,7 @@ void Cwaypoint_editorDlg::OnMButtonUp(UINT nFlags, CPoint point) {
 	}
 }
 
-void Cwaypoint_editorDlg::OnBnClickedButton1() {
+void CWpEditorDlg::OnBnClickedButton1() {
 	// TODO:  在此添加控件通知处理程序代码
 	CString nav_tile;
 	nav_tile.Format(_T("./wp/%s.wp"), AfxGetApp()->m_lpCmdLine);
@@ -452,7 +452,7 @@ void Cwaypoint_editorDlg::OnBnClickedButton1() {
 	MessageBoxW(nav_tile, _T("提示"), MB_OK);
 }
 
-void Cwaypoint_editorDlg::OnBnClickedButton2() {
+void CWpEditorDlg::OnBnClickedButton2() {
 	// TODO:  在此添加控件通知处理程序代码
 
 	char current_path[MAX_PATH];

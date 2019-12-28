@@ -45,39 +45,39 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
-// pathfinderDlg 对话框
+// CNavDlg 对话框
 
 
 
-pathfinderDlg::pathfinderDlg(CWnd* pParent /*=NULL*/)
-	: CDialogEx(pathfinderDlg::IDD, pParent) {
+CNavDlg::CNavDlg(CWnd* pParent /*=NULL*/)
+	: CDialogEx(CNavDlg::IDD, pParent) {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
 }
 
-void pathfinderDlg::DoDataExchange(CDataExchange* pDX) {
+void CNavDlg::DoDataExchange(CDataExchange* pDX) {
 	CDialogEx::DoDataExchange(pDX);
 }
 
-BEGIN_MESSAGE_MAP(pathfinderDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(CNavDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_BUTTON1, &pathfinderDlg::OnPath)
+	ON_BN_CLICKED(IDC_BUTTON1, &CNavDlg::OnPath)
 	ON_WM_MOUSEACTIVATE()
-	ON_UPDATE_COMMAND_UI(IDD_PATHFINDERTEST_DIALOG, &pathfinderDlg::OnUpdateIddPathfindertestDialog)
-	ON_BN_CLICKED(IDC_BUTTON2, &pathfinderDlg::Straightline)
+	ON_UPDATE_COMMAND_UI(IDD_PATHFINDERTEST_DIALOG, &CNavDlg::OnUpdateIddPathfindertestDialog)
+	ON_BN_CLICKED(IDC_BUTTON2, &CNavDlg::Straightline)
 	ON_WM_LBUTTONUP()
-	ON_BN_CLICKED(IDC_BUTTON3, &pathfinderDlg::OnIgnoreLine)
-	ON_EN_CHANGE(IDC_EDIT2, &pathfinderDlg::OnEnChangeEdit2)
-	ON_EN_CHANGE(IDC_EDIT3, &pathfinderDlg::OnEnChangeEdit3)
-	ON_EN_CHANGE(IDC_EDIT4, &pathfinderDlg::OnEnChangeEdit4)
-	ON_BN_CLICKED(IDC_BUTTON4, &pathfinderDlg::OnIgnorePath)
+	ON_BN_CLICKED(IDC_BUTTON3, &CNavDlg::OnIgnoreLine)
+	ON_EN_CHANGE(IDC_EDIT2, &CNavDlg::OnEnChangeEdit2)
+	ON_EN_CHANGE(IDC_EDIT3, &CNavDlg::OnEnChangeEdit3)
+	ON_EN_CHANGE(IDC_EDIT4, &CNavDlg::OnEnChangeEdit4)
+	ON_BN_CLICKED(IDC_BUTTON4, &CNavDlg::OnIgnorePath)
 	ON_WM_RBUTTONUP()
 	ON_WM_CLOSE()
-	ON_BN_CLICKED(IDC_CHECK1, &pathfinderDlg::OnCheck)
-	ON_EN_CHANGE(IDC_EDIT5, &pathfinderDlg::OnEnChangeEdit5)
-	ON_EN_CHANGE(IDC_EDIT6, &pathfinderDlg::OnEnChangeEdit6)
+	ON_BN_CLICKED(IDC_CHECK1, &CNavDlg::OnCheck)
+	ON_EN_CHANGE(IDC_EDIT5, &CNavDlg::OnEnChangeEdit5)
+	ON_EN_CHANGE(IDC_EDIT6, &CNavDlg::OnEnChangeEdit6)
 	ON_WM_MOUSEWHEEL()
 	ON_WM_MBUTTONUP()
 	ON_WM_MBUTTONDOWN()
@@ -85,9 +85,9 @@ BEGIN_MESSAGE_MAP(pathfinderDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
-// pathfinderDlg 消息处理程序
+// CNavDlg 消息处理程序
 
-BOOL pathfinderDlg::OnInitDialog() {
+BOOL CNavDlg::OnInitDialog() {
 	CDialogEx::OnInitDialog();
 	//_CrtSetBreakAlloc(3850);
 	// 将“关于...”菜单项添加到系统菜单中。
@@ -150,7 +150,7 @@ BOOL pathfinderDlg::OnInitDialog() {
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
-void pathfinderDlg::OnSysCommand(UINT nID, LPARAM lParam) {
+void CNavDlg::OnSysCommand(UINT nID, LPARAM lParam) {
 	if ((nID & 0xFFF0) == IDM_ABOUTBOX) {
 		CAboutDlg dlgAbout;
 		dlgAbout.DoModal();
@@ -163,7 +163,7 @@ void pathfinderDlg::OnSysCommand(UINT nID, LPARAM lParam) {
 //  来绘制该图标。  对于使用文档/视图模型的 MFC 应用程序，
 //  这将由框架自动完成。
 
-void pathfinderDlg::OnPaint() {
+void CNavDlg::OnPaint() {
 	if (IsIconic()) {
 		CPaintDC dc(this); // 用于绘制的设备上下文
 
@@ -190,12 +190,12 @@ void pathfinderDlg::OnPaint() {
 
 //当用户拖动最小化窗口时系统调用此函数取得光标
 //显示。
-HCURSOR pathfinderDlg::OnQueryDragIcon() {
+HCURSOR CNavDlg::OnQueryDragIcon() {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
 void OnSearchDump(void* self, int index) {
-	pathfinderDlg* dlgPtr = (pathfinderDlg*)self;
+	CNavDlg* dlgPtr = (CNavDlg*)self;
 	CClientDC dc(dlgPtr);
 	CBrush brush(RGB(123, 255, 0));
 	dc.SelectObject(&brush);
@@ -213,7 +213,7 @@ void OnSearchDump(void* self, int index) {
 }
 
 void OnOverlayDump(void* self, std::vector<const Math::Vector3*>& poly) {
-	pathfinderDlg* dlgPtr = (pathfinderDlg*)self;
+	CNavDlg* dlgPtr = (CNavDlg*)self;
 	CClientDC dc(dlgPtr);
 	CBrush brush(RGB(123, 255, 0));
 	dc.SelectObject(&brush);
@@ -229,7 +229,7 @@ void OnOverlayDump(void* self, std::vector<const Math::Vector3*>& poly) {
 	//Sleep(5);
 }
 
-void pathfinderDlg::OnPath() {
+void CNavDlg::OnPath() {
 	// TODO:  在此添加控件通知处理程序代码
 
 	if (m_poly_begin == -1) {
@@ -258,14 +258,14 @@ void pathfinderDlg::OnPath() {
 }
 
 
-int pathfinderDlg::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message) {
+int CNavDlg::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	return CDialogEx::OnMouseActivate(pDesktopWnd, nHitTest, message);
 }
 
 
-void pathfinderDlg::DrawMap() {
+void CNavDlg::DrawMap() {
 	CPen pen(PS_SOLID, 1, RGB(0, 0, 0));
 	CClientDC dc(this);
 	CPen *pOldPen = dc.SelectObject(&pen);
@@ -418,7 +418,7 @@ void pathfinderDlg::DrawMap() {
 }
 
 void OnAroundDump(void* self, int index) {
-	pathfinderDlg* dlgPtr = (pathfinderDlg*)self;
+	CNavDlg* dlgPtr = (CNavDlg*)self;
 	CClientDC dc(dlgPtr);
 	CBrush brush(RGB(66, 66, 66));
 
@@ -438,7 +438,7 @@ void OnAroundDump(void* self, int index) {
 	dc.SelectObject(obrush);
 }
 
-void pathfinderDlg::DrawBegin(CPoint& pos) {
+void CNavDlg::DrawBegin(CPoint& pos) {
 	double nav_x = (double)(pos.x - m_offset_x) / m_scale;
 	double nav_z = (double)(pos.y - m_offset_z) / m_scale;
 
@@ -490,7 +490,7 @@ void pathfinderDlg::DrawBegin(CPoint& pos) {
 
 
 
-void pathfinderDlg::DrawOver(CPoint& pos) {
+void CNavDlg::DrawOver(CPoint& pos) {
 	double nav_x = (double)(pos.x - m_offset_x) / m_scale;
 	double nav_z = (double)(pos.y - m_offset_z) / m_scale;
 
@@ -569,14 +569,14 @@ void pathfinderDlg::DrawOver(CPoint& pos) {
 
 }
 
-void pathfinderDlg::OnUpdateIddPathfindertestDialog(CCmdUI *pCmdUI) {
+void CNavDlg::OnUpdateIddPathfindertestDialog(CCmdUI *pCmdUI) {
 	// TODO:  在此添加命令更新用户界面处理程序代码
 	DrawMap();
 }
 
 
 
-void pathfinderDlg::Straightline() {
+void CNavDlg::Straightline() {
 	// TODO:  在此添加控件通知处理程序代码
 	if (m_poly_begin == -1) {
 		CString str;
@@ -618,14 +618,14 @@ void pathfinderDlg::Straightline() {
 }
 
 
-void pathfinderDlg::OnLButtonDown(UINT nFlags, CPoint point) {
+void CNavDlg::OnLButtonDown(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	CDialogEx::OnLButtonDown(nFlags, point);
 }
 
 
-void pathfinderDlg::OnLButtonUp(UINT nFlags, CPoint point) {
+void CNavDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 
@@ -636,7 +636,7 @@ void pathfinderDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 
 
 
-void pathfinderDlg::OnIgnoreLine() {
+void CNavDlg::OnIgnoreLine() {
 	// TODO:  在此添加控件通知处理程序代码
 	if (m_poly_begin == -1) {
 		CString str;
@@ -680,7 +680,7 @@ void pathfinderDlg::OnIgnoreLine() {
 }
 
 
-void pathfinderDlg::OnEnChangeEdit2() {
+void CNavDlg::OnEnChangeEdit2() {
 	// TODO:  如果该控件是 RICHEDIT 控件，它将不
 	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
 	// 函数并调用 CRichEditCtrl().SetEventMask()，
@@ -696,7 +696,7 @@ void pathfinderDlg::OnEnChangeEdit2() {
 }
 
 
-void pathfinderDlg::OnEnChangeEdit3() {
+void CNavDlg::OnEnChangeEdit3() {
 	// TODO:  如果该控件是 RICHEDIT 控件，它将不
 	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
 	// 函数并调用 CRichEditCtrl().SetEventMask()，
@@ -712,7 +712,7 @@ void pathfinderDlg::OnEnChangeEdit3() {
 }
 
 
-void pathfinderDlg::OnEnChangeEdit4() {
+void CNavDlg::OnEnChangeEdit4() {
 	// TODO:  如果该控件是 RICHEDIT 控件，它将不
 	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
 	// 函数并调用 CRichEditCtrl().SetEventMask()，
@@ -726,7 +726,7 @@ void pathfinderDlg::OnEnChangeEdit4() {
 	// TODO:  在此添加控件通知处理程序代码
 }
 
-void pathfinderDlg::DrawPath(std::vector<const Math::Vector3*>& path) {
+void CNavDlg::DrawPath(std::vector<const Math::Vector3*>& path) {
 	CClientDC dc(this);
 	CPen pen(PS_SOLID, 1, RGB(255, 255, 255));
 	CPen* open = dc.SelectObject(&pen);
@@ -741,7 +741,7 @@ void pathfinderDlg::DrawPath(std::vector<const Math::Vector3*>& path) {
 	dc.SelectObject(open);
 }
 
-void pathfinderDlg::OnIgnorePath() {
+void CNavDlg::OnIgnorePath() {
 	if (m_poly_begin == -1) {
 		CString str;
 		str.Format(_T("始点还没设置"));
@@ -770,24 +770,24 @@ void pathfinderDlg::OnIgnorePath() {
 }
 
 
-void pathfinderDlg::OnRButtonUp(UINT nFlags, CPoint point) {
+void CNavDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 	this->DrawOver(point);
 	CDialogEx::OnRButtonUp(nFlags, point);
 }
 
 
-void pathfinderDlg::OnClose() {
+void CNavDlg::OnClose() {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 	CDialogEx::OnClose();
 }
 
-void pathfinderDlg::OnCheck() {
+void CNavDlg::OnCheck() {
 	// TODO:  在此添加控件通知处理程序代码
 	Invalidate();
 }
 
-void pathfinderDlg::OnEnChangeEdit5() {
+void CNavDlg::OnEnChangeEdit5() {
 	// TODO:  如果该控件是 RICHEDIT 控件，它将不
 	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
 	// 函数并调用 CRichEditCtrl().SetEventMask()，
@@ -798,7 +798,7 @@ void pathfinderDlg::OnEnChangeEdit5() {
 }
 
 
-void pathfinderDlg::OnEnChangeEdit6() {
+void CNavDlg::OnEnChangeEdit6() {
 	// TODO:  如果该控件是 RICHEDIT 控件，它将不
 	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
 	// 函数并调用 CRichEditCtrl().SetEventMask()，
@@ -809,7 +809,7 @@ void pathfinderDlg::OnEnChangeEdit6() {
 }
 
 
-BOOL pathfinderDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
+BOOL CNavDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 	if (zDelta > 0) {
 		m_scale += 0.001;
@@ -827,7 +827,7 @@ BOOL pathfinderDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 }
 
 
-void pathfinderDlg::OnMButtonUp(UINT nFlags, CPoint point) {
+void CNavDlg::OnMButtonUp(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	CDialogEx::OnMButtonUp(nFlags, point);
@@ -839,7 +839,7 @@ void pathfinderDlg::OnMButtonUp(UINT nFlags, CPoint point) {
 }
 
 
-void pathfinderDlg::OnMButtonDown(UINT nFlags, CPoint point) {
+void CNavDlg::OnMButtonDown(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	CDialogEx::OnMButtonDown(nFlags, point);
@@ -849,7 +849,7 @@ void pathfinderDlg::OnMButtonDown(UINT nFlags, CPoint point) {
 }
 
 
-void pathfinderDlg::OnMouseMove(UINT nFlags, CPoint point) {
+void CNavDlg::OnMouseMove(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	CDialogEx::OnMouseMove(nFlags, point);

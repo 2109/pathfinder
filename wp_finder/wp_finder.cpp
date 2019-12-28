@@ -11,16 +11,16 @@
 #endif
 
 
-// Cwp_finderApp
+// CWpFinderApp
 
-BEGIN_MESSAGE_MAP(Cwp_finderApp, CWinApp)
+BEGIN_MESSAGE_MAP(CWpFinderApp, CWinApp)
 	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
 
-// Cwp_finderApp 构造
+// CWpFinderApp 构造
 
-Cwp_finderApp::Cwp_finderApp()
+CWpFinderApp::CWpFinderApp()
 {
 	// 支持重新启动管理器
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
@@ -30,14 +30,14 @@ Cwp_finderApp::Cwp_finderApp()
 }
 
 
-// 唯一的一个 Cwp_finderApp 对象
+// 唯一的一个 CWpFinderApp 对象
 
-Cwp_finderApp theApp;
+CWpFinderApp theApp;
 
 
-// Cwp_finderApp 初始化
+// CWpFinderApp 初始化
 
-BOOL Cwp_finderApp::InitInstance()
+BOOL CWpFinderApp::InitInstance()
 {
 	// 如果一个运行在 Windows XP 上的应用程序清单指定要
 	// 使用 ComCtl32.dll 版本 6 或更高版本来启用可视化方式，
@@ -70,7 +70,7 @@ BOOL Cwp_finderApp::InitInstance()
 	// 例如修改为公司或组织名
 	SetRegistryKey(_T("应用程序向导生成的本地应用程序"));
 
-	Cwp_finderDlg dlg;
+	CWpFinderDlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)

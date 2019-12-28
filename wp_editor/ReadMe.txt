@@ -14,10 +14,10 @@ waypoint_editor.vcxproj.filters
 
 waypoint_editor.h
     这是应用程序的主头文件。
-    其中包括其他项目特定的标头（包括 Resource.h），并声明 CWaypointEditorApp 应用程序类。
+    其中包括其他项目特定的标头（包括 Resource.h），并声明 CWpEditorApp 应用程序类。
 
 waypoint_editor.cpp
-    这是包含应用程序类 CWaypointEditorApp 的主应用程序源文件。
+    这是包含应用程序类 CWpEditorApp 的主应用程序源文件。
 
 waypoint_editor.rc
     这是程序使用的所有 Microsoft Windows 资源的列表。它包括 RES 子目录中存储的图标、位图和光标。此文件可以直接在 Microsoft Visual C++ 中进行编辑。项目资源包含在 2052 中。
@@ -34,7 +34,7 @@ res\waypoint_editor.rc2
 应用程序向导创建一个对话框类：
 
 waypoint_editorDlg.h、waypoint_editorDlg.cpp - 对话框
-    这些文件包含 Cwaypoint_editorDlg 类。此类定义应用程序的主对话框的行为。对话框模板包含在 waypoint_editor.rc 中，该文件可以在 Microsoft Visual C++ 中编辑。
+    这些文件包含 CWpEditorDlg 类。此类定义应用程序的主对话框的行为。对话框模板包含在 waypoint_editor.rc 中，该文件可以在 Microsoft Visual C++ 中编辑。
 
 /////////////////////////////////////////////////////////////////////////////
 

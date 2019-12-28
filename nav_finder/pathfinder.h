@@ -11,14 +11,14 @@
 #include "resource.h"		// 主符号
 
 
-// pathfinderApp: 
+// CNavApp: 
 // 有关此类的实现，请参阅 PathFinderTest.cpp
 //
 
-class pathfinderApp : public CWinApp
+class CNavApp : public CWinApp
 {
 public:
-	pathfinderApp();
+	CNavApp();
 
 // 重写
 public:
@@ -29,4 +29,4 @@ public:
 	DECLARE_MESSAGE_MAP()
 };
 
-extern pathfinderApp theApp;
+extern CNavApp theApp;

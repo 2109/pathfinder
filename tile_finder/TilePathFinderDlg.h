@@ -7,11 +7,11 @@
 #include <stdint.h>
 #include <vector>
 #include "TilePathFinder.h"
-// CTilePathFinderDlg 对话框
-class CTilePathFinderDlg : public CDialogEx {
+// CTileCNavDlg 对话框
+class CTileCNavDlg : public CDialogEx {
 	// 构造
 public:
-	CTilePathFinderDlg(CWnd* pParent = NULL);	// 标准构造函数
+	CTileCNavDlg(CWnd* pParent = NULL);	// 标准构造函数
 
 	// 对话框数据
 	enum { IDD = IDD_TILE_FINDPATH_DIALOG };

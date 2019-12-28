@@ -11,16 +11,16 @@
 #endif
 
 
-// CWaypointEditorApp
+// CWpEditorApp
 
-BEGIN_MESSAGE_MAP(CWaypointEditorApp, CWinApp)
+BEGIN_MESSAGE_MAP(CWpEditorApp, CWinApp)
 	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
 
-// CWaypointEditorApp 构造
+// CWpEditorApp 构造
 
-CWaypointEditorApp::CWaypointEditorApp()
+CWpEditorApp::CWpEditorApp()
 {
 	// 支持重新启动管理器
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
@@ -30,14 +30,14 @@ CWaypointEditorApp::CWaypointEditorApp()
 }
 
 
-// 唯一的一个 CWaypointEditorApp 对象
+// 唯一的一个 CWpEditorApp 对象
 
-CWaypointEditorApp theApp;
+CWpEditorApp theApp;
 
 
-// CWaypointEditorApp 初始化
+// CWpEditorApp 初始化
 
-BOOL CWaypointEditorApp::InitInstance()
+BOOL CWpEditorApp::InitInstance()
 {
 	// 如果一个运行在 Windows XP 上的应用程序清单指定要
 	// 使用 ComCtl32.dll 版本 6 或更高版本来启用可视化方式，
@@ -70,7 +70,7 @@ BOOL CWaypointEditorApp::InitInstance()
 	// 例如修改为公司或组织名
 	SetRegistryKey(_T("应用程序向导生成的本地应用程序"));
 
-	Cwaypoint_editorDlg dlg;
+	CWpEditorDlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)

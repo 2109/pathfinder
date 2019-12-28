@@ -25,12 +25,12 @@ struct WayPoint {
 	}
 };
 
-// Cwaypoint_editorDlg 对话框
-class Cwaypoint_editorDlg : public CDialogEx
+// CWpEditorDlg 对话框
+class CWpEditorDlg : public CDialogEx
 {
 // 构造
 public:
-	Cwaypoint_editorDlg(CWnd* pParent = NULL);	// 标准构造函数
+	CWpEditorDlg(CWnd* pParent = NULL);	// 标准构造函数
 
 // 对话框数据
 	enum { IDD = IDD_WAYPOINT_EDITOR_DIALOG };

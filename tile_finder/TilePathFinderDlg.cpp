@@ -43,46 +43,46 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
-// CTilePathFinderDlg 对话框
+// CTileCNavDlg 对话框
 
 
 
-CTilePathFinderDlg::CTilePathFinderDlg(CWnd* pParent /*=NULL*/)
-	: CDialogEx(CTilePathFinderDlg::IDD, pParent) {
+CTileCNavDlg::CTileCNavDlg(CWnd* pParent /*=NULL*/)
+	: CDialogEx(CTileCNavDlg::IDD, pParent) {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
-void CTilePathFinderDlg::DoDataExchange(CDataExchange* pDX) {
+void CTileCNavDlg::DoDataExchange(CDataExchange* pDX) {
 	CDialogEx::DoDataExchange(pDX);
 }
 
-BEGIN_MESSAGE_MAP(CTilePathFinderDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(CTileCNavDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_BUTTON1, &CTilePathFinderDlg::OnFindPath)
-	ON_BN_CLICKED(IDC_BUTTON2, &CTilePathFinderDlg::OnStraightLine)
-	ON_EN_CHANGE(IDC_EDIT1, &CTilePathFinderDlg::OnChangeX)
-	ON_EN_CHANGE(IDC_EDIT2, &CTilePathFinderDlg::OnChangeZ)
-	ON_EN_CHANGE(IDC_EDIT3, &CTilePathFinderDlg::OnChangeScale)
+	ON_BN_CLICKED(IDC_BUTTON1, &CTileCNavDlg::OnFindPath)
+	ON_BN_CLICKED(IDC_BUTTON2, &CTileCNavDlg::OnStraightLine)
+	ON_EN_CHANGE(IDC_EDIT1, &CTileCNavDlg::OnChangeX)
+	ON_EN_CHANGE(IDC_EDIT2, &CTileCNavDlg::OnChangeZ)
+	ON_EN_CHANGE(IDC_EDIT3, &CTileCNavDlg::OnChangeScale)
 	//	ON_WM_LBUTTONDBLCLK()
 	ON_WM_LBUTTONUP()
 	ON_WM_RBUTTONUP()
-	ON_UPDATE_COMMAND_UI(IDD_TILE_FINDPATH_DIALOG, &CTilePathFinderDlg::OnUpdateIddTileFindpathDialog)
-	ON_EN_CHANGE(IDC_EDIT4, &CTilePathFinderDlg::OnEnChangeEdit4)
+	ON_UPDATE_COMMAND_UI(IDD_TILE_FINDPATH_DIALOG, &CTileCNavDlg::OnUpdateIddTileFindpathDialog)
+	ON_EN_CHANGE(IDC_EDIT4, &CTileCNavDlg::OnEnChangeEdit4)
 	ON_WM_CLOSE()
-	ON_BN_CLICKED(IDC_CHECK1, &CTilePathFinderDlg::OnBnClickedPathCheck)
-	ON_BN_CLICKED(IDC_CHECK2, &CTilePathFinderDlg::OnBnClickedLineCheck)
-	ON_BN_CLICKED(IDC_CHECK3, &CTilePathFinderDlg::OnBnClickedEditCheck)
+	ON_BN_CLICKED(IDC_CHECK1, &CTileCNavDlg::OnBnClickedPathCheck)
+	ON_BN_CLICKED(IDC_CHECK2, &CTileCNavDlg::OnBnClickedLineCheck)
+	ON_BN_CLICKED(IDC_CHECK3, &CTileCNavDlg::OnBnClickedEditCheck)
 	//ON_WM_LBUTTONDOWN()
-	ON_BN_CLICKED(IDC_BUTTON3, &CTilePathFinderDlg::OnStraightLineEx)
-	ON_BN_CLICKED(IDC_BUTTON4, &CTilePathFinderDlg::OnRandomPos)
+	ON_BN_CLICKED(IDC_BUTTON3, &CTileCNavDlg::OnStraightLineEx)
+	ON_BN_CLICKED(IDC_BUTTON4, &CTileCNavDlg::OnRandomPos)
 END_MESSAGE_MAP()
 
 
-// CTilePathFinderDlg 消息处理程序
+// CTileCNavDlg 消息处理程序
 
-BOOL CTilePathFinderDlg::OnInitDialog() {
+BOOL CTileCNavDlg::OnInitDialog() {
 	CDialogEx::OnInitDialog();
 
 	// 将“关于...”菜单项添加到系统菜单中。
@@ -161,7 +161,7 @@ BOOL CTilePathFinderDlg::OnInitDialog() {
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
-void CTilePathFinderDlg::OnSysCommand(UINT nID, LPARAM lParam) {
+void CTileCNavDlg::OnSysCommand(UINT nID, LPARAM lParam) {
 	if ((nID & 0xFFF0) == IDM_ABOUTBOX) {
 		CAboutDlg dlgAbout;
 		dlgAbout.DoModal();
@@ -174,7 +174,7 @@ void CTilePathFinderDlg::OnSysCommand(UINT nID, LPARAM lParam) {
 //  来绘制该图标。对于使用文档/视图模型的 MFC 应用程序，
 //  这将由框架自动完成。
 
-void CTilePathFinderDlg::OnPaint() {
+void CTileCNavDlg::OnPaint() {
 	if (IsIconic()) {
 		CPaintDC dc(this); // 用于绘制的设备上下文
 
@@ -199,18 +199,18 @@ void CTilePathFinderDlg::OnPaint() {
 
 //当用户拖动最小化窗口时系统调用此函数取得光标
 //显示。
-HCURSOR CTilePathFinderDlg::OnQueryDragIcon() {
+HCURSOR CTileCNavDlg::OnQueryDragIcon() {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
 struct DumpArgs {
-	CTilePathFinderDlg* self;
+	CTileCNavDlg* self;
 	CClientDC* cdc;
 };
 
 void OnSearchDump(void* ud, int x, int z) {
 	DumpArgs* args = (DumpArgs*)ud;
-	CTilePathFinderDlg* self = args->self;
+	CTileCNavDlg* self = args->self;
 	CClientDC* cdc = args->cdc;
 
 	CBrush brush_begin(RGB(0, 0, 0));
@@ -237,7 +237,7 @@ void OnSearchDump(void* ud, int x, int z) {
 
 void OnPathDump(void* ud, int x, int z) {
 	DumpArgs* args = (DumpArgs*)ud;
-	CTilePathFinderDlg* self = args->self;
+	CTileCNavDlg* self = args->self;
 	CClientDC* cdc = args->cdc;
 
 	POINT* pt = new POINT();
@@ -251,7 +251,7 @@ void OnPathDummy(void* ud, int x, int z) {
 
 void LineDump(void* ud, int x, int z) {
 	DumpArgs* args = (DumpArgs*)ud;
-	CTilePathFinderDlg* self = args->self;
+	CTileCNavDlg* self = args->self;
 	CClientDC* cdc = args->cdc;
 
 	CBrush brush(RGB(0, 255, 0));
@@ -266,7 +266,7 @@ void LineDump(void* ud, int x, int z) {
 	Sleep(10);
 }
 
-void CTilePathFinderDlg::OnFindPath() {
+void CTileCNavDlg::OnFindPath() {
 	// TODO: 在此添加控件通知处理程序代码
 	m_path.clear();
 
@@ -324,14 +324,14 @@ void CTilePathFinderDlg::OnFindPath() {
 	m_time_cost->SetWindowText(str);
 }
 
-void CTilePathFinderDlg::OnChangeX() {
+void CTileCNavDlg::OnChangeX() {
 	CString str;
 	((CEdit*)GetDlgItem(IDC_EDIT1))->GetWindowTextW(str);
 	m_offset_x = _ttoi(str);
 	Invalidate();
 }
 
-void CTilePathFinderDlg::OnChangeZ() {
+void CTileCNavDlg::OnChangeZ() {
 	CString str;
 	((CEdit*)GetDlgItem(IDC_EDIT2))->GetWindowTextW(str);
 	m_offset_z = _ttoi(str);
@@ -339,14 +339,14 @@ void CTilePathFinderDlg::OnChangeZ() {
 }
 
 
-void CTilePathFinderDlg::OnChangeScale() {
+void CTileCNavDlg::OnChangeScale() {
 	CString str;
 	((CEdit*)GetDlgItem(IDC_EDIT3))->GetWindowTextW(str);
 	m_scale = _ttoi(str);
 	Invalidate();
 }
 
-bool CTilePathFinderDlg::Between(CPoint& pos) {
+bool CTileCNavDlg::Between(CPoint& pos) {
 	if (pos.x >= m_offset_x && pos.y >= m_offset_z) {
 		if (pos.x <= (m_tile_finder->GetWidth() - 1) * m_scale + m_offset_x && pos.y <= (m_tile_finder->GetHeight() - 1) * m_scale + m_offset_z) {
 			return true;
@@ -355,7 +355,7 @@ bool CTilePathFinderDlg::Between(CPoint& pos) {
 	return false;
 }
 
-void CTilePathFinderDlg::UpdateDialog() {
+void CTileCNavDlg::UpdateDialog() {
 	CClientDC dc(this);
 	CPen pen(PS_SOLID, 1, RGB(0, 0, 0));
 	CPen *oopen = dc.SelectObject(&pen);
@@ -386,7 +386,7 @@ void CTilePathFinderDlg::UpdateDialog() {
 }
 
 
-void CTilePathFinderDlg::OnLButtonUp(UINT nFlags, CPoint point) {
+void CTileCNavDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	if (Between(point)) {
 		if (m_edit) {
@@ -418,7 +418,7 @@ void CTilePathFinderDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 }
 
 
-void CTilePathFinderDlg::OnRButtonUp(UINT nFlags, CPoint point) {
+void CTileCNavDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 
 	if (Between(point)) {
@@ -457,20 +457,20 @@ void CTilePathFinderDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 }
 
 
-void CTilePathFinderDlg::OnUpdateIddTileFindpathDialog(CCmdUI *pCmdUI) {
+void CTileCNavDlg::OnUpdateIddTileFindpathDialog(CCmdUI *pCmdUI) {
 	// TODO: 在此添加命令更新用户界面处理程序代码
 	UpdateDialog();
 }
 
 
-void CTilePathFinderDlg::OnEnChangeEdit4() {
+void CTileCNavDlg::OnEnChangeEdit4() {
 	CString str;
 	((CEdit*)GetDlgItem(IDC_EDIT4))->GetWindowTextW(str);
 	m_cost = _ttoi(str);
 }
 
 
-void CTilePathFinderDlg::OnClose() {
+void CTileCNavDlg::OnClose() {
 	//finder_release(m_finder);
 
 	//FILE* fd = fopen("nav.tile", "wb+");
@@ -483,34 +483,34 @@ void CTilePathFinderDlg::OnClose() {
 }
 
 
-void CTilePathFinderDlg::OnBnClickedPathCheck() {
+void CTileCNavDlg::OnBnClickedPathCheck() {
 	m_show_path_search = ((CButton*)GetDlgItem(IDC_CHECK1))->GetCheck();
 }
 
 
-void CTilePathFinderDlg::OnBnClickedLineCheck() {
+void CTileCNavDlg::OnBnClickedLineCheck() {
 	// TODO:  在此添加控件通知处理程序代码
 	m_show_line_search = ((CButton*)GetDlgItem(IDC_CHECK2))->GetCheck();
 }
 
 
-void CTilePathFinderDlg::OnBnClickedEditCheck() {
+void CTileCNavDlg::OnBnClickedEditCheck() {
 	// TODO:  在此添加控件通知处理程序代码
 	m_edit = ((CButton*)GetDlgItem(IDC_CHECK3))->GetCheck();
 }
 
-void CTilePathFinderDlg::OnStraightLine() {
+void CTileCNavDlg::OnStraightLine() {
 	// TODO: 在此添加控件通知处理程序代码
 	RayCast(0);
 }
 
 
-void CTilePathFinderDlg::OnStraightLineEx() {
+void CTileCNavDlg::OnStraightLineEx() {
 	// TODO:  在此添加控件通知处理程序代码
 	RayCast(1);
 }
 
-void CTilePathFinderDlg::RayCast(int type) {
+void CTileCNavDlg::RayCast(int type) {
 	CClientDC dc(this);
 	DumpArgs args;
 	args.self = this;
@@ -562,7 +562,7 @@ void CTilePathFinderDlg::RayCast(int type) {
 
 extern "C" void finder_random(struct pathfinder* finder, int* x, int* z);
 
-void CTilePathFinderDlg::OnRandomPos() {
+void CTileCNavDlg::OnRandomPos() {
 	// TODO:  在此添加控件通知处理程序代码
 	CClientDC cdc(this);
 
@@ -577,7 +577,7 @@ void CTilePathFinderDlg::OnRandomPos() {
 	}
 }
 
-void CTilePathFinderDlg::DrawTile(CClientDC& cdc, int x, int z) {
+void CTileCNavDlg::DrawTile(CClientDC& cdc, int x, int z) {
 	CPoint pt[4];
 	pt[0].x = x * m_scale + m_offset_x;
 	pt[0].y = z * m_scale + m_offset_z;
@@ -591,7 +591,7 @@ void CTilePathFinderDlg::DrawTile(CClientDC& cdc, int x, int z) {
 	cdc.Polygon(pt, 4);
 }
 
-void CTilePathFinderDlg::DrawBegin() {
+void CTileCNavDlg::DrawBegin() {
 	CClientDC dc(this);
 
 	CString str;
@@ -608,7 +608,7 @@ void CTilePathFinderDlg::DrawBegin() {
 	dc.SelectObject(obrush);
 }
 
-void CTilePathFinderDlg::DrawOver() {
+void CTileCNavDlg::DrawOver() {
 	CClientDC dc(this);
 
 	CString str;

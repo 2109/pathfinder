@@ -14,10 +14,10 @@ wp_finder.vcxproj.filters
 
 wp_finder.h
     这是应用程序的主头文件。
-    其中包括其他项目特定的标头（包括 Resource.h），并声明 Cwp_finderApp 应用程序类。
+    其中包括其他项目特定的标头（包括 Resource.h），并声明 CWpFinderApp 应用程序类。
 
 wp_finder.cpp
-    这是包含应用程序类 Cwp_finderApp 的主应用程序源文件。
+    这是包含应用程序类 CWpFinderApp 的主应用程序源文件。
 
 wp_finder.rc
     这是程序使用的所有 Microsoft Windows 资源的列表。它包括 RES 子目录中存储的图标、位图和光标。此文件可以直接在 Microsoft Visual C++ 中进行编辑。项目资源包含在 2052 中。
@@ -34,7 +34,7 @@ res\wp_finder.rc2
 应用程序向导创建一个对话框类：
 
 wp_finderDlg.h、wp_finderDlg.cpp - 对话框
-    这些文件包含 Cwp_finderDlg 类。此类定义应用程序的主对话框的行为。对话框模板包含在 wp_finder.rc 中，该文件可以在 Microsoft Visual C++ 中编辑。
+    这些文件包含 CWpFinderDlg 类。此类定义应用程序的主对话框的行为。对话框模板包含在 wp_finder.rc 中，该文件可以在 Microsoft Visual C++ 中编辑。
 
 /////////////////////////////////////////////////////////////////////////////
 

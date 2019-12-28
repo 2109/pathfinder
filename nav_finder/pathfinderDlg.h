@@ -8,12 +8,12 @@
 
 #include "NavMeshFinder.h"
 #include <vector>
-// pathfinderDlg 对话框
-class pathfinderDlg : public CDialogEx
+// CNavDlg 对话框
+class CNavDlg : public CDialogEx
 {
 // 构造
 public:
-	pathfinderDlg(CWnd* pParent = NULL);	// 标准构造函数
+	CNavDlg(CWnd* pParent = NULL);	// 标准构造函数
 
 // 对话框数据
 	enum { IDD = IDD_PATHFINDERTEST_DIALOG };

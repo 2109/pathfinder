@@ -11,14 +11,14 @@
 #include "resource.h"		// 主符号
 
 
-// Cwp_finderApp: 
+// CWpFinderApp: 
 // 有关此类的实现，请参阅 wp_finder.cpp
 //
 
-class Cwp_finderApp : public CWinApp
+class CWpFinderApp : public CWinApp
 {
 public:
-	Cwp_finderApp();
+	CWpFinderApp();
 
 // 重写
 public:
@@ -29,4 +29,4 @@ public:
 	DECLARE_MESSAGE_MAP()
 };
 
-extern Cwp_finderApp theApp;
+extern CWpFinderApp theApp;
