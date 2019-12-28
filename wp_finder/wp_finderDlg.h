@@ -20,7 +20,7 @@ struct WayPoint {
 	bool Inside(CPoint& point) {
 		int dist_x = point.x - pt.x;
 		int dist_y = point.y - pt.y;
-		if ( sqrt(dist_x*dist_x + dist_y * dist_y) <= r ) {
+		if (sqrt(dist_x*dist_x + dist_y * dist_y) <= r) {
 			return true;
 		}
 		return false;
@@ -28,19 +28,18 @@ struct WayPoint {
 };
 
 // CWpFinderDlg 对话框
-class CWpFinderDlg : public CDialogEx
-{
-// 构造
+class CWpFinderDlg : public CDialogEx {
+	// 构造
 public:
 	CWpFinderDlg(CWnd* pParent = NULL);	// 标准构造函数
 
-// 对话框数据
+	// 对话框数据
 	enum { IDD = IDD_WP_FINDER_DIALOG };
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 
-
+public:
 	void UpdateMesh();
 	void editor2mesh(CPoint* from, CPoint* to);
 	void mesh2editor(CPoint* from, CPoint* to);
@@ -61,7 +60,7 @@ public:
 	std::vector<CPoint> m_path;
 	std::vector<CPoint> m_search;
 
-// 实现
+	// 实现
 protected:
 	HICON m_hIcon;
 

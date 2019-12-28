@@ -397,6 +397,16 @@ void OnPathDump(void* ud, int x, int z) {
 void OnSearchDump(void* ud, const Math::Vector2& pos) {
 	CWpFinderDlg* self = (CWpFinderDlg*)ud;
 	self->m_search.push_back(CPoint(pos.x, pos.y));
+
+	CPoint pt(pos.x, pos.y);
+	CPoint editor_pt;
+	self->mesh2editor(&pt, &editor_pt);
+	CClientDC dc(self);
+	CBrush brush(RGB(0, 255, 0));
+	CBrush *obrush = dc.SelectObject(&brush);
+	dc.Ellipse(editor_pt.x - 250 * self->m_scale, editor_pt.y - 250 * self->m_scale, editor_pt.x + 250 * self->m_scale, editor_pt.y + 250 * self->m_scale);
+	dc.SelectObject(obrush);
+	Sleep(100);
 }
 
 void CWpFinderDlg::OnBnClickedButton1() {
@@ -427,5 +437,6 @@ void CWpFinderDlg::OnBnClickedButton1() {
 		m_path.push_back(CPoint(m_over->x, m_over->y));
 	}
 
+	Sleep(1000);
 	Invalidate();
 }
