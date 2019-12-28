@@ -28,7 +28,7 @@ static inline float NeighborEstimate(TilePathFinder::PathNode* from, TilePathFin
 }
 
 static inline float GoalEstimate(TilePathFinder::PathNode* from, TilePathFinder::PathNode* to, float cost) {
-	return abs(DX(from, to)) * 10 + abs(DZ(from, to)) * 10;
+	return abs(DX(from, to)) * cost + abs(DZ(from, to)) * cost;
 }
 
 static inline void ClearHeap(mh_elt_t* elt) {
@@ -376,7 +376,7 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, bool smooth, std:
 	}
 }
 
-int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, bool smooth, std::vector<const Math::Vector2*>& list) {
+int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, bool smooth, std::vector<const Math::Vector2*>& list, float estimate) {
 	PathNode* fromNode = FindNode((int)from.x, (int)from.y);
 	if (!fromNode || IsBlock(fromNode)) {
 		fromNode = SearchInCircle((int)from.x, (int)from.y, kSearchDepth);
@@ -433,7 +433,7 @@ int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, boo
 			} else {
 				nei->parent_ = node;
 				nei->G = node->G + NeighborEstimate(node, nei);
-				nei->H = GoalEstimate(nei, toNode, 1);
+				nei->H = GoalEstimate(nei, toNode, estimate);
 				nei->F = nei->G + nei->H;
 				mh_push(&openList_, &nei->elt_);
 				if (debugFunc_) {
@@ -449,10 +449,10 @@ int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, boo
 	return status;
 }
 
-int TilePathFinder::Find(int x0, int z0, int x1, int z1, bool smooth, std::vector<const Math::Vector2*>& list) {
+int TilePathFinder::Find(int x0, int z0, int x1, int z1, bool smooth, std::vector<const Math::Vector2*>& list, float estimate) {
 	const Math::Vector2 from(x0, z0);
 	const Math::Vector2 to(x1, z1);
-	return Find(from, to, smooth, list);
+	return Find(from, to, smooth, list, estimate);
 }
 
 int TilePathFinder::Raycast(const Math::Vector2& from, const Math::Vector2& to, bool ignore, Math::Vector2* result, Math::Vector2* stop) {

@@ -8,20 +8,19 @@
 #include <vector>
 #include "TilePathFinder.h"
 // CTilePathFinderDlg 对话框
-class CTilePathFinderDlg : public CDialogEx
-{
-// 构造
+class CTilePathFinderDlg : public CDialogEx {
+	// 构造
 public:
 	CTilePathFinderDlg(CWnd* pParent = NULL);	// 标准构造函数
 
-// 对话框数据
+	// 对话框数据
 	enum { IDD = IDD_TILE_FINDPATH_DIALOG };
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 
 
-// 实现
+	// 实现
 protected:
 	HICON m_hIcon;
 
@@ -43,14 +42,12 @@ public:
 
 	void RayCast(int type);
 
+	void DrawTile(CClientDC& cdc, int x, int z);
+
 	void DrawBegin();
 
 	void DrawOver();
 public:
-	int m_width;
-	int m_heigh;
-	uint8_t* m_data;
-	int m_size;
 
 	int m_begin_x;
 	int m_begin_z;
@@ -76,7 +73,7 @@ public:
 	CStatic* m_pos_start;
 	CStatic* m_pos_over;
 public:
-//	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
+	//	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnUpdateIddTileFindpathDialog(CCmdUI *pCmdUI);
@@ -85,7 +82,7 @@ public:
 	afx_msg void OnBnClickedPathCheck();
 	afx_msg void OnBnClickedLineCheck();
 	afx_msg void OnBnClickedEditCheck();
-//	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	//	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnStraightLineEx();
 	afx_msg void OnRandomPos();
 };

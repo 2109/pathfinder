@@ -129,22 +129,6 @@ BOOL CTilePathFinderDlg::OnInitDialog() {
 
 	CString tile_file;
 	tile_file.Format(_T("./tile/%s"), AfxGetApp()->m_lpCmdLine);
-	FILE* fp = _wfopen(tile_file.GetBuffer(0), _T("rb"));
-
-	fseek(fp, 0, SEEK_END);
-	int size = ftell(fp);
-	rewind(fp);
-	int version;
-	int gridSize;
-	fread(&version, 1, sizeof(int), fp);
-	fread(&m_width, 1, sizeof(int), fp);
-	fread(&m_heigh, 1, sizeof(int), fp);
-	fread(&gridSize, 1, sizeof(int), fp);
-	m_size = m_width * m_heigh;
-	m_data = (uint8_t*)malloc(m_size);
-	memset(m_data, 0, m_size);
-	fread(m_data, 1, m_size, fp);
-	fclose(fp);
 
 	m_show_path_search = false;
 	m_show_line_search = false;
@@ -154,8 +138,9 @@ BOOL CTilePathFinderDlg::OnInitDialog() {
 	((CButton*)GetDlgItem(IDC_CHECK1))->SetCheck(m_show_line_search);
 	((CButton*)GetDlgItem(IDC_CHECK3))->SetCheck(m_edit);
 
-	//m_finder = finder_create(m_width, m_heigh, (char*)m_data);
-	m_tile_finder = new TilePathFinder(m_width, m_heigh, gridSize, m_data);
+	USES_CONVERSION;
+	char * pFileName = T2A(tile_file);
+	m_tile_finder = TilePathFinder::LoadFromFile(pFileName);
 
 	m_time_cost = new CStatic();
 	m_time_cost->Create(_T(""), WS_CHILD | WS_VISIBLE | SS_CENTER, CRect(10, 20, 150, 100), this);
@@ -231,8 +216,7 @@ void OnSearchDump(void* ud, int x, int z) {
 	CBrush brush_begin(RGB(0, 0, 0));
 	CBrush* obrush = cdc->SelectObject(&brush_begin);
 
-	int index = x * self->m_heigh + z;
-	uint8_t data = self->m_data[index];
+	int index = x * self->m_tile_finder->GetHeight() + z;
 
 	CPoint pt[4];
 	pt[0].x = x * self->m_scale + self->m_offset_x;
@@ -302,7 +286,7 @@ void CTilePathFinderDlg::OnFindPath() {
 	Math::Vector2 to(m_over_x, m_over_z);
 
 	std::vector<const Math::Vector2*> list;
-	m_tile_finder->Find(from, to, true, list);
+	m_tile_finder->Find(from, to, true, list, m_cost);
 	for (int i = 0; i < list.size(); i++) {
 		POINT* pt = new POINT();
 		pt->x = list[i]->x;
@@ -364,7 +348,7 @@ void CTilePathFinderDlg::OnChangeScale() {
 
 bool CTilePathFinderDlg::Between(CPoint& pos) {
 	if (pos.x >= m_offset_x && pos.y >= m_offset_z) {
-		if (pos.x <= (m_width - 1) * m_scale + m_offset_x && pos.y <= (m_heigh - 1) * m_scale + m_offset_z) {
+		if (pos.x <= (m_tile_finder->GetWidth() - 1) * m_scale + m_offset_x && pos.y <= (m_tile_finder->GetHeight() - 1) * m_scale + m_offset_z) {
 			return true;
 		}
 	}
@@ -379,36 +363,20 @@ void CTilePathFinderDlg::UpdateDialog() {
 	CBrush brush1(RGB(0, 255, 0));
 	CBrush brush2(RGB(0, 0, 255));
 
-	for (int x = 0; x < m_width; x++) {
-		for (int z = 0; z < m_heigh; z++) {
-			int index = x * m_heigh + z;
-			uint8_t data = m_data[index];
+	for (int x = 0; x < m_tile_finder->GetWidth(); x++) {
+		for (int z = 0; z < m_tile_finder->GetHeight(); z++) {
 
 			CBrush* obrush;
-			if (data == 1)
+			if (m_tile_finder->GetBlock(x, z) == 1)
 				obrush = dc.SelectObject(&brush1);
-			else if (data == 0)
+			else if (m_tile_finder->GetBlock(x, z) == 0)
 				obrush = dc.SelectObject(&brush0);
 			else
 				obrush = dc.SelectObject(&brush2);
 
-
-			CPoint pt[4];
-			pt[0].x = x * m_scale + m_offset_x;
-			pt[0].y = z * m_scale + m_offset_z;
-			pt[1].x = (x + 1) * m_scale + m_offset_x;
-			pt[1].y = z * m_scale + m_offset_z;
-			pt[2].x = (x + 1) * m_scale + m_offset_x;
-			pt[2].y = (z + 1) * m_scale + m_offset_z;
-			pt[3].x = x * m_scale + m_offset_x;
-			pt[3].y = (z + 1) * m_scale + m_offset_z;
-
-			dc.Polygon(pt, 4);
+			DrawTile(dc, x, z);
 
 			dc.SelectObject(obrush);
-
-
-
 		}
 	}
 	dc.SelectObject(oopen);
@@ -424,8 +392,7 @@ void CTilePathFinderDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 		if (m_edit) {
 			int x = (point.x - m_offset_x) / m_scale;
 			int z = (point.y - m_offset_z) / m_scale;
-			int index = x * m_heigh + z;
-			m_data[index] = 1;
+			m_tile_finder->SetBlock(x, z, 1);
 		} else {
 			m_begin_x = (point.x - m_offset_x) / m_scale;
 			m_begin_z = (point.y - m_offset_z) / m_scale;
@@ -439,12 +406,11 @@ void CTilePathFinderDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 
 			//m_tile_finder->SetDebugCallback(OnSearchDump, &args);
 
-			for (int i = 0; i < 1000; i++) {
-				Math::Vector2 result;
-				m_tile_finder->RandomInCircle(m_begin_x, m_begin_z, 16, result);
-				dc.SetPixel((result.x + (Math::Rand((float)0, (float)1))) * (float)m_scale + m_offset_x, (result.y + (Math::Rand((float)0, (float)1))) * (float)m_scale + m_offset_z, RGB(255, 255, 250));
-			}
-
+			//for (int i = 0; i < 1000; i++) {
+			//	Math::Vector2 result;
+			//	m_tile_finder->RandomInCircle(m_begin_x, m_begin_z, 16, result);
+			//	dc.SetPixel((result.x + (Math::Rand((float)0, (float)1))) * (float)m_scale + m_offset_x, (result.y + (Math::Rand((float)0, (float)1))) * (float)m_scale + m_offset_z, RGB(255, 255, 250));
+			//}
 		}
 	}
 
@@ -459,8 +425,7 @@ void CTilePathFinderDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 		if (m_edit) {
 			int x = (point.x - m_offset_x) / m_scale;
 			int z = (point.y - m_offset_z) / m_scale;
-			int index = x * m_heigh + z;
-			m_data[index] = 2;
+			m_tile_finder->SetBlock(x, z, 2);
 		} else {
 			m_over_x = (point.x - m_offset_x) / m_scale;
 			m_over_z = (point.y - m_offset_z) / m_scale;
@@ -508,11 +473,11 @@ void CTilePathFinderDlg::OnEnChangeEdit4() {
 void CTilePathFinderDlg::OnClose() {
 	//finder_release(m_finder);
 
-	FILE* fd = fopen("nav.tile", "wb+");
-	fwrite(&m_width, 1, sizeof(int), fd);
-	fwrite(&m_heigh, 1, sizeof(int), fd);
-	fwrite(m_data, 1, m_size, fd);
-	fclose(fd);
+	//FILE* fd = fopen("nav.tile", "wb+");
+	//fwrite(&m_width, 1, sizeof(int), fd);
+	//fwrite(&m_heigh, 1, sizeof(int), fd);
+	//fwrite(m_data, 1, m_size, fd);
+	//fclose(fd);
 
 	CDialogEx::OnClose();
 }
@@ -591,20 +556,7 @@ void CTilePathFinderDlg::RayCast(int type) {
 
 	CBrush brush_begin(RGB(123, 255, 87));
 	CBrush* obrush = dc.SelectObject(&brush_begin);
-	int index = stop.x * m_heigh + stop.y;
-	uint8_t data = m_data[index];
-
-	CPoint pt[4];
-	pt[0].x = stop.x * m_scale + m_offset_x;
-	pt[0].y = stop.y * m_scale + m_offset_z;
-	pt[1].x = (stop.x + 1) * m_scale + m_offset_x;
-	pt[1].y = stop.y * m_scale + m_offset_z;
-	pt[2].x = (stop.x + 1) * m_scale + m_offset_x;
-	pt[2].y = (stop.y + 1) * m_scale + m_offset_z;
-	pt[3].x = stop.x * m_scale + m_offset_x;
-	pt[3].y = (stop.y + 1) * m_scale + m_offset_z;
-
-	dc.Polygon(pt, 4);
+	DrawTile(dc, stop.x, stop.y);
 	dc.SelectObject(obrush);
 }
 
@@ -625,6 +577,20 @@ void CTilePathFinderDlg::OnRandomPos() {
 	}
 }
 
+void CTilePathFinderDlg::DrawTile(CClientDC& cdc, int x, int z) {
+	CPoint pt[4];
+	pt[0].x = x * m_scale + m_offset_x;
+	pt[0].y = z * m_scale + m_offset_z;
+	pt[1].x = (x + 1) * m_scale + m_offset_x;
+	pt[1].y = z * m_scale + m_offset_z;
+	pt[2].x = (x + 1) * m_scale + m_offset_x;
+	pt[2].y = (z + 1) * m_scale + m_offset_z;
+	pt[3].x = x * m_scale + m_offset_x;
+	pt[3].y = (z + 1) * m_scale + m_offset_z;
+
+	cdc.Polygon(pt, 4);
+}
+
 void CTilePathFinderDlg::DrawBegin() {
 	CClientDC dc(this);
 
@@ -635,21 +601,7 @@ void CTilePathFinderDlg::DrawBegin() {
 	CBrush brush_begin(RGB(0, 255, 0));
 	CBrush* obrush = dc.SelectObject(&brush_begin);
 	if (m_begin_x != -1 && m_begin_z != -1) {
-		int index = m_begin_x * m_heigh + m_begin_z;
-		uint8_t data = m_data[index];
-
-		CPoint pt[4];
-		pt[0].x = m_begin_x * m_scale + m_offset_x;
-		pt[0].y = m_begin_z * m_scale + m_offset_z;
-		pt[1].x = (m_begin_x + 1) * m_scale + m_offset_x;
-		pt[1].y = m_begin_z * m_scale + m_offset_z;
-		pt[2].x = (m_begin_x + 1) * m_scale + m_offset_x;
-		pt[2].y = (m_begin_z + 1) * m_scale + m_offset_z;
-		pt[3].x = m_begin_x * m_scale + m_offset_x;
-		pt[3].y = (m_begin_z + 1) * m_scale + m_offset_z;
-
-		dc.Polygon(pt, 4);
-
+		DrawTile(dc, m_begin_x, m_begin_z);
 		str.Format(_T("起点:%d,%d"), m_begin_x, m_begin_z);
 		m_pos_start->SetWindowText(str);
 	}
@@ -666,21 +618,7 @@ void CTilePathFinderDlg::DrawOver() {
 	CBrush brush_over(RGB(0, 0, 0));
 	CBrush* obrush = dc.SelectObject(&brush_over);
 	if (m_over_x != -1 && m_over_z != -1) {
-		int index = m_over_x * m_heigh + m_over_z;
-		uint8_t data = m_data[index];
-
-		CPoint pt[4];
-		pt[0].x = m_over_x * m_scale + m_offset_x;
-		pt[0].y = m_over_z * m_scale + m_offset_z;
-		pt[1].x = (m_over_x + 1) * m_scale + m_offset_x;
-		pt[1].y = m_over_z * m_scale + m_offset_z;
-		pt[2].x = (m_over_x + 1) * m_scale + m_offset_x;
-		pt[2].y = (m_over_z + 1) * m_scale + m_offset_z;
-		pt[3].x = m_over_x * m_scale + m_offset_x;
-		pt[3].y = (m_over_z + 1) * m_scale + m_offset_z;
-
-		dc.Polygon(pt, 4);
-
+		DrawTile(dc, m_over_x, m_over_z);
 		str.Format(_T("终点:%d,%d"), m_over_x, m_over_z);
 		m_pos_over->SetWindowText(str);
 	}

@@ -80,6 +80,22 @@ public:
 		return height_;
 	}
 
+	inline uint8_t GetBlock(int x, int z) {
+		PathNode* node = FindNode(x, z);
+		if (!node) {
+			return 0;
+		}
+		return node->block_;
+	}
+
+	inline void SetBlock(int x, int z, uint8_t val) {
+		PathNode* node = FindNode(x, z);
+		if (!node) {
+			return;
+		}
+		node->block_ = val;
+	}
+
 	inline PathNode* FindNode(int x, int z) {
 		if (x < 0 || x >= width_ || z < 0 || z >= height_) {
 			return NULL;
@@ -148,9 +164,9 @@ public:
 
 	void BuildPath(PathNode* node, PathNode* from, bool smooth, std::vector<const Math::Vector2*>& list);
 
-	int Find(const Math::Vector2& from, const Math::Vector2& to, bool smooth, std::vector<const Math::Vector2*>& list);
+	int Find(const Math::Vector2& from, const Math::Vector2& to, bool smooth, std::vector<const Math::Vector2*>& list, float estimate = 1.0f);
 
-	int Find(int x0, int z0, int x1, int z1, bool smooth, std::vector<const Math::Vector2*>& list);
+	int Find(int x0, int z0, int x1, int z1, bool smooth, std::vector<const Math::Vector2*>& list, float estimate = 1.0f);
 
 	int Raycast(const Math::Vector2& from, const Math::Vector2& to, bool ignore, Math::Vector2* result, Math::Vector2* stop);
 
