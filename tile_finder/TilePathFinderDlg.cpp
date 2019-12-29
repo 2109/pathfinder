@@ -402,11 +402,14 @@ void CTileCNavDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 		if (m_edit) {
 			int x = (point.x - m_offset_x) / m_scale;
 			int z = (point.y - m_offset_z) / m_scale;
-			m_tile_finder->SetBlock(x, z, 1);
-			CClientDC dc(this);
-			CBrush* ob = dc.SelectObject(pBrushGray);
-			DrawTile(dc, x, z);
-			dc.SelectObject(ob);
+			if (m_tile_finder->GetBlock(x, z) == 0 || m_tile_finder->GetBlock(x, z) == 1)
+			{
+				m_tile_finder->SetBlock(x, z, 1);
+				CClientDC dc(this);
+				CBrush* ob = dc.SelectObject(pBrushGray);
+				DrawTile(dc, x, z);
+				dc.SelectObject(ob);
+			}
 		} else {
 			m_begin_x = (point.x - m_offset_x) / m_scale;
 			m_begin_z = (point.y - m_offset_z) / m_scale;
@@ -439,11 +442,13 @@ void CTileCNavDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 		if (m_edit) {
 			int x = (point.x - m_offset_x) / m_scale;
 			int z = (point.y - m_offset_z) / m_scale;
-			m_tile_finder->SetBlock(x, z, 0);
-			CClientDC dc(this);
-			CBrush* ob = dc.SelectObject(pBrushB);
-			DrawTile(dc, x, z);
-			dc.SelectObject(ob);
+			if (m_tile_finder->GetBlock(x, z) == 0 || m_tile_finder->GetBlock(x, z) == 1) {
+				m_tile_finder->SetBlock(x, z, 0);
+				CClientDC dc(this);
+				CBrush* ob = dc.SelectObject(pBrushB);
+				DrawTile(dc, x, z);
+				dc.SelectObject(ob);
+			}
 		} else {
 			m_over_x = (point.x - m_offset_x) / m_scale;
 			m_over_z = (point.y - m_offset_z) / m_scale;
@@ -652,18 +657,17 @@ void CTileCNavDlg::OnMouseMove(UINT nFlags, CPoint point)
 
 	CDialogEx::OnMouseMove(nFlags, point);
 	if (m_edit) {
-		if (m_drag_l) {
-			int x = (point.x - m_offset_x) / m_scale;
-			int z = (point.y - m_offset_z) / m_scale;
+		int x = (point.x - m_offset_x) / m_scale;
+		int z = (point.y - m_offset_z) / m_scale;
+		uint8_t block = m_tile_finder->GetBlock(x, z);
+		if (m_drag_l && (block == 0 || block == 1)) {
 			m_tile_finder->SetBlock(x, z, 1);
 			CClientDC dc(this);
 			CBrush* ob = dc.SelectObject(pBrushGray);
 			DrawTile(dc, x, z);
 			dc.SelectObject(ob);
 		}
-		if (m_drag_r) {
-			int x = (point.x - m_offset_x) / m_scale;
-			int z = (point.y - m_offset_z) / m_scale;
+		if (m_drag_r && (block == 0 || block == 1)) {
 			m_tile_finder->SetBlock(x, z, 0);
 			CClientDC dc(this);
 			CBrush* ob = dc.SelectObject(pBrushB);
