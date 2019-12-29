@@ -63,7 +63,15 @@ public:
 	bool m_show_line_search;
 	bool m_edit;
 
+	bool m_drag_l;
+	bool m_drag_r;
 	std::vector<POINT*> m_path;
+
+	static CBrush* pBrushR;
+	static CBrush* pBrushG;
+	static CBrush* pBrushB;
+	
+
 
 	float m_cost;
 
@@ -85,4 +93,7 @@ public:
 	//	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnStraightLineEx();
 	afx_msg void OnRandomPos();
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 };

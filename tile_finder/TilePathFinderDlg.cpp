@@ -45,7 +45,9 @@ END_MESSAGE_MAP()
 
 // CTileCNavDlg 对话框
 
-
+CBrush* CTileCNavDlg::pBrushR = new CBrush(RGB(255, 0, 0));
+CBrush* CTileCNavDlg::pBrushG = new CBrush(RGB(0, 255, 0));
+CBrush* CTileCNavDlg::pBrushB = new CBrush(RGB(0, 0, 255));
 
 CTileCNavDlg::CTileCNavDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CTileCNavDlg::IDD, pParent) {
@@ -77,6 +79,9 @@ BEGIN_MESSAGE_MAP(CTileCNavDlg, CDialogEx)
 	//ON_WM_LBUTTONDOWN()
 	ON_BN_CLICKED(IDC_BUTTON3, &CTileCNavDlg::OnStraightLineEx)
 	ON_BN_CLICKED(IDC_BUTTON4, &CTileCNavDlg::OnRandomPos)
+	ON_WM_MOUSEMOVE()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_RBUTTONDOWN()
 END_MESSAGE_MAP()
 
 
@@ -368,11 +373,11 @@ void CTileCNavDlg::UpdateDialog() {
 
 			CBrush* obrush;
 			if (m_tile_finder->GetBlock(x, z) == 1)
-				obrush = dc.SelectObject(&brush1);
+				obrush = dc.SelectObject(pBrushG);
 			else if (m_tile_finder->GetBlock(x, z) == 0)
-				obrush = dc.SelectObject(&brush0);
+				obrush = dc.SelectObject(pBrushR);
 			else
-				obrush = dc.SelectObject(&brush2);
+				obrush = dc.SelectObject(pBrushB);
 
 			DrawTile(dc, x, z);
 
@@ -388,11 +393,17 @@ void CTileCNavDlg::UpdateDialog() {
 
 void CTileCNavDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	m_drag_l = false;
 	if (Between(point)) {
 		if (m_edit) {
 			int x = (point.x - m_offset_x) / m_scale;
 			int z = (point.y - m_offset_z) / m_scale;
 			m_tile_finder->SetBlock(x, z, 1);
+			CClientDC dc(this);
+			CBrush brush0(RGB(255, 0, 0));
+			CBrush* ob = dc.SelectObject(&brush0);
+			DrawTile(dc, x, z);
+			dc.SelectObject(ob);
 		} else {
 			m_begin_x = (point.x - m_offset_x) / m_scale;
 			m_begin_z = (point.y - m_offset_z) / m_scale;
@@ -420,12 +431,17 @@ void CTileCNavDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 
 void CTileCNavDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-
+	m_drag_r = false;
 	if (Between(point)) {
 		if (m_edit) {
 			int x = (point.x - m_offset_x) / m_scale;
 			int z = (point.y - m_offset_z) / m_scale;
 			m_tile_finder->SetBlock(x, z, 2);
+			CClientDC dc(this);
+			CBrush brush2(RGB(0, 0, 255));
+			CBrush* ob = dc.SelectObject(&brush2);
+			DrawTile(dc, x, z);
+			dc.SelectObject(ob);
 		} else {
 			m_over_x = (point.x - m_offset_x) / m_scale;
 			m_over_z = (point.y - m_offset_z) / m_scale;
@@ -623,4 +639,51 @@ void CTileCNavDlg::DrawOver() {
 		m_pos_over->SetWindowText(str);
 	}
 	dc.SelectObject(obrush);
+}
+
+void CTileCNavDlg::OnMouseMove(UINT nFlags, CPoint point)
+{
+	// TODO:  在此添加消息处理程序代码和/或调用默认值
+
+	CDialogEx::OnMouseMove(nFlags, point);
+	if (m_edit) {
+		if (m_drag_l) {
+			int x = (point.x - m_offset_x) / m_scale;
+			int z = (point.y - m_offset_z) / m_scale;
+			m_tile_finder->SetBlock(x, z, 2);
+			CClientDC dc(this);
+			CBrush* ob = dc.SelectObject(pBrushG);
+			DrawTile(dc, x, z);
+			dc.SelectObject(ob);
+		}
+		if (m_drag_r) {
+			int x = (point.x - m_offset_x) / m_scale;
+			int z = (point.y - m_offset_z) / m_scale;
+			m_tile_finder->SetBlock(x, z, 1);
+			CClientDC dc(this);
+			CBrush brush2(RGB(0, 0, 255));
+			CBrush* ob = dc.SelectObject(pBrushR);
+			DrawTile(dc, x, z);
+			dc.SelectObject(ob);
+		}
+	}
+
+}
+
+
+void CTileCNavDlg::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO:  在此添加消息处理程序代码和/或调用默认值
+
+	CDialogEx::OnLButtonDown(nFlags, point);
+	m_drag_l = true;
+}
+
+
+void CTileCNavDlg::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO:  在此添加消息处理程序代码和/或调用默认值
+
+	CDialogEx::OnRButtonDown(nFlags, point);
+	m_drag_r = true;
 }
