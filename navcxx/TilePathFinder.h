@@ -72,6 +72,8 @@ public:
 
 	static TilePathFinder* LoadFromFile(const char* file);
 
+	void Serialize(const char* file);
+
 	inline int GetWidth() {
 		return width_;
 	}

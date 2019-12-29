@@ -6,8 +6,8 @@
 #define DX(A,B) (A->pos_.x - B->pos_.x)
 #define DZ(A,B) (A->pos_.y - B->pos_.y)
 
-static int kDirection[8][2] = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 },
-{ -1, -1 }, { -1, 1 }, { 1, -1 }, { 1, 1 } };
+static int kDirection[8][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1},
+{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
 
 static inline int NodeCmp(mh_elt_t* lhs, mh_elt_t* rhs) {
 	return ((TilePathFinder::PathNode*)lhs)->F > ((TilePathFinder::PathNode*)rhs)->F;
@@ -78,8 +78,8 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 		int tz = i;
 		int d = 3 - 2 * i;
 		while (tx <= tz) {
-			int range[][2] = { { tx, tz }, { -tx, tz }, { tx, -tz }, { -tx, -tz },
-			{ tz, tx }, { -tz, tx }, { tz, -tx }, { -tz, -tx } };
+			int range[][2] = {{tx, tz}, {-tx, tz}, {tx, -tz}, {-tx, -tz},
+			{tz, tx}, {-tz, tx}, {tz, -tx}, {-tz, -tx}};
 			for (int j = 0; j < 8; ++j) {
 				int xOffset = range[j][0];
 				int zOffset = range[j][1];
@@ -119,8 +119,8 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 		int d = 3 - 2 * i;
 		while (tx <= tz) {
 			for (int zi = tx; zi <= tz; zi++) {
-				int range[][2] = { { tx, zi }, { -tx, zi }, { tx, -zi }, { -tx, -zi },
-				{ zi, tx }, { -zi, tx }, { zi, -tx }, { -zi, -tx } };
+				int range[][2] = {{tx, zi}, {-tx, zi}, {tx, -zi}, {-tx, -zi},
+				{zi, tx}, {-zi, tx}, {zi, -tx}, {-zi, -tx}};
 
 				for (int i = 0; i < 8; i++) {
 					int xOffset = range[i][0];
@@ -190,6 +190,18 @@ TilePathFinder* TilePathFinder::LoadFromFile(const char* file) {
 	return finder;
 }
 
+void TilePathFinder::Serialize(const char* file) {
+	MemoryStream ms;
+	ms << (int32_t)0 << width_ << height_ << tile_;
+	for (int i = 0; i < width_ * height_; i++) {
+		ms << node_[i].block_;
+	}
+
+	FILE* fp = fopen(file, "wb");
+	fwrite(ms.Begin(), ms.Length(), 1, fp);
+	fclose(fp);
+}
+
 void TilePathFinder::SetDebugCallback(DebugFunc func, void* userdata) {
 	debugFunc_ = func;
 	debugUserdata_ = userdata;
@@ -216,8 +228,8 @@ TilePathFinder::PathNode* TilePathFinder::SearchInCircle(int cx, int cz, int dep
 			int tz = i;
 			int d = 3 - 2 * i;
 			while (tx <= tz) {
-				int range[][2] = { { tx, tz }, { -tx, tz }, { tx, -tz }, { -tx, -tz },
-				{ tz, tx }, { -tz, tx }, { tz, -tx }, { -tz, -tx } };
+				int range[][2] = {{tx, tz}, {-tx, tz}, {tx, -tz}, {-tx, -tz},
+				{tz, tx}, {-tz, tx}, {tz, -tx}, {-tz, -tx}};
 				for (int j = 0; j < 8; ++j) {
 					int xOffset = range[j][0];
 					int zOffset = range[j][1];
@@ -252,7 +264,7 @@ TilePathFinder::PathNode* TilePathFinder::SearchInReactangle(int cx, int cz, int
 		int zMin = cz - r;
 		int zMax = cz + r;
 
-		int zRange[2] = { zMin, zMax };
+		int zRange[2] = {zMin, zMax};
 
 		for (int i = 0; i < 2; i++) {
 			int z = zRange[i];
@@ -279,7 +291,7 @@ TilePathFinder::PathNode* TilePathFinder::SearchInReactangle(int cx, int cz, int
 			}
 		}
 
-		int xRange[2] = { xMin, xMax };
+		int xRange[2] = {xMin, xMax};
 
 		for (int i = 0; i < 2; i++) {
 			int x = xRange[i];
@@ -653,8 +665,8 @@ int TilePathFinder::RandomInCircle(int cx, int cz, int radius, Math::Vector2& re
 		int d = 3 - 2 * radius;
 		while (tx <= tz) {
 			for (int zi = tx; zi <= tz; zi++) {
-				int range[][2] = { { tx, zi }, { -tx, zi }, { tx, -zi }, { -tx, -zi },
-				{ zi, tx }, { -zi, tx }, { zi, -tx }, { -zi, -tx } };
+				int range[][2] = {{tx, zi}, {-tx, zi}, {tx, -zi}, {-tx, -zi},
+				{zi, tx}, {-zi, tx}, {zi, -tx}, {-zi, -tx}};
 
 				for (int i = 0; i < 8; i++) {
 					int xOffset = range[i][0];

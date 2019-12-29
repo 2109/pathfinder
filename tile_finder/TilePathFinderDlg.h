@@ -70,7 +70,7 @@ public:
 	static CBrush* pBrushR;
 	static CBrush* pBrushG;
 	static CBrush* pBrushB;
-	
+	static CBrush* pBrushGray;
 
 
 	float m_cost;

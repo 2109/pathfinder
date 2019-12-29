@@ -48,6 +48,7 @@ END_MESSAGE_MAP()
 CBrush* CTileCNavDlg::pBrushR = new CBrush(RGB(255, 0, 0));
 CBrush* CTileCNavDlg::pBrushG = new CBrush(RGB(0, 255, 0));
 CBrush* CTileCNavDlg::pBrushB = new CBrush(RGB(0, 0, 255));
+CBrush* CTileCNavDlg::pBrushGray = new CBrush(RGB(0xcd, 0x66, 0x1d));
 
 CTileCNavDlg::CTileCNavDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CTileCNavDlg::IDD, pParent) {
@@ -273,6 +274,9 @@ void LineDump(void* ud, int x, int z) {
 
 void CTileCNavDlg::OnFindPath() {
 	// TODO: 在此添加控件通知处理程序代码
+	if (m_edit) {
+		return;
+	}
 	m_path.clear();
 
 	CClientDC dc(this);
@@ -373,11 +377,11 @@ void CTileCNavDlg::UpdateDialog() {
 
 			CBrush* obrush;
 			if (m_tile_finder->GetBlock(x, z) == 1)
-				obrush = dc.SelectObject(pBrushG);
+				obrush = dc.SelectObject(pBrushGray);
 			else if (m_tile_finder->GetBlock(x, z) == 0)
-				obrush = dc.SelectObject(pBrushR);
-			else
 				obrush = dc.SelectObject(pBrushB);
+			else
+				obrush = dc.SelectObject(pBrushR);
 
 			DrawTile(dc, x, z);
 
@@ -400,8 +404,7 @@ void CTileCNavDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 			int z = (point.y - m_offset_z) / m_scale;
 			m_tile_finder->SetBlock(x, z, 1);
 			CClientDC dc(this);
-			CBrush brush0(RGB(255, 0, 0));
-			CBrush* ob = dc.SelectObject(&brush0);
+			CBrush* ob = dc.SelectObject(pBrushGray);
 			DrawTile(dc, x, z);
 			dc.SelectObject(ob);
 		} else {
@@ -436,10 +439,9 @@ void CTileCNavDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 		if (m_edit) {
 			int x = (point.x - m_offset_x) / m_scale;
 			int z = (point.y - m_offset_z) / m_scale;
-			m_tile_finder->SetBlock(x, z, 2);
+			m_tile_finder->SetBlock(x, z, 0);
 			CClientDC dc(this);
-			CBrush brush2(RGB(0, 0, 255));
-			CBrush* ob = dc.SelectObject(&brush2);
+			CBrush* ob = dc.SelectObject(pBrushB);
 			DrawTile(dc, x, z);
 			dc.SelectObject(ob);
 		} else {
@@ -487,14 +489,11 @@ void CTileCNavDlg::OnEnChangeEdit4() {
 
 
 void CTileCNavDlg::OnClose() {
-	//finder_release(m_finder);
-
-	//FILE* fd = fopen("nav.tile", "wb+");
-	//fwrite(&m_width, 1, sizeof(int), fd);
-	//fwrite(&m_heigh, 1, sizeof(int), fd);
-	//fwrite(m_data, 1, m_size, fd);
-	//fclose(fd);
-
+	CString tile_file;
+	tile_file.Format(_T("./tile/%s"), AfxGetApp()->m_lpCmdLine);
+	USES_CONVERSION;
+	char * pFileName = T2A(tile_file);
+	m_tile_finder->Serialize(pFileName);
 	CDialogEx::OnClose();
 }
 
@@ -517,12 +516,18 @@ void CTileCNavDlg::OnBnClickedEditCheck() {
 
 void CTileCNavDlg::OnStraightLine() {
 	// TODO: 在此添加控件通知处理程序代码
+	if (m_edit) {
+		return;
+	}
 	RayCast(0);
 }
 
 
 void CTileCNavDlg::OnStraightLineEx() {
 	// TODO:  在此添加控件通知处理程序代码
+	if (m_edit) {
+		return;
+	}
 	RayCast(1);
 }
 
@@ -650,19 +655,18 @@ void CTileCNavDlg::OnMouseMove(UINT nFlags, CPoint point)
 		if (m_drag_l) {
 			int x = (point.x - m_offset_x) / m_scale;
 			int z = (point.y - m_offset_z) / m_scale;
-			m_tile_finder->SetBlock(x, z, 2);
+			m_tile_finder->SetBlock(x, z, 1);
 			CClientDC dc(this);
-			CBrush* ob = dc.SelectObject(pBrushG);
+			CBrush* ob = dc.SelectObject(pBrushGray);
 			DrawTile(dc, x, z);
 			dc.SelectObject(ob);
 		}
 		if (m_drag_r) {
 			int x = (point.x - m_offset_x) / m_scale;
 			int z = (point.y - m_offset_z) / m_scale;
-			m_tile_finder->SetBlock(x, z, 1);
+			m_tile_finder->SetBlock(x, z, 0);
 			CClientDC dc(this);
-			CBrush brush2(RGB(0, 0, 255));
-			CBrush* ob = dc.SelectObject(pBrushR);
+			CBrush* ob = dc.SelectObject(pBrushB);
 			DrawTile(dc, x, z);
 			dc.SelectObject(ob);
 		}
