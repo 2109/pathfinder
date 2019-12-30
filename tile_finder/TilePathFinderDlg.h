@@ -49,6 +49,10 @@ public:
 	void DrawBegin();
 
 	void DrawOver();
+
+	static void OnSearchDump(void* userdata, int x, int z);
+
+	static void OnLineDump(void* userdata, int x, int z);
 public:
 
 	int m_begin_x;
@@ -74,7 +78,10 @@ public:
 	static CBrush* pBrushG;
 	static CBrush* pBrushB;
 	static CBrush* pBrushGray;
-
+	static CBrush* pBrushDump;
+	static CBrush* pBrushLine;
+	static CBrush* pBrushStop;
+	static CPen* pPenLine;
 
 	float m_cost;
 

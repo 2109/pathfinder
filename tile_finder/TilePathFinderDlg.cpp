@@ -49,6 +49,11 @@ CBrush* CTilePathFinderDlg::pBrushR = new CBrush(RGB(255, 0, 0));
 CBrush* CTilePathFinderDlg::pBrushG = new CBrush(RGB(0, 255, 0));
 CBrush* CTilePathFinderDlg::pBrushB = new CBrush(RGB(0, 0, 255));
 CBrush* CTilePathFinderDlg::pBrushGray = new CBrush(RGB(0xcd, 0x66, 0x1d));
+CBrush* CTilePathFinderDlg::pBrushDump = new CBrush(RGB(0, 0, 0));
+CBrush* CTilePathFinderDlg::pBrushLine = new CBrush(RGB(124, 252, 0));
+CBrush* CTilePathFinderDlg::pBrushStop = new CBrush(RGB(0, 255, 255));
+CPen* CTilePathFinderDlg::pPenLine = new CPen(PS_SOLID, 1, RGB(110, 139, 61));
+
 
 CTilePathFinderDlg::CTilePathFinderDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CTilePathFinderDlg::IDD, pParent) {
@@ -211,69 +216,6 @@ HCURSOR CTilePathFinderDlg::OnQueryDragIcon() {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-struct DumpArgs {
-	CTilePathFinderDlg* self;
-	CClientDC* cdc;
-};
-
-void OnSearchDump(void* ud, int x, int z) {
-	DumpArgs* args = (DumpArgs*)ud;
-	CTilePathFinderDlg* self = args->self;
-	CClientDC* cdc = args->cdc;
-
-	CBrush brush_begin(RGB(0, 0, 0));
-	CBrush* obrush = cdc->SelectObject(&brush_begin);
-
-	int index = x * self->m_tile_finder->GetHeight() + z;
-
-	CPoint pt[4];
-	pt[0].x = x * self->m_scale + self->m_offset_x;
-	pt[0].y = z * self->m_scale + self->m_offset_z;
-	pt[1].x = (x + 1) * self->m_scale + self->m_offset_x;
-	pt[1].y = z * self->m_scale + self->m_offset_z;
-	pt[2].x = (x + 1) * self->m_scale + self->m_offset_x;
-	pt[2].y = (z + 1) * self->m_scale + self->m_offset_z;
-	pt[3].x = x * self->m_scale + self->m_offset_x;
-	pt[3].y = (z + 1) * self->m_scale + self->m_offset_z;
-
-	cdc->Polygon(pt, 4);
-
-	cdc->SelectObject(obrush);
-
-	Sleep(1);
-}
-
-void OnPathDump(void* ud, int x, int z) {
-	DumpArgs* args = (DumpArgs*)ud;
-	CTilePathFinderDlg* self = args->self;
-	CClientDC* cdc = args->cdc;
-
-	POINT* pt = new POINT();
-	pt->x = x;
-	pt->y = z;
-	self->m_path.push_back(pt);
-}
-
-void OnPathDummy(void* ud, int x, int z) {
-}
-
-void LineDump(void* ud, int x, int z) {
-	DumpArgs* args = (DumpArgs*)ud;
-	CTilePathFinderDlg* self = args->self;
-	CClientDC* cdc = args->cdc;
-
-	CBrush brush(RGB(0, 255, 0));
-	POINT from;
-	from.x = x * self->m_scale + self->m_offset_x;
-	from.y = z * self->m_scale + self->m_offset_z;
-	POINT to;
-	to.x = from.x + self->m_scale;
-	to.y = from.y + self->m_scale;
-
-	cdc->FillRect(CRect(from, to), &brush);
-	Sleep(10);
-}
-
 void CTilePathFinderDlg::OnFindPath() {
 	// TODO: 在此添加控件通知处理程序代码
 	if (m_edit) {
@@ -281,17 +223,12 @@ void CTilePathFinderDlg::OnFindPath() {
 	}
 	m_path.clear();
 
-	CClientDC dc(this);
-	DumpArgs args;
-	args.self = this;
-	args.cdc = &dc;
-
 	LARGE_INTEGER freq;
 	LARGE_INTEGER start, over;
 	QueryPerformanceFrequency(&freq);
 	QueryPerformanceCounter(&start);
 
-	m_tile_finder->SetDebugCallback(m_show_path_search ? OnSearchDump : NULL, &args);
+	m_tile_finder->SetDebugCallback(m_show_path_search ? CTilePathFinderDlg::OnSearchDump : NULL, this);
 
 	Math::Vector2 from(m_begin_x, m_begin_z);
 	Math::Vector2 to(m_over_x, m_over_z);
@@ -307,26 +244,26 @@ void CTilePathFinderDlg::OnFindPath() {
 
 	QueryPerformanceCounter(&over);
 
-	CPen pen(PS_SOLID, 1, RGB(100, 100, 255));
-	CPen *open = dc.SelectObject(&pen);
+	CClientDC cdc(this);
+	CPen *oriPen = cdc.SelectObject(pPenLine);
 
 	if (m_path.size() != 0) {
 		std::vector<POINT*>::iterator iter = m_path.begin();
 		POINT pt;
 		pt.x = ((*iter)->x + 0.5) * m_scale + m_offset_x;
 		pt.y = ((*iter)->y + 0.5) * m_scale + m_offset_z;
-		dc.MoveTo(pt);
+		cdc.MoveTo(pt);
 
 		for (iter++; iter != m_path.end(); iter++) {
 			pt.x = ((*iter)->x + 0.5) * m_scale + m_offset_x;
 			pt.y = ((*iter)->y + 0.5) * m_scale + m_offset_z;
 
-			dc.LineTo(pt);
-			dc.MoveTo(pt);
+			cdc.LineTo(pt);
+			cdc.MoveTo(pt);
 		}
 	}
 
-	dc.SelectObject(open);
+	cdc.SelectObject(oriPen);
 
 
 	double pathCost = (double)((over.QuadPart - start.QuadPart) * 1000) / (double)freq.QuadPart;
@@ -409,12 +346,7 @@ void CTilePathFinderDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 
 			DrawBegin();
 
-			CClientDC dc(this);
-			DumpArgs args;
-			args.self = this;
-			args.cdc = &dc;
-
-			//m_tile_finder->SetDebugCallback(OnSearchDump, &args);
+			//m_tile_finder->SetDebugCallback(CTilePathFinderDlg::OnSearchDump, this);
 
 			//for (int i = 0; i < 1000; i++) {
 			//	Math::Vector2 result;
@@ -442,11 +374,7 @@ void CTilePathFinderDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 			m_over_z = (point.y - m_offset_z) / m_scale;
 
 			if (m_tile_finder->IsBlock(m_over_x, m_over_z)) {
-				CClientDC dc(this);
-				DumpArgs args;
-				args.self = this;
-				args.cdc = &dc;
-				m_tile_finder->SetDebugCallback(OnSearchDump, &args);
+				m_tile_finder->SetDebugCallback(CTilePathFinderDlg::OnSearchDump, this);
 				TilePathFinder::PathNode* node = m_tile_finder->SearchInCircle(m_over_x, m_over_z, TilePathFinder::kSearchDepth);
 				if (!node) {
 					node = m_tile_finder->SearchInReactangle(m_over_x, m_over_z, 16);
@@ -525,11 +453,6 @@ void CTilePathFinderDlg::OnStraightLineEx() {
 }
 
 void CTilePathFinderDlg::RayCast(int type) {
-	CClientDC dc(this);
-	DumpArgs args;
-	args.self = this;
-	args.cdc = &dc;
-
 	int rx = 0;
 	int ry = 0;
 
@@ -538,7 +461,7 @@ void CTilePathFinderDlg::RayCast(int type) {
 	QueryPerformanceFrequency(&freq);
 	QueryPerformanceCounter(&start);
 
-	m_tile_finder->SetDebugCallback(m_show_line_search ? LineDump : NULL, &args);
+	m_tile_finder->SetDebugCallback(m_show_line_search ? CTilePathFinderDlg::OnSearchDump : NULL, this);
 
 	const Math::Vector2 fromPos(m_begin_x, m_begin_z);
 	const Math::Vector2 toPos(m_over_x, m_over_z);
@@ -551,7 +474,6 @@ void CTilePathFinderDlg::RayCast(int type) {
 		m_tile_finder->Raycast(fromPos, toPos, false, &result, &stop);
 	}
 
-
 	QueryPerformanceCounter(&over);
 
 	double pathCost = (double)((over.QuadPart - start.QuadPart) * 1000) / (double)freq.QuadPart;
@@ -559,22 +481,22 @@ void CTilePathFinderDlg::RayCast(int type) {
 	str.Format(_T("耗时:%fms"), pathCost);
 	m_time_cost->SetWindowText(str);
 
+	CClientDC cdc(this);
+	CPen* oriPen = cdc.SelectObject(pPenLine);
 	POINT from;
 	from.x = (m_begin_x + 0.5) * m_scale + m_offset_x;
 	from.y = (m_begin_z + 0.5) * m_scale + m_offset_z;
 	POINT to;
 	to.x = (result.x + 0.5) * m_scale + m_offset_x;
 	to.y = (result.y + 0.5) * m_scale + m_offset_z;
-	dc.MoveTo(from);
-	dc.LineTo(to);
+	cdc.MoveTo(from);
+	cdc.LineTo(to);
+	cdc.SelectObject(oriPen);
 
-	CBrush brush_begin(RGB(123, 255, 87));
-	CBrush* obrush = dc.SelectObject(&brush_begin);
-	DrawTile(dc, stop.x, stop.y);
-	dc.SelectObject(obrush);
+	CBrush* ori = cdc.SelectObject(pBrushStop);
+	DrawTile(cdc, stop.x, stop.y);
+	cdc.SelectObject(ori);
 }
-
-extern "C" void finder_random(struct pathfinder* finder, int* x, int* z);
 
 void CTilePathFinderDlg::OnRandomPos() {
 	// TODO:  在此添加控件通知处理程序代码
@@ -673,7 +595,6 @@ void CTilePathFinderDlg::OnMouseMove(UINT nFlags, CPoint point) {
 	}
 }
 
-
 void CTilePathFinderDlg::OnLButtonDown(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
@@ -681,14 +602,12 @@ void CTilePathFinderDlg::OnLButtonDown(UINT nFlags, CPoint point) {
 	m_drag_l = true;
 }
 
-
 void CTilePathFinderDlg::OnRButtonDown(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	CDialogEx::OnRButtonDown(nFlags, point);
 	m_drag_r = true;
 }
-
 
 BOOL CTilePathFinderDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 	// TODO: Add your message handler code here and/or call default
@@ -699,4 +618,13 @@ BOOL CTilePathFinderDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 	}
 	Invalidate();
 	return CDialogEx::OnMouseWheel(nFlags, zDelta, pt);
+}
+
+void CTilePathFinderDlg::OnSearchDump(void* userdata, int x, int z) {
+	CTilePathFinderDlg* ptr = (CTilePathFinderDlg*)userdata;
+	CClientDC cdc(ptr);
+	CBrush* oriBrush = cdc.SelectObject(pBrushDump);
+	ptr->DrawTile(cdc, x, z);
+	cdc.SelectObject(oriBrush);
+	Sleep(1);
 }
