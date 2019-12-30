@@ -7,11 +7,11 @@
 #include <stdint.h>
 #include <vector>
 #include "TilePathFinder.h"
-// CTileCNavDlg 对话框
-class CTileCNavDlg : public CDialogEx {
+// CTilePathFinderDlg 对话框
+class CTilePathFinderDlg : public CDialogEx {
 	// 构造
 public:
-	CTileCNavDlg(CWnd* pParent = NULL);	// 标准构造函数
+	CTilePathFinderDlg(CWnd* pParent = NULL);	// 标准构造函数
 
 	// 对话框数据
 	enum { IDD = IDD_TILE_FINDPATH_DIALOG };
@@ -35,7 +35,7 @@ public:
 	afx_msg void OnStraightLine();
 	afx_msg void OnChangeX();
 	afx_msg void OnChangeZ();
-	afx_msg void OnChangeScale();
+	afx_msg void OnChangeEditBrush();
 
 	bool Between(CPoint& pos);
 	void UpdateDialog();
@@ -43,6 +43,8 @@ public:
 	void RayCast(int type);
 
 	void DrawTile(CClientDC& cdc, int x, int z);
+
+	void DrawBlock(CClientDC& cdc, CPoint& pos, uint8_t val);
 
 	void DrawBegin();
 
@@ -58,6 +60,7 @@ public:
 	int m_offset_x;
 	int m_offset_z;
 	int m_scale;
+	int m_brush_size;
 
 	bool m_show_path_search;
 	bool m_show_line_search;
@@ -96,4 +99,5 @@ public:
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
+	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 };
