@@ -69,7 +69,6 @@ public:
 
 	bool m_show_path_search;
 	bool m_show_line_search;
-	bool m_edit;
 
 	bool m_drag_l;
 	bool m_drag_r;

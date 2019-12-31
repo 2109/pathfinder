@@ -81,7 +81,6 @@ BEGIN_MESSAGE_MAP(CTilePathFinderDlg, CDialogEx)
 	ON_WM_CLOSE()
 	ON_BN_CLICKED(IDC_CHECK1, &CTilePathFinderDlg::OnBnClickedPathCheck)
 	ON_BN_CLICKED(IDC_CHECK2, &CTilePathFinderDlg::OnBnClickedLineCheck)
-	ON_BN_CLICKED(IDC_CHECK3, &CTilePathFinderDlg::OnBnClickedEditCheck)
 	//ON_WM_LBUTTONDOWN()
 	ON_BN_CLICKED(IDC_BUTTON3, &CTilePathFinderDlg::OnStraightLineEx)
 	ON_BN_CLICKED(IDC_BUTTON4, &CTilePathFinderDlg::OnRandomPos)
@@ -123,20 +122,10 @@ BOOL CTilePathFinderDlg::OnInitDialog() {
 
 	// TODO: 在此添加额外的初始化代码
 
-	m_offset_x = 200;
-	m_offset_z = 10;
-	m_scale = 5;
-	m_cost = 50;
-	m_brush_size = 2;
-	CString str;
-	str.Format(_T("%d"), m_offset_x);
-	((CEdit*)GetDlgItem(IDC_EDIT1))->SetWindowTextW(str);
-	str.Format(_T("%d"), m_offset_z);
-	((CEdit*)GetDlgItem(IDC_EDIT2))->SetWindowTextW(str);
-	str.Format(_T("%d"), m_brush_size);
-	((CEdit*)GetDlgItem(IDC_EDIT3))->SetWindowTextW(str);
-	str.Format(_T("%f"), m_cost);
-	((CEdit*)GetDlgItem(IDC_EDIT4))->SetWindowTextW(str);
+	m_offset_x = 0;
+	m_offset_z = 0;
+	m_scale = 0;
+
 
 	m_begin_x = m_begin_z = -1;
 	m_over_x = m_over_z = -1;
@@ -146,7 +135,6 @@ BOOL CTilePathFinderDlg::OnInitDialog() {
 
 	m_show_path_search = false;
 	m_show_line_search = false;
-	m_edit = false;
 	bNeedPaint = true;
 
 	USES_CONVERSION;
@@ -190,18 +178,32 @@ BOOL CTilePathFinderDlg::OnInitDialog() {
 		memdc->SelectObject(oriOpen);
 	}
 	m_scale = 5;
+	m_offset_x = 200;
+	m_offset_z = 10;
+	m_cost = 50;
+	m_brush_size = 2;
+
+	CString str;
+	str.Format(_T("%d"), m_offset_x);
+	((CEdit*)GetDlgItem(IDC_EDIT1))->SetWindowTextW(str);
+	str.Format(_T("%d"), m_offset_z);
+	((CEdit*)GetDlgItem(IDC_EDIT2))->SetWindowTextW(str);
+	str.Format(_T("%d"), m_brush_size);
+	((CEdit*)GetDlgItem(IDC_EDIT3))->SetWindowTextW(str);
+	str.Format(_T("%f"), m_cost);
+	((CEdit*)GetDlgItem(IDC_EDIT4))->SetWindowTextW(str);
+
 	((CButton*)GetDlgItem(IDC_CHECK1))->SetCheck(m_show_path_search);
 	((CButton*)GetDlgItem(IDC_CHECK1))->SetCheck(m_show_line_search);
-	((CButton*)GetDlgItem(IDC_CHECK3))->SetCheck(m_edit);
 
 	m_time_cost = new CStatic();
-	m_time_cost->Create(_T(""), WS_CHILD | WS_VISIBLE | SS_CENTER, CRect(10, 20, 150, 100), this);
+	m_time_cost->Create(_T(""), WS_CHILD | WS_VISIBLE | SS_LEFT, CRect(10, 20, 150, 100), this);
 
 	m_pos_start = new CStatic();
-	m_pos_start->Create(_T(""), WS_CHILD | WS_VISIBLE | SS_CENTER, CRect(10, 50, 150, 100), this);
+	m_pos_start->Create(_T(""), WS_CHILD | WS_VISIBLE | SS_LEFT, CRect(10, 50, 150, 100), this);
 
 	m_pos_over = new CStatic();
-	m_pos_over->Create(_T(""), WS_CHILD | WS_VISIBLE | SS_CENTER, CRect(10, 80, 150, 100), this);
+	m_pos_over->Create(_T(""), WS_CHILD | WS_VISIBLE | SS_LEFT, CRect(10, 80, 150, 100), this);
 
 	AllocConsole();
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -260,9 +262,7 @@ HCURSOR CTilePathFinderDlg::OnQueryDragIcon() {
 
 void CTilePathFinderDlg::OnFindPath() {
 	// TODO: 在此添加控件通知处理程序代码
-	if (m_edit) {
-		return;
-	}
+
 	m_path.clear();
 
 	LARGE_INTEGER freq;
@@ -307,11 +307,16 @@ void CTilePathFinderDlg::OnFindPath() {
 
 	cdc.SelectObject(oriPen);
 
-
 	double pathCost = (double)((over.QuadPart - start.QuadPart) * 1000) / (double)freq.QuadPart;
 	CString str;
 	str.Format(_T("耗时:%fms"), pathCost);
 	m_time_cost->SetWindowText(str);
+
+	str.Format(_T("起点:%d,%d"), m_begin_x, m_begin_z);
+	m_pos_start->SetWindowText(str);
+
+	str.Format(_T("终点:%d,%d"), m_over_x, m_over_z);
+	m_pos_over->SetWindowText(str);
 }
 
 void CTilePathFinderDlg::OnChangeX() {
@@ -353,7 +358,7 @@ void CTilePathFinderDlg::UpdateDialog() {
 	GetClientRect(&rect);
 	CDC* memdc = m_cdc[m_scale];
 	CDC* cdc = GetDC();
-	cdc->BitBlt(0, 0, rect.Width(), rect.Height(), memdc, 0, 0, SRCCOPY);
+	cdc->BitBlt(m_offset_x, m_offset_z, rect.Width(), rect.Height(), memdc, 0, 0, SRCCOPY);
 	DrawBegin();
 	DrawOver();
 
@@ -375,7 +380,8 @@ void CTilePathFinderDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	m_drag_l = false;
 	if (Between(point)) {
-		if (m_edit) {
+		BOOL bCtrl = GetKeyState(VK_CONTROL) & 0x8000;
+		if (bCtrl) {
 			CClientDC cdc(this);
 			CBrush* oriBrush = cdc.SelectObject(pBrushGray);
 			DrawBlock(&cdc, point, 1);
@@ -404,7 +410,8 @@ void CTilePathFinderDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	m_drag_r = false;
 	if (Between(point)) {
-		if (m_edit) {
+		BOOL bCtrl = GetKeyState(VK_CONTROL) & 0x8000;
+		if (bCtrl) {
 			CClientDC cdc(this);
 			CBrush* oriBrush = cdc.SelectObject(pBrushB);
 			DrawBlock(&cdc, point, 0);
@@ -470,25 +477,14 @@ void CTilePathFinderDlg::OnBnClickedLineCheck() {
 }
 
 
-void CTilePathFinderDlg::OnBnClickedEditCheck() {
-	// TODO:  在此添加控件通知处理程序代码
-	m_edit = ((CButton*)GetDlgItem(IDC_CHECK3))->GetCheck();
-}
-
 void CTilePathFinderDlg::OnStraightLine() {
 	// TODO: 在此添加控件通知处理程序代码
-	if (m_edit) {
-		return;
-	}
 	RayCast(0);
 }
 
 
 void CTilePathFinderDlg::OnStraightLineEx() {
 	// TODO:  在此添加控件通知处理程序代码
-	if (m_edit) {
-		return;
-	}
 	RayCast(1);
 }
 
@@ -517,9 +513,7 @@ void CTilePathFinderDlg::RayCast(int type) {
 	QueryPerformanceCounter(&over);
 
 	double pathCost = (double)((over.QuadPart - start.QuadPart) * 1000) / (double)freq.QuadPart;
-	CString str;
-	str.Format(_T("耗时:%fms"), pathCost);
-	m_time_cost->SetWindowText(str);
+
 
 	CClientDC cdc(this);
 	CPen* oriPen = cdc.SelectObject(pPenLine);
@@ -536,6 +530,16 @@ void CTilePathFinderDlg::RayCast(int type) {
 	CBrush* ori = cdc.SelectObject(pBrushStop);
 	DrawTile(&cdc, stop.x, stop.y);
 	cdc.SelectObject(ori);
+
+	CString str;
+	str.Format(_T("耗时:%fms"), pathCost);
+	m_time_cost->SetWindowText(str);
+
+	str.Format(_T("起点:%d,%d"), m_begin_x, m_begin_z);
+	m_pos_start->SetWindowText(str);
+
+	str.Format(_T("终点:%d,%d"), m_over_x, m_over_z);
+	m_pos_over->SetWindowText(str);
 }
 
 void CTilePathFinderDlg::OnRandomPos() {
@@ -620,7 +624,8 @@ void CTilePathFinderDlg::OnMouseMove(UINT nFlags, CPoint point) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 
 	CDialogEx::OnMouseMove(nFlags, point);
-	if (m_edit) {
+	BOOL bCtrl = GetKeyState(VK_CONTROL) & 0x8000;
+	if (bCtrl) {
 		CClientDC cdc(this);
 		if (m_drag_l) {
 			CBrush* oriBrush = cdc.SelectObject(pBrushGray);
