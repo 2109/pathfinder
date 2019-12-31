@@ -89,6 +89,7 @@ BEGIN_MESSAGE_MAP(CTilePathFinderDlg, CDialogEx)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_RBUTTONDOWN()
 	ON_WM_MOUSEWHEEL()
+	ON_WM_ERASEBKGND()
 END_MESSAGE_MAP()
 
 
@@ -146,14 +147,52 @@ BOOL CTilePathFinderDlg::OnInitDialog() {
 	m_show_path_search = false;
 	m_show_line_search = false;
 	m_edit = false;
-
-	((CButton*)GetDlgItem(IDC_CHECK1))->SetCheck(m_show_path_search);
-	((CButton*)GetDlgItem(IDC_CHECK1))->SetCheck(m_show_line_search);
-	((CButton*)GetDlgItem(IDC_CHECK3))->SetCheck(m_edit);
+	bNeedPaint = true;
 
 	USES_CONVERSION;
 	char * pFileName = T2A(tile_file);
 	m_tile_finder = TilePathFinder::LoadFromFile(pFileName);
+
+	CRect rect;
+	GetClientRect(&rect);
+	m_cdc.resize(16);
+	for (int i = 2; i < 16; i++) {
+		m_scale = i;
+		CDC* memdc = new CDC();
+		m_cdc[i] = memdc;
+
+		memdc->CreateCompatibleDC(GetDC());
+
+		CBitmap memBitmap;
+		memBitmap.CreateCompatibleBitmap(GetDC(), rect.Width(), rect.Height());
+		memdc->SelectObject(&memBitmap);
+		memdc->FillSolidRect(0, 0, rect.Width(), rect.Height(), RGB(255, 255, 255));
+
+		CPen pen(PS_SOLID, 1, RGB(0, 0, 0));
+		CPen *oriOpen = memdc->SelectObject(&pen);
+
+		for (int x = 0; x < m_tile_finder->GetWidth(); x++) {
+			for (int z = 0; z < m_tile_finder->GetHeight(); z++) {
+
+				CBrush* oriBush;
+				if (m_tile_finder->GetBlock(x, z) == 1)
+					oriBush = memdc->SelectObject(pBrushGray);
+				else if (m_tile_finder->GetBlock(x, z) == 0)
+					oriBush = memdc->SelectObject(pBrushB);
+				else
+					oriBush = memdc->SelectObject(pBrushR);
+
+				DrawTile(memdc, x, z);
+
+				memdc->SelectObject(oriBush);
+			}
+		}
+		memdc->SelectObject(oriOpen);
+	}
+	m_scale = 5;
+	((CButton*)GetDlgItem(IDC_CHECK1))->SetCheck(m_show_path_search);
+	((CButton*)GetDlgItem(IDC_CHECK1))->SetCheck(m_show_line_search);
+	((CButton*)GetDlgItem(IDC_CHECK3))->SetCheck(m_edit);
 
 	m_time_cost = new CStatic();
 	m_time_cost->Create(_T(""), WS_CHILD | WS_VISIBLE | SS_CENTER, CRect(10, 20, 150, 100), this);
@@ -169,7 +208,6 @@ BOOL CTilePathFinderDlg::OnInitDialog() {
 	int hCrt = _open_osfhandle((long)handle, _O_TEXT);
 	FILE * hf = _fdopen(hCrt, "w");
 	*stdout = *hf;
-
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -187,6 +225,7 @@ void CTilePathFinderDlg::OnSysCommand(UINT nID, LPARAM lParam) {
 //  来绘制该图标。对于使用文档/视图模型的 MFC 应用程序，
 //  这将由框架自动完成。
 
+bool bPaint = false;
 void CTilePathFinderDlg::OnPaint() {
 	if (IsIconic()) {
 		CPaintDC dc(this); // 用于绘制的设备上下文
@@ -205,9 +244,11 @@ void CTilePathFinderDlg::OnPaint() {
 		dc.DrawIcon(x, y, m_hIcon);
 	} else {
 		CDialogEx::OnPaint();
+		if (bNeedPaint) {
+			bNeedPaint = false;
+			UpdateDialog();
+		}
 	}
-
-	UpdateDialog();
 }
 
 //当用户拖动最小化窗口时系统调用此函数取得光标
@@ -276,6 +317,7 @@ void CTilePathFinderDlg::OnChangeX() {
 	CString str;
 	((CEdit*)GetDlgItem(IDC_EDIT1))->GetWindowTextW(str);
 	m_offset_x = _ttoi(str);
+	bNeedPaint = true;
 	Invalidate();
 }
 
@@ -283,6 +325,7 @@ void CTilePathFinderDlg::OnChangeZ() {
 	CString str;
 	((CEdit*)GetDlgItem(IDC_EDIT2))->GetWindowTextW(str);
 	m_offset_z = _ttoi(str);
+	bNeedPaint = true;
 	Invalidate();
 }
 
@@ -291,6 +334,7 @@ void CTilePathFinderDlg::OnChangeEditBrush() {
 	CString str;
 	((CEdit*)GetDlgItem(IDC_EDIT3))->GetWindowTextW(str);
 	m_brush_size = _ttoi(str);
+	bNeedPaint = true;
 	Invalidate();
 }
 
@@ -304,28 +348,11 @@ bool CTilePathFinderDlg::Between(CPoint& pos) {
 }
 
 void CTilePathFinderDlg::UpdateDialog() {
-	CClientDC dc(this);
-	CPen pen(PS_SOLID, 1, RGB(0, 0, 0));
-	CPen *oriOpen = dc.SelectObject(&pen);
-
-	for (int x = 0; x < m_tile_finder->GetWidth(); x++) {
-		for (int z = 0; z < m_tile_finder->GetHeight(); z++) {
-
-			CBrush* oriBush;
-			if (m_tile_finder->GetBlock(x, z) == 1)
-				oriBush = dc.SelectObject(pBrushGray);
-			else if (m_tile_finder->GetBlock(x, z) == 0)
-				oriBush = dc.SelectObject(pBrushB);
-			else
-				oriBush = dc.SelectObject(pBrushR);
-
-			DrawTile(dc, x, z);
-
-			dc.SelectObject(oriBush);
-		}
-	}
-	dc.SelectObject(oriOpen);
-
+	CRect rect;
+	GetClientRect(&rect);
+	CDC* memdc = m_cdc[m_scale];
+	CDC* cdc = GetDC();
+	cdc->BitBlt(0, 0, rect.Width(), rect.Height(), memdc, 0, 0, SRCCOPY);
 	DrawBegin();
 	DrawOver();
 }
@@ -338,7 +365,7 @@ void CTilePathFinderDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 		if (m_edit) {
 			CClientDC cdc(this);
 			CBrush* oriBrush = cdc.SelectObject(pBrushGray);
-			DrawBlock(cdc, point, 1);
+			DrawBlock(&cdc, point, 1);
 			cdc.SelectObject(oriBrush);
 		} else {
 			m_begin_x = (point.x - m_offset_x) / m_scale;
@@ -367,7 +394,7 @@ void CTilePathFinderDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 		if (m_edit) {
 			CClientDC cdc(this);
 			CBrush* oriBrush = cdc.SelectObject(pBrushB);
-			DrawBlock(cdc, point, 0);
+			DrawBlock(&cdc, point, 0);
 			cdc.SelectObject(oriBrush);
 		} else {
 			m_over_x = (point.x - m_offset_x) / m_scale;
@@ -494,7 +521,7 @@ void CTilePathFinderDlg::RayCast(int type) {
 	cdc.SelectObject(oriPen);
 
 	CBrush* ori = cdc.SelectObject(pBrushStop);
-	DrawTile(cdc, stop.x, stop.y);
+	DrawTile(&cdc, stop.x, stop.y);
 	cdc.SelectObject(ori);
 }
 
@@ -513,7 +540,7 @@ void CTilePathFinderDlg::OnRandomPos() {
 	}
 }
 
-void CTilePathFinderDlg::DrawTile(CClientDC& cdc, int x, int z) {
+void CTilePathFinderDlg::DrawTile(CDC* cdc, int x, int z) {
 	CPoint pt[4];
 	pt[0].x = x * m_scale + m_offset_x;
 	pt[0].y = z * m_scale + m_offset_z;
@@ -524,10 +551,10 @@ void CTilePathFinderDlg::DrawTile(CClientDC& cdc, int x, int z) {
 	pt[3].x = x * m_scale + m_offset_x;
 	pt[3].y = (z + 1) * m_scale + m_offset_z;
 
-	cdc.Polygon(pt, 4);
+	bool ok = cdc->Polygon(pt, 4);
 }
 
-void CTilePathFinderDlg::DrawBlock(CClientDC& cdc, CPoint& pos, uint8_t val) {
+void CTilePathFinderDlg::DrawBlock(CDC* cdc, CPoint& pos, uint8_t val) {
 	int x = (pos.x - m_offset_x) / m_scale;
 	int z = (pos.y - m_offset_z) / m_scale;
 
@@ -552,7 +579,7 @@ void CTilePathFinderDlg::DrawBegin() {
 	CBrush brush_begin(RGB(0, 255, 0));
 	CBrush* obrush = dc.SelectObject(&brush_begin);
 	if (m_begin_x != -1 && m_begin_z != -1) {
-		DrawTile(dc, m_begin_x, m_begin_z);
+		DrawTile(&dc, m_begin_x, m_begin_z);
 		str.Format(_T("起点:%d,%d"), m_begin_x, m_begin_z);
 		m_pos_start->SetWindowText(str);
 	}
@@ -569,7 +596,7 @@ void CTilePathFinderDlg::DrawOver() {
 	CBrush brush_over(RGB(0, 0, 0));
 	CBrush* obrush = dc.SelectObject(&brush_over);
 	if (m_over_x != -1 && m_over_z != -1) {
-		DrawTile(dc, m_over_x, m_over_z);
+		DrawTile(&dc, m_over_x, m_over_z);
 		str.Format(_T("终点:%d,%d"), m_over_x, m_over_z);
 		m_pos_over->SetWindowText(str);
 	}
@@ -584,12 +611,12 @@ void CTilePathFinderDlg::OnMouseMove(UINT nFlags, CPoint point) {
 		CClientDC cdc(this);
 		if (m_drag_l) {
 			CBrush* oriBrush = cdc.SelectObject(pBrushGray);
-			DrawBlock(cdc, point, 1);
+			DrawBlock(&cdc, point, 1);
 			cdc.SelectObject(oriBrush);
 		}
 		if (m_drag_r) {
 			CBrush* oriBrush = cdc.SelectObject(pBrushB);
-			DrawBlock(cdc, point, 0);
+			DrawBlock(&cdc, point, 0);
 			cdc.SelectObject(oriBrush);
 		}
 	}
@@ -616,6 +643,16 @@ BOOL CTilePathFinderDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 	} else {
 		m_scale -= 1;
 	}
+	if (m_scale <= 1 || m_scale >= 16) {
+		if (m_scale <= 1) {
+			m_scale = 2;
+		}
+		if (m_scale >= 16) {
+			m_scale = 15;
+		}
+		return CDialogEx::OnMouseWheel(nFlags, zDelta, pt);
+	}
+	bNeedPaint = true;
 	Invalidate();
 	return CDialogEx::OnMouseWheel(nFlags, zDelta, pt);
 }
@@ -624,7 +661,16 @@ void CTilePathFinderDlg::OnSearchDump(void* userdata, int x, int z) {
 	CTilePathFinderDlg* ptr = (CTilePathFinderDlg*)userdata;
 	CClientDC cdc(ptr);
 	CBrush* oriBrush = cdc.SelectObject(pBrushDump);
-	ptr->DrawTile(cdc, x, z);
+	ptr->DrawTile(&cdc, x, z);
 	cdc.SelectObject(oriBrush);
 	Sleep(1);
+}
+
+
+BOOL CTilePathFinderDlg::OnEraseBkgnd(CDC* pDC) {
+	// TODO: Add your message handler code here and/or call default
+	if (bNeedPaint) {
+		return CDialogEx::OnEraseBkgnd(pDC);
+	}
+	return true;
 }

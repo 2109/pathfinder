@@ -42,9 +42,9 @@ public:
 
 	void RayCast(int type);
 
-	void DrawTile(CClientDC& cdc, int x, int z);
+	void DrawTile(CDC* cdc, int x, int z);
 
-	void DrawBlock(CClientDC& cdc, CPoint& pos, uint8_t val);
+	void DrawBlock(CDC* cdc, CPoint& pos, uint8_t val);
 
 	void DrawBegin();
 
@@ -73,6 +73,10 @@ public:
 	bool m_drag_l;
 	bool m_drag_r;
 	std::vector<POINT*> m_path;
+
+	std::vector<CDC*> m_cdc;
+
+	bool bNeedPaint;
 
 	static CBrush* pBrushR;
 	static CBrush* pBrushG;
@@ -107,4 +111,5 @@ public:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 };
