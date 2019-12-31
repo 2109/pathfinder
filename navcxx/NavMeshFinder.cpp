@@ -158,7 +158,7 @@ int NavPathFinder::Find(const Math::Vector3& from, const Math::Vector3& to, std:
 		}
 	}
 	Reset();
-	return 0;
+	return -1;
 }
 
 int NavPathFinder::Raycast(const Math::Vector3& from, const Math::Vector3& to, Math::Vector3& stop) {

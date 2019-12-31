@@ -46,6 +46,7 @@ public:
 	int m_offset_x;
 	int m_offset_z;
 	double m_scale;
+	int m_scale_base;
 	bool m_mouse_state;
 	CPoint* m_mouse_point;
 
@@ -53,7 +54,8 @@ public:
 	Math::Vector3* m_pt_begin;
 	int m_poly_over;
 	Math::Vector3* m_pt_over;
-	struct lua_State* L;
+
+	std::vector<CDC*> m_cdc;
 public:
 	afx_msg void OnUpdateIddPathfindertestDialog(CCmdUI *pCmdUI);
 	afx_msg void Straightline();

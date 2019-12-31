@@ -121,10 +121,6 @@ BOOL CNavDlg::OnInitDialog() {
 	m_finder = NavPathFinder::LoadMeshEx(T2A(nav_tile.GetBuffer(0)));
 	m_finder->CreateTile(100);
 
-	m_offset_x = 100;
-	m_offset_z = -100;
-	m_scale = 0.02f;
-
 	m_mouse_state = true;
 	m_mouse_point = NULL;
 
@@ -132,6 +128,53 @@ BOOL CNavDlg::OnInitDialog() {
 	m_poly_over = -1;
 
 	m_pt_over = m_pt_begin = NULL;
+
+	CRect rect;
+	GetClientRect(&rect);
+	m_cdc.resize(20);
+
+	m_offset_x = 0;
+	m_offset_z = 0;
+	CBrush brushWalk(RGB(255, 0, 0));
+	CBrush brushBlock(RGB(88, 88, 0));
+	for (int i = 0; i < 20;i++) {
+		m_scale = 0.005 * i + 0.005;
+		CDC* memdc = new CDC();
+		m_cdc[i] = memdc;
+
+		memdc->CreateCompatibleDC(GetDC());
+
+		CBitmap memBitmap;
+		memBitmap.CreateCompatibleBitmap(GetDC(), rect.Width(), rect.Height());
+		memdc->SelectObject(&memBitmap);
+		memdc->FillSolidRect(0, 0, rect.Width(), rect.Height(), RGB(255, 255, 255));
+
+		for (int i = 0; i < m_finder->mesh_->node_.size(); i++) {
+			NavNode* node = m_finder->GetNode(i);
+			CPoint* pt = new CPoint[node->size_];
+
+			CBrush* ori = NULL;
+			if (node->mask_ == 0) {
+				ori = memdc->SelectObject(&brushWalk);
+			} else {
+				ori = memdc->SelectObject(&brushBlock);
+			}
+			for (int j = 0; j < node->size_; j++) {
+				Math::Vector3* pos = &m_finder->mesh_->vertice_[node->vertice_[j]];
+
+				pt[j].x = pos->x*m_scale + m_offset_x;
+				pt[j].y = pos->z*m_scale + m_offset_z;
+			}
+			memdc->Polygon(pt, node->size_);
+			delete[] pt;
+			memdc->SelectObject(ori);
+		}
+	}
+
+	m_scale_base = 10;
+	m_scale = 0.005f + (m_scale_base * 0.005);
+	m_offset_x = 200;
+	m_offset_z = 0;
 
 	CString str;
 	str.Format(_T("%d"), m_offset_x);
@@ -253,7 +296,6 @@ void CNavDlg::OnPath() {
 		if (m_finder->Find(begin, over, result) >= 0) {
 			DrawPath(result);
 		}
-		DrawPath(result);
 	}
 }
 
@@ -266,35 +308,20 @@ int CNavDlg::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message) {
 
 
 void CNavDlg::DrawMap() {
+	CRect rect;
+	GetClientRect(&rect);
+	
+	CDC* memdc = m_cdc[m_scale_base];
+
+	CDC* cdc = GetDC();
+	cdc->BitBlt(m_offset_x, m_offset_z, rect.Width(), rect.Height(), memdc, 0, 0, SRCCOPY);
+
 	CPen pen(PS_SOLID, 1, RGB(0, 0, 0));
-	CClientDC dc(this);
-	CPen *pOldPen = dc.SelectObject(&pen);
+	CPen *oriPen = cdc->SelectObject(&pen);
 
 	CBrush brush(RGB(255, 0, 0));
-	CBrush *obrush = dc.SelectObject(&brush);
+	CBrush *obrush = cdc->SelectObject(&brush);
 
-	CBrush brushDoor(RGB(88, 88, 0));
-	for (int i = 0; i < m_finder->mesh_->node_.size(); i++) {
-		NavNode* node = m_finder->GetNode(i);
-		CPoint* pt = new CPoint[node->size_];
-
-		if (node->mask_ == 0) {
-			dc.SelectObject(&brush);
-		} else {
-			dc.SelectObject(&brushDoor);
-		}
-		for (int j = 0; j < node->size_; j++) {
-			Math::Vector3* pos = &m_finder->mesh_->vertice_[node->vertice_[j]];
-
-			pt[j].x = pos->x*m_scale + m_offset_x;
-			pt[j].y = pos->z*m_scale + m_offset_z;
-		}
-		dc.Polygon(pt, node->size_);
-		delete[] pt;
-		dc.SelectObject(obrush);
-	}
-
-	obrush = dc.SelectObject(&brush);
 	CBrush brush_empty0(RGB(255, 255, 0));
 	CBrush brush_empty1(RGB(0, 0, 0));
 	CBrush brush_empty2(RGB(88, 88, 0));
@@ -306,9 +333,9 @@ void CNavDlg::DrawMap() {
 			CPoint pt[4];
 
 			if (tile->node_.size() == 0)
-				dc.SelectObject(&brush_empty0);
+				cdc->SelectObject(&brush_empty0);
 			else
-				dc.SelectObject(&brush_empty1);
+				cdc->SelectObject(&brush_empty1);
 
 
 			for (int j = 0; j < 4; j++) {
@@ -317,15 +344,15 @@ void CNavDlg::DrawMap() {
 				pt[j].x = pos->x*m_scale + m_offset_x;
 				pt[j].y = pos->z*m_scale + m_offset_z;
 			}
-			dc.Polygon(pt, 4);
+			cdc->Polygon(pt, 4);
 		}
 	}
 
-	dc.SelectObject(obrush);
+	cdc->SelectObject(obrush);
 
 	if (m_poly_begin != -1) {
 		CBrush brush(RGB(0, 255, 0));
-		dc.SelectObject(&brush);
+		cdc->SelectObject(&brush);
 		NavNode* node = m_finder->GetNode(m_poly_begin);
 		CPoint* pt = new CPoint[node->size_];
 		for (int j = 0; j < node->size_; j++) {
@@ -333,13 +360,13 @@ void CNavDlg::DrawMap() {
 			pt[j].x = pos->x*m_scale + m_offset_x;
 			pt[j].y = pos->z*m_scale + m_offset_z;
 		}
-		dc.Polygon(pt, node->size_);
+		cdc->Polygon(pt, node->size_);
 		delete[] pt;
 	}
 
 	if (m_poly_over != -1) {
 		CBrush brush(RGB(0, 0, 255));
-		dc.SelectObject(&brush);
+		cdc->SelectObject(&brush);
 
 		NavNode* node = m_finder->GetNode(m_poly_over);
 		CPoint* pt = new CPoint[node->size_];
@@ -348,72 +375,25 @@ void CNavDlg::DrawMap() {
 			pt[j].x = pos->x*m_scale + m_offset_x;
 			pt[j].y = pos->z*m_scale + m_offset_z;
 		}
-		dc.Polygon(pt, node->size_);
+		cdc->Polygon(pt, node->size_);
 		delete[] pt;
 	}
 
 
 	if (m_pt_begin != NULL) {
 		CBrush brush(RGB(50, 50, 50));
-		dc.SelectObject(&brush);
-		dc.Ellipse(m_pt_begin->x - 3, m_pt_begin->z - 3, m_pt_begin->x + 3, m_pt_begin->z + 3);
-		int x = ((m_pt_begin->x - m_offset_x) / m_scale - m_finder->mesh_->lt_.x) / m_finder->mesh_->tileUnit_;
-		int z = ((m_pt_begin->z - m_offset_z) / m_scale - m_finder->mesh_->lt_.z) / m_finder->mesh_->tileUnit_;
-		int index = x + z * m_finder->mesh_->tileWidth_;
-		NavTile* tile = &m_finder->mesh_->tile_[index];
-
-		//格子跨跃多少个多边形
-		/*	for (int i = 0;i < tile->offset;i++)
-			{
-			int node_id = tile->node[i];
-
-			CBrush brush(RGB(111,111,66));
-			dc.SelectObject(&brush);
-
-			struct nav_node* node = get_node(m_mesh,node_id);
-			CPoint* pt0 = new CPoint[node->size];
-			for (int j = 0; j < node->size;j++)
-			{
-			struct vector3* pos = &m_mesh->vertices[node->poly[j]];
-			pt0[j].x = pos->x*m_scale+m_offset_x;
-			pt0[j].y = pos->z*m_scale+m_offset_z;
-			}
-			dc.Polygon(pt0,node->size);
-			delete[] pt0;
-			}
-			*/
-
-		//CPoint pt[4];
-		//CBrush brush00(RGB(99, 99, 99));
-		//dc.SelectObject(&brush00);
-
-		//for ( int j = 0; j < 4; j++ )
-		//{
-		//	struct vector3* pos = &tile->pos[j];
-
-		//	pt[j].x = pos->x*m_scale + m_offset_x;
-		//	pt[j].y = pos->z*m_scale + m_offset_z;
-		//}
-		//dc.Polygon(pt, 4);
-
-		//for (int j = 0; j < 4;j++)
-		//{
-		//	struct vector3* pos = &tile->pos[j];
-
-		//	pt[j].x = pos->x*m_scale+m_offset_x +300;
-		//	pt[j].y = pos->z*m_scale+m_offset_z;
-		//}
-		//dc.Polygon(pt,4);
+		cdc->SelectObject(&brush);
+		cdc->Ellipse(m_pt_begin->x - 3, m_pt_begin->z - 3, m_pt_begin->x + 3, m_pt_begin->z + 3);
 	}
 
 	if (m_pt_over != NULL) {
 		CBrush brush(RGB(250, 50, 50));
-		dc.SelectObject(&brush);
-		dc.Ellipse(m_pt_over->x - 3, m_pt_over->z - 3, m_pt_over->x + 3, m_pt_over->z + 3);
+		cdc->SelectObject(&brush);
+		cdc->Ellipse(m_pt_over->x - 3, m_pt_over->z - 3, m_pt_over->x + 3, m_pt_over->z + 3);
 	}
 
-	dc.SelectObject(pOldPen);
-	dc.SelectObject(obrush);
+	cdc->SelectObject(oriPen);
+	cdc->SelectObject(obrush);
 
 }
 
@@ -812,11 +792,22 @@ void CNavDlg::OnEnChangeEdit6() {
 BOOL CNavDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 	// TODO:  在此添加消息处理程序代码和/或调用默认值
 	if (zDelta > 0) {
-		m_scale += 0.001;
+		m_scale_base++;
 	} else {
-		m_scale -= 0.001;
+		m_scale_base--;
 	}
 
+	if (m_scale_base < 0 || m_scale_base > 19) {
+		if (m_scale_base < 0) {
+			m_scale_base = 0;
+		}
+		if (m_scale_base > 19) {
+			m_scale_base = 19;
+		}
+	}
+	m_scale = (0.005 + (m_scale_base * 0.005));
+
+	printf("m_scale:%f, m_scale_base:%d\n", m_scale, m_scale_base);
 	CString str;
 	str.Format(_T("%f"), m_scale);
 
