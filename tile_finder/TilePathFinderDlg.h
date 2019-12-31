@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include <map>
 #include "TilePathFinder.h"
 // CTilePathFinderDlg ¶Ô»°¿ò
 class CTilePathFinderDlg : public CDialogEx {

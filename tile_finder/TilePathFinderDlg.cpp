@@ -174,17 +174,17 @@ BOOL CTilePathFinderDlg::OnInitDialog() {
 		for (int x = 0; x < m_tile_finder->GetWidth(); x++) {
 			for (int z = 0; z < m_tile_finder->GetHeight(); z++) {
 
-				CBrush* oriBush;
-				if (m_tile_finder->GetBlock(x, z) == 1)
-					oriBush = memdc->SelectObject(pBrushGray);
-				else if (m_tile_finder->GetBlock(x, z) == 0)
+				CBrush* oriBush = NULL;
+
+				if (m_tile_finder->GetBlock(x, z) == 0 || m_tile_finder->GetBlock(x, z) == 1)
 					oriBush = memdc->SelectObject(pBrushB);
 				else
 					oriBush = memdc->SelectObject(pBrushR);
 
-				DrawTile(memdc, x, z);
-
-				memdc->SelectObject(oriBush);
+				if (oriBush) {
+					DrawTile(memdc, x, z);
+					memdc->SelectObject(oriBush);
+				}
 			}
 		}
 		memdc->SelectObject(oriOpen);
@@ -209,6 +209,7 @@ BOOL CTilePathFinderDlg::OnInitDialog() {
 	FILE * hf = _fdopen(hCrt, "w");
 	*stdout = *hf;
 
+	Invalidate();
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -355,6 +356,18 @@ void CTilePathFinderDlg::UpdateDialog() {
 	cdc->BitBlt(0, 0, rect.Width(), rect.Height(), memdc, 0, 0, SRCCOPY);
 	DrawBegin();
 	DrawOver();
+
+	for (int x = 0; x < m_tile_finder->GetWidth(); x++) {
+		for (int z = 0; z < m_tile_finder->GetHeight(); z++) {
+
+			if (m_tile_finder->GetBlock(x, z) == 1) {
+				CBrush* oriBush = cdc->SelectObject(pBrushGray);
+				DrawTile(cdc, x, z);
+
+				cdc->SelectObject(oriBush);
+			}
+		}
+	}
 }
 
 
