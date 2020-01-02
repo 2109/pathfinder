@@ -381,7 +381,18 @@ void CTilePathFinderDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 	m_drag_l = false;
 	if (Between(point)) {
 		BOOL bCtrl = GetKeyState(VK_CONTROL) & 0x8000;
-		if (bCtrl) {
+		BOOL bAlt = GetKeyState(VK_MENU) & 0x8000;
+		if (bCtrl && bAlt) {
+			CClientDC dc(this);
+			//m_tile_finder->SetDebugCallback(CTilePathFinderDlg::OnSearchDump, this);
+			for (int i = 0; i < 1000; i++) {
+				Math::Vector2 result;
+				m_begin_x = (point.x - m_offset_x) / m_scale;
+				m_begin_z = (point.y - m_offset_z) / m_scale;
+				m_tile_finder->RandomInCircle(m_begin_x, m_begin_z, 10, result);
+				dc.SetPixel((result.x + (Math::Rand((float)0, (float)1))) * (float)m_scale + m_offset_x, (result.y + (Math::Rand((float)0, (float)1))) * (float)m_scale + m_offset_z, RGB(255, 255, 250));
+			}
+		} else if (bCtrl) {
 			CClientDC cdc(this);
 			CBrush* oriBrush = cdc.SelectObject(pBrushGray);
 			DrawBlock(&cdc, point, 1);
@@ -391,14 +402,6 @@ void CTilePathFinderDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 			m_begin_z = (point.y - m_offset_z) / m_scale;
 
 			DrawBegin();
-
-			//m_tile_finder->SetDebugCallback(CTilePathFinderDlg::OnSearchDump, this);
-
-			//for (int i = 0; i < 1000; i++) {
-			//	Math::Vector2 result;
-			//	m_tile_finder->RandomInCircle(m_begin_x, m_begin_z, 16, result);
-			//	dc.SetPixel((result.x + (Math::Rand((float)0, (float)1))) * (float)m_scale + m_offset_x, (result.y + (Math::Rand((float)0, (float)1))) * (float)m_scale + m_offset_z, RGB(255, 255, 250));
-			//}
 		}
 	}
 
@@ -546,14 +549,14 @@ void CTilePathFinderDlg::OnRandomPos() {
 	// TODO:  在此添加控件通知处理程序代码
 	CClientDC cdc(this);
 
-	for (int i = 0; i < 1000; i++) {
+	for (int i = 0; i < 10000; i++) {
 		Math::Vector2 result;
 		m_tile_finder->Random(result);
 		POINT pt;
-		pt.x = result.x * m_scale + m_offset_x;
-		pt.y = result.y * m_scale + m_offset_z;
+		pt.x = ((float)result.x + Math::Rand(0.0f, 1.0f)) * (float)m_scale + m_offset_x;
+		pt.y = ((float)result.y + Math::Rand(0.0f, 1.0f)) * (float)m_scale + m_offset_z;
 
-		cdc.Ellipse(pt.x - 1, pt.y - 1, pt.x + 1, pt.y + 1);
+		cdc.Ellipse(pt.x - 2, pt.y - 2, pt.x + 2, pt.y + 2);
 	}
 }
 

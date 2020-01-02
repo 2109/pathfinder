@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <sstream>
 #include <stdlib.h>
+#include <random>
 
 #define PI (float)3.14159265358979323846
 
@@ -45,11 +46,15 @@ namespace Math {
 	}
 
 	inline int Rand(int min, int max) {
-		return (int)((float)rand() / RAND_MAX * (max - min)) + min;
+		std::random_device rd;
+		std::uniform_int_distribution<int> dist(min, max);
+		return dist(rd);
 	}
 
 	inline float Rand(float min, float max) {
-		return (float)rand() / RAND_MAX * (max - min) + min;
+		std::random_device rd;
+		std::uniform_real_distribution<float> dist(min, max);
+		return dist(rd);
 	}
 
 	bool InsideVector(const Math::Vector3& lhs, const Math::Vector3& rhs, const Math::Vector3& pos);

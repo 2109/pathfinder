@@ -633,7 +633,7 @@ void TilePathFinder::Random(Math::Vector2& result) {
 		}
 	}
 
-	PathNode* node = &node_[nonblock_[Math::Rand(1, nonblockCount_)]];
+	PathNode* node = &node_[nonblock_[Math::Rand(0, nonblockCount_-1)]];
 	result = node->pos_;
 }
 
