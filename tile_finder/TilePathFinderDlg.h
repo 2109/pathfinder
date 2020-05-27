@@ -69,6 +69,8 @@ public:
 
 	bool m_show_path_search;
 	bool m_show_line_search;
+	bool m_smooth_head;
+	bool m_smooth_tail;
 
 	bool m_drag_l;
 	bool m_drag_r;
@@ -112,4 +114,6 @@ public:
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	afx_msg void OnBnClickedCheck3();
+	afx_msg void OnBnClickedCheck4();
 };

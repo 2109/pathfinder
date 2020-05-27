@@ -89,6 +89,8 @@ BEGIN_MESSAGE_MAP(CTilePathFinderDlg, CDialogEx)
 	ON_WM_RBUTTONDOWN()
 	ON_WM_MOUSEWHEEL()
 	ON_WM_ERASEBKGND()
+	ON_BN_CLICKED(IDC_CHECK3, &CTilePathFinderDlg::OnBnClickedCheck3)
+	ON_BN_CLICKED(IDC_CHECK4, &CTilePathFinderDlg::OnBnClickedCheck4)
 END_MESSAGE_MAP()
 
 
@@ -135,6 +137,7 @@ BOOL CTilePathFinderDlg::OnInitDialog() {
 
 	m_show_path_search = false;
 	m_show_line_search = false;
+	m_smooth_head = m_smooth_tail = false;
 	bNeedPaint = true;
 
 	USES_CONVERSION;
@@ -194,7 +197,9 @@ BOOL CTilePathFinderDlg::OnInitDialog() {
 	((CEdit*)GetDlgItem(IDC_EDIT4))->SetWindowTextW(str);
 
 	((CButton*)GetDlgItem(IDC_CHECK1))->SetCheck(m_show_path_search);
-	((CButton*)GetDlgItem(IDC_CHECK1))->SetCheck(m_show_line_search);
+	((CButton*)GetDlgItem(IDC_CHECK2))->SetCheck(m_show_line_search);
+	((CButton*)GetDlgItem(IDC_CHECK3))->SetCheck(m_smooth_head);
+	((CButton*)GetDlgItem(IDC_CHECK4))->SetCheck(m_smooth_tail);
 
 	m_time_cost = new CStatic();
 	m_time_cost->Create(_T(""), WS_CHILD | WS_VISIBLE | SS_LEFT, CRect(10, 20, 150, 100), this);
@@ -272,11 +277,18 @@ void CTilePathFinderDlg::OnFindPath() {
 
 	m_tile_finder->SetDebugCallback(m_show_path_search ? CTilePathFinderDlg::OnSearchDump : NULL, this);
 
+	int st = TilePathFinder::None;
+	if (m_smooth_head) {
+		st |= TilePathFinder::Head;
+	}
+	if (m_smooth_tail) {
+		st |= TilePathFinder::Tail;
+	}
 	Math::Vector2 from(m_begin_x, m_begin_z);
 	Math::Vector2 to(m_over_x, m_over_z);
 
 	std::vector<const Math::Vector2*> list;
-	m_tile_finder->Find(from, to, true, list, m_cost);
+	m_tile_finder->Find(from, to, (TilePathFinder::SmoothType)st, list, m_cost);
 	for (int i = 0; i < list.size(); i++) {
 		POINT* pt = new POINT();
 		pt->x = list[i]->x;
@@ -682,6 +694,12 @@ void CTilePathFinderDlg::OnSearchDump(void* userdata, int x, int z) {
 	CTilePathFinderDlg* ptr = (CTilePathFinderDlg*)userdata;
 	CClientDC cdc(ptr);
 	CBrush* oriBrush = cdc.SelectObject(pBrushDump);
+	if (ptr->m_smooth_head) {
+		oriBrush = cdc.SelectObject(pBrushGray);
+	}
+	if (ptr->m_smooth_tail) {
+		oriBrush = cdc.SelectObject(pBrushG);
+	}
 	ptr->DrawTile(&cdc, x, z);
 	cdc.SelectObject(oriBrush);
 	Sleep(1);
@@ -694,4 +712,16 @@ BOOL CTilePathFinderDlg::OnEraseBkgnd(CDC* pDC) {
 		return CDialogEx::OnEraseBkgnd(pDC);
 	}
 	return true;
+}
+
+
+void CTilePathFinderDlg::OnBnClickedCheck3() {
+	// TODO: Add your control notification handler code here
+	m_smooth_head = ((CButton*)GetDlgItem(IDC_CHECK3))->GetCheck();
+}
+
+
+void CTilePathFinderDlg::OnBnClickedCheck4() {
+	// TODO: Add your control notification handler code here
+	m_smooth_tail = ((CButton*)GetDlgItem(IDC_CHECK4))->GetCheck();
 }

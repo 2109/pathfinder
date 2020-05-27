@@ -6,8 +6,8 @@
 #define DX(A,B) (A->pos_.x - B->pos_.x)
 #define DZ(A,B) (A->pos_.y - B->pos_.y)
 
-static int kDirection[8][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1},
-{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
+static int kDirection[8][2] = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 },
+{ -1, -1 }, { -1, 1 }, { 1, -1 }, { 1, 1 } };
 
 static inline int NodeCmp(mh_elt_t* lhs, mh_elt_t* rhs) {
 	return ((TilePathFinder::PathNode*)lhs)->F > ((TilePathFinder::PathNode*)rhs)->F;
@@ -78,8 +78,8 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 		int tz = i;
 		int d = 3 - 2 * i;
 		while (tx <= tz) {
-			int range[][2] = {{tx, tz}, {-tx, tz}, {tx, -tz}, {-tx, -tz},
-			{tz, tx}, {-tz, tx}, {tz, -tx}, {-tz, -tx}};
+			int range[][2] = { { tx, tz }, { -tx, tz }, { tx, -tz }, { -tx, -tz },
+			{ tz, tx }, { -tz, tx }, { tz, -tx }, { -tz, -tx } };
 			for (int j = 0; j < 8; ++j) {
 				int xOffset = range[j][0];
 				int zOffset = range[j][1];
@@ -119,8 +119,8 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 		int d = 3 - 2 * i;
 		while (tx <= tz) {
 			for (int zi = tx; zi <= tz; zi++) {
-				int range[][2] = {{tx, zi}, {-tx, zi}, {tx, -zi}, {-tx, -zi},
-				{zi, tx}, {-zi, tx}, {zi, -tx}, {-zi, -tx}};
+				int range[][2] = { { tx, zi }, { -tx, zi }, { tx, -zi }, { -tx, -zi },
+				{ zi, tx }, { -zi, tx }, { zi, -tx }, { -zi, -tx } };
 
 				for (int i = 0; i < 8; i++) {
 					int xOffset = range[i][0];
@@ -228,8 +228,8 @@ TilePathFinder::PathNode* TilePathFinder::SearchInCircle(int cx, int cz, int dep
 			int tz = i;
 			int d = 3 - 2 * i;
 			while (tx <= tz) {
-				int range[][2] = {{tx, tz}, {-tx, tz}, {tx, -tz}, {-tx, -tz},
-				{tz, tx}, {-tz, tx}, {tz, -tx}, {-tz, -tx}};
+				int range[][2] = { { tx, tz }, { -tx, tz }, { tx, -tz }, { -tx, -tz },
+				{ tz, tx }, { -tz, tx }, { tz, -tx }, { -tz, -tx } };
 				for (int j = 0; j < 8; ++j) {
 					int xOffset = range[j][0];
 					int zOffset = range[j][1];
@@ -264,7 +264,7 @@ TilePathFinder::PathNode* TilePathFinder::SearchInReactangle(int cx, int cz, int
 		int zMin = cz - r;
 		int zMax = cz + r;
 
-		int zRange[2] = {zMin, zMax};
+		int zRange[2] = { zMin, zMax };
 
 		for (int i = 0; i < 2; i++) {
 			int z = zRange[i];
@@ -291,7 +291,7 @@ TilePathFinder::PathNode* TilePathFinder::SearchInReactangle(int cx, int cz, int
 			}
 		}
 
-		int xRange[2] = {xMin, xMax};
+		int xRange[2] = { xMin, xMax };
 
 		for (int i = 0; i < 2; i++) {
 			int x = xRange[i];
@@ -319,7 +319,7 @@ TilePathFinder::PathNode* TilePathFinder::SearchInReactangle(int cx, int cz, int
 	return NULL;
 }
 
-void TilePathFinder::BuildPath(PathNode* node, PathNode* from, bool smooth, std::vector<const Math::Vector2*>& list) {
+void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth, std::vector<const Math::Vector2*>& list) {
 	std::vector<const Math::Vector2*> path;
 
 	PathNode* parent = node->parent_;
@@ -352,12 +352,15 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, bool smooth, std:
 		node = node->parent_;
 	}
 
-	if (!smooth || path.size() == 2) {
+	if (smooth == SmoothType::None || path.size() == 2) {
 		for (int i = path.size() - 1; i >= 0; i--) {
 			const Math::Vector2* node = path[i];
 			list.push_back(node);
 		}
-	} else {
+		return;
+	}
+
+	if (smooth & SmoothType::Head) {
 		int tail = path.size() - 1;
 		const Math::Vector2* node = path[tail];
 		list.push_back(node);
@@ -385,10 +388,34 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, bool smooth, std:
 
 		node = path[0];
 		list.push_back(node);
+	} else {
+		std::swap(list, path);
 	}
+
+	if (smooth & SmoothType::Tail) {
+		std::vector<const Math::Vector2*> smoothPath;
+		for (int head = 0; head < path.size() - 1; head++) {
+			for (int tail = path.size() - 1; tail > head + 1; tail--) {
+				const Math::Vector2* headNode = path[head];
+				const Math::Vector2* tailNode = path[tail];
+				Math::Vector2 result;
+				Raycast(*headNode, *tailNode, true, &result, NULL);
+				if ((int)result.x == (int)tailNode->x &&
+					(int)result.y == (int)tailNode->y) {
+					smoothPath.push_back(path[head]);
+					head = tail;
+					break;
+				}
+			}
+			smoothPath.push_back(path[head]);
+		}
+
+		std::swap(list, smoothPath);
+	}
+
 }
 
-int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, bool smooth, std::vector<const Math::Vector2*>& list, float estimate) {
+int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, SmoothType smooth, std::vector<const Math::Vector2*>& list, float estimate) {
 	PathNode* fromNode = FindNode((int)from.x, (int)from.y);
 	if (!fromNode || IsBlock(fromNode)) {
 		fromNode = SearchInCircle((int)from.x, (int)from.y, kSearchDepth);
@@ -461,7 +488,7 @@ int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, boo
 	return status;
 }
 
-int TilePathFinder::Find(int x0, int z0, int x1, int z1, bool smooth, std::vector<const Math::Vector2*>& list, float estimate) {
+int TilePathFinder::Find(int x0, int z0, int x1, int z1, SmoothType smooth, std::vector<const Math::Vector2*>& list, float estimate) {
 	const Math::Vector2 from(x0, z0);
 	const Math::Vector2 to(x1, z1);
 	return Find(from, to, smooth, list, estimate);
@@ -633,7 +660,7 @@ void TilePathFinder::Random(Math::Vector2& result) {
 		}
 	}
 
-	PathNode* node = &node_[nonblock_[Math::Rand(0, nonblockCount_-1)]];
+	PathNode* node = &node_[nonblock_[Math::Rand(0, nonblockCount_ - 1)]];
 	result = node->pos_;
 }
 
@@ -665,8 +692,8 @@ int TilePathFinder::RandomInCircle(int cx, int cz, int radius, Math::Vector2& re
 		int d = 3 - 2 * radius;
 		while (tx <= tz) {
 			for (int zi = tx; zi <= tz; zi++) {
-				int range[][2] = {{tx, zi}, {-tx, zi}, {tx, -zi}, {-tx, -zi},
-				{zi, tx}, {-zi, tx}, {zi, -tx}, {-zi, -tx}};
+				int range[][2] = { { tx, zi }, { -tx, zi }, { tx, -zi }, { -tx, -zi },
+				{ zi, tx }, { -zi, tx }, { zi, -tx }, { -zi, -tx } };
 
 				for (int i = 0; i < 8; i++) {
 					int xOffset = range[i][0];

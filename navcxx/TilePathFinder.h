@@ -28,6 +28,12 @@ public:
 		STATUS_CANNOT_REACH = -4,
 	};
 
+	enum SmoothType {
+		None = 0,
+		Head = 0x01,
+		Tail = 0x02,
+	};
+
 	struct PathNode {
 		mh_elt_t elt_;
 		PathNode* next_;
@@ -164,11 +170,11 @@ public:
 
 	PathNode* SearchInReactangle(int cx, int cz, int depth);
 
-	void BuildPath(PathNode* node, PathNode* from, bool smooth, std::vector<const Math::Vector2*>& list);
+	void BuildPath(PathNode* node, PathNode* from, SmoothType smooth, std::vector<const Math::Vector2*>& list);
 
-	int Find(const Math::Vector2& from, const Math::Vector2& to, bool smooth, std::vector<const Math::Vector2*>& list, float estimate = 1.0f);
+	int Find(const Math::Vector2& from, const Math::Vector2& to, SmoothType smooth, std::vector<const Math::Vector2*>& list, float estimate = 1.0f);
 
-	int Find(int x0, int z0, int x1, int z1, bool smooth, std::vector<const Math::Vector2*>& list, float estimate = 1.0f);
+	int Find(int x0, int z0, int x1, int z1, SmoothType smooth, std::vector<const Math::Vector2*>& list, float estimate = 1.0f);
 
 	int Raycast(const Math::Vector2& from, const Math::Vector2& to, bool ignore, Math::Vector2* result, Math::Vector2* stop);
 
