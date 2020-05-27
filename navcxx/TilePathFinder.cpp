@@ -353,10 +353,8 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 	}
 
 	if (smooth == SmoothType::None || path.size() == 2) {
-		for (int i = path.size() - 1; i >= 0; i--) {
-			const Math::Vector2* node = path[i];
-			list.push_back(node);
-		}
+		list.resize(path.size());
+		std::reverse_copy(path.begin(), path.end(), list.begin());
 		return;
 	}
 
