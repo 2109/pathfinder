@@ -53,6 +53,8 @@ CBrush* CTilePathFinderDlg::pBrushDump = new CBrush(RGB(0, 0, 0));
 CBrush* CTilePathFinderDlg::pBrushLine = new CBrush(RGB(124, 252, 0));
 CBrush* CTilePathFinderDlg::pBrushStop = new CBrush(RGB(0, 255, 255));
 CPen* CTilePathFinderDlg::pPenLine = new CPen(PS_SOLID, 1, RGB(110, 139, 61));
+CPen* CTilePathFinderDlg::pPenLine1 = new CPen(PS_SOLID, 1, RGB(0, 139, 61));
+CPen* CTilePathFinderDlg::pPenLine2 = new CPen(PS_SOLID, 1, RGB(110, 0, 61));
 
 
 CTilePathFinderDlg::CTilePathFinderDlg(CWnd* pParent /*=NULL*/)
@@ -300,6 +302,12 @@ void CTilePathFinderDlg::OnFindPath() {
 
 	CClientDC cdc(this);
 	CPen *oriPen = cdc.SelectObject(pPenLine);
+	if (m_smooth_head) {
+		oriPen = cdc.SelectObject(pPenLine1);
+	}
+	if (m_smooth_tail) {
+		oriPen = cdc.SelectObject(pPenLine2);
+	}
 
 	if (m_path.size() != 0) {
 		std::vector<POINT*>::iterator iter = m_path.begin();
@@ -694,12 +702,7 @@ void CTilePathFinderDlg::OnSearchDump(void* userdata, int x, int z) {
 	CTilePathFinderDlg* ptr = (CTilePathFinderDlg*)userdata;
 	CClientDC cdc(ptr);
 	CBrush* oriBrush = cdc.SelectObject(pBrushDump);
-	if (ptr->m_smooth_head) {
-		oriBrush = cdc.SelectObject(pBrushGray);
-	}
-	if (ptr->m_smooth_tail) {
-		oriBrush = cdc.SelectObject(pBrushG);
-	}
+
 	ptr->DrawTile(&cdc, x, z);
 	cdc.SelectObject(oriBrush);
 	Sleep(1);

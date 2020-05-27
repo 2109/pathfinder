@@ -88,6 +88,8 @@ public:
 	static CBrush* pBrushLine;
 	static CBrush* pBrushStop;
 	static CPen* pPenLine;
+	static CPen* pPenLine1;
+	static CPen* pPenLine2;
 
 	float m_cost;
 
