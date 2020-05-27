@@ -390,29 +390,27 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 		list.push_back(node);
 	} else {
 		std::swap(list, path);
+		std::reverse(list.begin(), list.end());
 	}
 
 	if (smooth & SmoothType::Tail) {
 		std::vector<const Math::Vector2*> smoothPath;
 		for (int head = 0; head < list.size() - 1; head++) {
+			smoothPath.push_back(list[head]);
 			for (int tail = list.size() - 1; tail > head + 1; tail--) {
 				const Math::Vector2* headNode = list[head];
 				const Math::Vector2* tailNode = list[tail];
 				Math::Vector2 result;
 				Raycast(*headNode, *tailNode, true, &result, NULL);
-				if ((int)result.x == (int)tailNode->x &&
-					(int)result.y == (int)tailNode->y) {
-					smoothPath.push_back(list[head]);
-					head = tail;
+				if ((int)result.x == (int)tailNode->x && (int)result.y == (int)tailNode->y) {
+					head = tail - 1;
 					break;
 				}
 			}
-			smoothPath.push_back(list[head]);
 		}
-
+		smoothPath.push_back(list[list.size() - 1]);
 		std::swap(list, smoothPath);
 	}
-
 }
 
 int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, SmoothType smooth, std::vector<const Math::Vector2*>& list, float estimate) {
