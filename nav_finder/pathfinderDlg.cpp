@@ -416,6 +416,7 @@ void OnAroundDump(void* self, int index) {
 	}
 	dc.Polygon(pt, 4);
 	dc.SelectObject(obrush);
+	Sleep(100);
 }
 
 void CNavDlg::DrawBegin(CPoint& pos) {
@@ -424,9 +425,10 @@ void CNavDlg::DrawBegin(CPoint& pos) {
 
 	printf("nav begin:%f,%f\n", nav_x, nav_z);
 
-	/*m_finder->SetDebugTileFunc(OnAroundDump, this);
-	m_finder->SetDebugNodeFunc(OnSearchDump, this);*/
-	NavNode* node = m_finder->SearchNode(Math::Vector3(nav_x, 0, nav_z), 20);
+	m_finder->SetDebugTileFunc(OnAroundDump, this);
+	m_finder->SetDebugNodeFunc(OnSearchDump, this);
+	/*m_finder->Movable(Math::Vector3(nav_x, 0, nav_z), 10, NULL);*/
+	NavNode* node = m_finder->SearchNode(Math::Vector3(nav_x, 0, nav_z), 1);
 	if (node == NULL)
 		return;
 
@@ -452,19 +454,19 @@ void CNavDlg::DrawBegin(CPoint& pos) {
 	float h = m_finder->GetHeight(Math::Vector3(nav_x, 0, nav_z));
 	printf("heigh:%f\n", h);
 
-	//m_finder->SetDebugOverlapFunc(OnOverlayDump, this);
+	m_finder->SetDebugOverlapFunc(OnOverlayDump, this);
 
-	CClientDC dc(this);
-	int count = 0;
-	for (int i = 0; i < 1000; i++) {
-		Math::Vector3 result;
-		//Math::Vector3 result = m_finder->RandomMovable(-1);
-		if (m_finder->RandomInCircle(result, Math::Vector3(nav_x, 0, nav_z), 2000)) {
-			//printf("%f,%f\n", result.x*m_scale + m_offset_x, result.z*m_scale + m_offset_z);
-			dc.SetPixel(result.x*m_scale + m_offset_x, result.z*m_scale + m_offset_z, RGB(255, 111, 250));
-		}
+	//CClientDC dc(this);
+	//int count = 0;
+	//for (int i = 0; i < 1000; i++) {
+	//	Math::Vector3 result;
+	//	//Math::Vector3 result = m_finder->RandomMovable(-1);
+	//	if (m_finder->RandomInCircle(result, Math::Vector3(nav_x, 0, nav_z), 2000)) {
+	//		//printf("%f,%f\n", result.x*m_scale + m_offset_x, result.z*m_scale + m_offset_z);
+	//		dc.SetPixel(result.x*m_scale + m_offset_x, result.z*m_scale + m_offset_z, RGB(255, 111, 250));
+	//	}
 
-	}
+	//}
 
 
 	//Invalidate();

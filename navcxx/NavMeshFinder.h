@@ -127,6 +127,9 @@ public:
 	struct IndexPair {
 		int x_;
 		int z_;
+		IndexPair() {
+			x_ = z_ = 0;
+		}
 		IndexPair(int x, int z) {
 			x_ = x;
 			z_ = z;
@@ -358,6 +361,7 @@ public:
 	std::vector<bool>                    mask_;
 
 	std::vector<std::vector<IndexPair>*> circle_index_;
+	std::vector<std::vector<IndexPair>*> reactangle_index_;
 
 	DebugFunc                            debug_node_func_;
 	void*                                debug_node_userdata_;

@@ -84,6 +84,38 @@ NavPathFinder::NavPathFinder() {
 			tx++;
 		}
 	}
+
+	reactangle_index_.resize(kSearchDepth);
+	for (int i = 1; i <= kSearchDepth; i++) {
+		int size = i * 2 + 1;
+		std::vector<IndexPair>* vt = new std::vector<IndexPair>();
+		vt->resize(size * size);
+		int y = size / 2, x = size / 2;//从中心点开始
+		for (int i = 1; i <= size * size; i++) {
+			if (x <= size - y - 1 && x >= y) {
+				IndexPair& pairs = (*vt)[i - 1];
+				pairs.x_ = x;
+				pairs.z_ = y;
+				x++;
+			} else if (x > size - y - 1 && x > y) {
+				IndexPair& pairs = (*vt)[i - 1];
+				pairs.x_ = x;
+				pairs.z_ = y;
+				y++;
+			} else if (x > size - y - 1 && x <= y) {
+				IndexPair& pairs = (*vt)[i - 1];
+				pairs.x_ = x;
+				pairs.z_ = y;
+				x--;
+			} else if (x <= size - y - 1 && x < y) {
+				IndexPair& pairs = (*vt)[i - 1];
+				pairs.x_ = x;
+				pairs.z_ = y;
+				y--;
+			}
+		}
+		reactangle_index_[i - 1] = vt;
+	}
 }
 
 NavPathFinder::~NavPathFinder() {
@@ -91,6 +123,13 @@ NavPathFinder::~NavPathFinder() {
 
 	for (int i = 0; i < kSearchDepth; ++i) {
 		std::vector<IndexPair>* index = circle_index_[i];
+		if (index) {
+			delete index;
+		}
+	}
+
+	for (int i = 0; i < kSearchDepth; ++i) {
+		std::vector<IndexPair>* index = reactangle_index_[i];
 		if (index) {
 			delete index;
 		}

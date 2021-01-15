@@ -43,65 +43,94 @@ void NavPathFinder::SearchTile(const Math::Vector3& pos, int depth, SearchFunc f
 	int x_index = (pos.x - mesh_->lt_.x) / mesh_->tile_unit_;
 	int z_index = (pos.z - mesh_->lt_.z) / mesh_->tile_unit_;
 
-	for (int r = 1; r <= depth; ++r) {
-		int x_min = x_index - r;
-		int x_max = x_index + r;
-		int z_min = z_index - r;
-		int z_max = z_index + r;
-
-		int z_range[2] = { z_min, z_max };
-
-		for (int i = 0; i < 2; i++) {
-			int z = z_range[i];
-
+	if (depth <= kSearchDepth) {
+		int xmin = x_index - depth;
+		int zmin = z_index - depth;
+		std::vector<IndexPair>* indexes = reactangle_index_[depth-1];
+		for (int i = 0; i < indexes->size(); i++) {
+			IndexPair& pair = (*indexes)[i];
+			int x = xmin + pair.x_;
+			int z = zmin + pair.z_;
+			if (x < 0 || x >= (int)mesh_->tile_width_) {
+				continue;
+			}
 			if (z < 0 || z >= (int)mesh_->tile_height_) {
 				continue;
 			}
+			int index = x + z * mesh_->tile_width_;
+			NavTile* tile = &mesh_->tile_[index];
 
-			for (int x = x_min; x <= x_max; x++) {
+			if (debug_tile_func_) {
+				debug_tile_func_(debug_tile_userdata_, index);
+			}
 
+			if (!func(ud, this, tile)) {
+				return;
+			}
+		}
+	} else {
+
+		for (int r = 1; r <= depth; ++r) {
+			int x_min = x_index - r;
+			int x_max = x_index + r;
+			int z_min = z_index - r;
+			int z_max = z_index + r;
+
+			int z_range[2] = { z_min, z_max };
+
+			for (int i = 0; i < 2; i++) {
+				int z = z_range[i];
+
+				if (z < 0 || z >= (int)mesh_->tile_height_) {
+					continue;
+				}
+
+				for (int x = x_min; x <= x_max; x++) {
+
+					if (x < 0 || x >= (int)mesh_->tile_width_) {
+						continue;
+					}
+
+					int index = x + z * mesh_->tile_width_;
+					NavTile* tile = &mesh_->tile_[index];
+
+					if (debug_tile_func_) {
+						debug_tile_func_(debug_tile_userdata_, index);
+					}
+
+					if (!func(ud, this, tile)) {
+						return;
+					}
+				}
+			}
+
+			int x_range[2] = { x_min, x_max };
+
+			for (int i = 0; i < 2; i++) {
+				int x = x_range[i];
 				if (x < 0 || x >= (int)mesh_->tile_width_) {
 					continue;
 				}
 
-				int index = x + z * mesh_->tile_width_;
-				NavTile* tile = &mesh_->tile_[index];
+				for (int z = z_min; z < z_max; z++) {
+					if (z < 0 || z >= (int)mesh_->tile_height_) {
+						continue;
+					}
+					int index = x + z * mesh_->tile_width_;
+					NavTile* tile = &mesh_->tile_[index];
 
-				if (debug_tile_func_) {
-					debug_tile_func_(debug_tile_userdata_, index);
-				}
+					if (debug_tile_func_) {
+						debug_tile_func_(debug_tile_userdata_, index);
+					}
 
-				if (!func(ud, this, tile)) {
-					return;
-				}
-			}
-		}
-
-		int x_range[2] = { x_min, x_max };
-
-		for (int i = 0; i < 2; i++) {
-			int x = x_range[i];
-			if (x < 0 || x >= (int)mesh_->tile_width_) {
-				continue;
-			}
-
-			for (int z = z_min; z < z_max; z++) {
-				if (z < 0 || z >= (int)mesh_->tile_height_) {
-					continue;
-				}
-				int index = x + z * mesh_->tile_width_;
-				NavTile* tile = &mesh_->tile_[index];
-
-				if (debug_tile_func_) {
-					debug_tile_func_(debug_tile_userdata_, index);
-				}
-
-				if (!func(ud, this, tile)) {
-					return;
+					if (!func(ud, this, tile)) {
+						return;
+					}
 				}
 			}
 		}
 	}
+
 }
 
 Math::Vector3* NavPathFinder::SearchInRectangle(const Math::Vector3& pos, int depth, int* center_node) {
@@ -227,7 +256,7 @@ NavNode* NavPathFinder::SearchNode(const Math::Vector3& pos, int depth) {
 
 	if (depth > 0) {
 		int center_node = 0;
-		if (SearchInCircle(pos, depth, &center_node)) {
+		if (SearchInRectangle(pos, depth, &center_node)) {
 			return &mesh_->node_[center_node];
 		}
 	}
