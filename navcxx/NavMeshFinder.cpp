@@ -1,4 +1,3 @@
-
 #include "Intersect.h"
 #include "Math.h"
 #include "NavMeshFinder.h"
@@ -8,26 +7,26 @@ static inline int NodeCmp(mh_elt_t* lhs, mh_elt_t* rhs) {
 	return ((NavNode*)lhs)->F > ((NavNode*)rhs)->F;
 }
 
-static inline float NeighborEstimate(NavNode* from, NavNode* to) {
-	double dx = from->pos_.x - to->pos_.x;
+static inline float NeighborEstimate(NavNode* src, NavNode* dst) {
+	double dx = src->pos_.x - dst->pos_.x;
 	double dy = 0;
-	double dz = from->pos_.z - to->pos_.z;
-	return sqrt(dx*dx + dy* dy + dz* dz) * NavPathFinder::kGrate;
+	double dz = src->pos_.z - dst->pos_.z;
+	return sqrt(dx * dx + dy * dy + dz * dz) * NavPathFinder::kGrate;
 }
 
-static inline float GoalEstimate(NavNode* from, const Math::Vector3& to) {
-	double dx = from->center_.x - to.x;
+static inline float GoalEstimate(NavNode* src, const Math::Vector3& dst) {
+	double dx = src->center_.x - dst.x;
 	double dy = 0;
-	double dz = from->center_.z - to.z;
-	return sqrt(dx*dx + dy* dy + dz* dz) * NavPathFinder::kHrate;
+	double dz = src->center_.z - dst.z;
+	return sqrt(dx * dx + dy * dy + dz * dz) * NavPathFinder::kHrate;
 }
 
 NavPathFinder::NavPathFinder() {
-	pathIndex_ = 0;
+	path_index_ = 0;
 	path_.resize(kDefaultPath);
 
-	mh_ctor(&openList_, NodeCmp);
-	closeList_ = NULL;
+	mh_ctor(&open_list_, NodeCmp);
+	close_list_ = NULL;
 
 	mask_.resize(kMaskMax);
 	for (int i = 0; i < kMaskMax; ++i) {
@@ -35,18 +34,21 @@ NavPathFinder::NavPathFinder() {
 	}
 	SetMask(0, 1);
 
-	debugNodeFunc_ = NULL;
-	debugNodeUserdata_ = NULL;
+	debug_node_func_ = NULL;
+	debug_node_userdata_ = NULL;
 
-	debugTileFunc_ = NULL;
-	debugTileUserdata_ = NULL;
+	debug_tile_func_ = NULL;
+	debug_tile_userdata_ = NULL;
+
+	debug_overlap_func_ = NULL;
+	debug_overlap_userdata_ = NULL;
 
 	mesh_ = NULL;
 
-	circleIndex_.resize(kSearchDepth);
-	for (int i = 1; i <= (int)circleIndex_.size(); ++i) {
-		std::vector<IndexPair>* pairInfo = new std::vector<IndexPair>();
-		circleIndex_[i - 1] = pairInfo;
+	circle_index_.resize(kSearchDepth);
+	for (int i = 1; i <= (int)circle_index_.size(); ++i) {
+		std::vector<IndexPair>* pair_info = new std::vector<IndexPair>();
+		circle_index_[i - 1] = pair_info;
 		std::unordered_map<int, std::unordered_set<int>> record;
 
 		int tx = 0;
@@ -56,20 +58,20 @@ NavPathFinder::NavPathFinder() {
 			int range[][2] = { { tx, tz }, { -tx, tz }, { tx, -tz }, { -tx, -tz },
 			{ tz, tx }, { -tz, tx }, { tz, -tx }, { -tz, -tx } };
 			for (int j = 0; j < 8; ++j) {
-				int xOffset = range[j][0];
-				int zOffset = range[j][1];
-				std::unordered_map<int, std::unordered_set<int>>::iterator itr = record.find(xOffset);
+				int x_offset = range[j][0];
+				int z_offset = range[j][1];
+				auto itr = record.find(x_offset);
 				if (itr != record.end()) {
 					std::unordered_set<int>& set = itr->second;
-					std::unordered_set<int>::iterator it = set.find(zOffset);
+					auto it = set.find(z_offset);
 					if (it == set.end()) {
-						set.insert(zOffset);
-						pairInfo->push_back(IndexPair(xOffset, zOffset));
+						set.insert(z_offset);
+						pair_info->push_back(IndexPair(x_offset, z_offset));
 					}
 				} else {
-					record[xOffset] = std::unordered_set<int>();
-					record[xOffset].insert(zOffset);
-					pairInfo->push_back(IndexPair(xOffset, zOffset));
+					record[x_offset] = std::unordered_set<int>();
+					record[x_offset].insert(z_offset);
+					pair_info->push_back(IndexPair(x_offset, z_offset));
 				}
 			}
 
@@ -85,10 +87,10 @@ NavPathFinder::NavPathFinder() {
 }
 
 NavPathFinder::~NavPathFinder() {
-	mh_dtor(&openList_);
+	mh_dtor(&open_list_);
 
 	for (int i = 0; i < kSearchDepth; ++i) {
-		std::vector<IndexPair>* index = circleIndex_[i];
+		std::vector<IndexPair>* index = circle_index_[i];
 		if (index) {
 			delete index;
 		}
@@ -99,61 +101,61 @@ NavPathFinder::~NavPathFinder() {
 	}
 }
 
-int NavPathFinder::Find(const Math::Vector3& from, const Math::Vector3& to, std::vector<const Math::Vector3*>& list) {
-	NavNode* fromNode = SearchNode(from);
-	NavNode* toNode = SearchNode(to);
-	if (!fromNode || !toNode) {
+int NavPathFinder::Find(const Math::Vector3& src, const Math::Vector3& dst, std::vector<const Math::Vector3*>& list) {
+	NavNode* src_node = SearchNode(src);
+	NavNode* dst_node = SearchNode(dst);
+	if (!src_node || !dst_node) {
 		return -1;
 	}
-	if (fromNode == toNode) {
-		PathAdd((Math::Vector3&)to);
-		PathAdd((Math::Vector3&)from);
+	if (src_node == dst_node) {
+		PathAdd((Math::Vector3&)dst);
+		PathAdd((Math::Vector3&)src);
 		PathCollect(list);
 		return 0;
 	}
 
-	fromNode->pos_ = from;
-	mh_push(&openList_, &fromNode->elt_);
+	src_node->pos_ = src;
+	mh_push(&open_list_, &src_node->elt_);
 	NavNode* node = NULL;
 
-	while ((node = (NavNode*)mh_pop(&openList_)) != NULL) {
+	while ((node = (NavNode*)mh_pop(&open_list_)) != NULL) {
 		node->close_ = true;
-		node->next_ = closeList_;
-		closeList_ = node;
+		node->next_ = close_list_;
+		close_list_ = node;
 
-		if (node == toNode) {
-			BuildPath(from, to, node, list);
+		if (node == dst_node) {
+			BuildPath(src, dst, node, list);
 			Reset();
 			return 0;
 		}
 
-		NavNode* linkNode = NULL;
-		GetLink(node, &linkNode);
+		NavNode* link_node = NULL;
+		GetLink(node, &link_node);
 
-		while (linkNode) {
-			if (mh_elt_has_init(&linkNode->elt_)) {
-				double nG = node->G + NeighborEstimate(node, linkNode);
-				if (nG < linkNode->G) {
-					linkNode->G = nG;
-					linkNode->F = linkNode->G + linkNode->H;
-					linkNode->linkParent_ = node;
-					linkNode->linkBorder_ = linkNode->reserve_;
-					mh_adjust(&openList_, &linkNode->elt_);
+		while (link_node) {
+			if (mh_elt_has_init(&link_node->elt_)) {
+				double nG = node->G + NeighborEstimate(node, link_node);
+				if (nG < link_node->G) {
+					link_node->G = nG;
+					link_node->F = link_node->G + link_node->H;
+					link_node->link_parent_ = node;
+					link_node->link_edge_ = link_node->reserve_;
+					mh_adjust(&open_list_, &link_node->elt_);
 				}
 			} else {
-				linkNode->G = node->G + NeighborEstimate(node, linkNode);
-				linkNode->H = GoalEstimate(linkNode, to);
-				linkNode->F = linkNode->G + linkNode->H;
-				linkNode->linkParent_ = node;
-				linkNode->linkBorder_ = linkNode->reserve_;
-				mh_push(&openList_, &linkNode->elt_);
+				link_node->G = node->G + NeighborEstimate(node, link_node);
+				link_node->H = GoalEstimate(link_node, dst);
+				link_node->F = link_node->G + link_node->H;
+				link_node->link_parent_ = node;
+				link_node->link_edge_ = link_node->reserve_;
+				mh_push(&open_list_, &link_node->elt_);
 
-				if (debugNodeFunc_) {
-					debugNodeFunc_(debugNodeUserdata_, linkNode->id_);
+				if (debug_node_func_) {
+					debug_node_func_(debug_node_userdata_, link_node->id_);
 				}
 			}
-			NavNode* tmp = linkNode;
-			linkNode = linkNode->next_;
+			NavNode* tmp = link_node;
+			link_node = link_node->next_;
 			tmp->next_ = NULL;
 		}
 	}
@@ -161,58 +163,58 @@ int NavPathFinder::Find(const Math::Vector3& from, const Math::Vector3& to, std:
 	return -1;
 }
 
-int NavPathFinder::Raycast(const Math::Vector3& from, const Math::Vector3& to, Math::Vector3& stop) {
-	NavNode* node = SearchNode(from);
+int NavPathFinder::Raycast(const Math::Vector3& src, const Math::Vector3& dst, Math::Vector3& stop) {
+	NavNode* node = SearchNode(src);
 	if (!node) {
 		return -1;
 	}
 
-	Math::Vector3 pt0 = from;
-	const Math::Vector3 pt1 = to;
+	Math::Vector3 pt0 = src;
+	const Math::Vector3 pt1 = dst;
 
 	int index = 0;
 	Math::Vector3 vt10 = pt1 - pt0;
 	while (node) {
-		if (InsideNode(node->id_, to)) {
-			stop = to;
+		if (InsideNode(node->id_, dst)) {
+			stop = dst;
 			return 0;
 		}
 
 		bool cross = false;
 		for (int i = 0; i < node->size_; ++i) {
-			NavBorder* border = GetBorder(node->border_[i]);
-			const Math::Vector3& pt3 = mesh_->vertice_[border->a_];
-			const Math::Vector3& pt4 = mesh_->vertice_[border->b_];
+			NavEdge* edge = GetEdge(node->edge_[i]);
+			const Math::Vector3& pt3 = mesh_->vertice_[edge->a_];
+			const Math::Vector3& pt4 = mesh_->vertice_[edge->b_];
 			Math::Vector3 vt30 = pt3 - pt0;
 			Math::Vector3 vt40 = pt4 - pt0;
 			if (Math::InsideVector(vt30, vt40, vt10)) {
 				int next = -1;
-				if (border->node_[0] != -1) {
-					if (border->node_[0] == node->id_) {
-						next = border->node_[1];
+				if (edge->node_[0] != -1) {
+					if (edge->node_[0] == node->id_) {
+						next = edge->node_[1];
 					} else {
-						next = border->node_[0];
+						next = edge->node_[0];
 					}
 				} else {
-					assert(border->node_[1] == node->id_);
+					assert(edge->node_[1] == node->id_);
 				}
 
 				if (next == -1) {
 					GetIntersectPoint(pt3, pt4, pt1, pt0, stop);
 					return 0;
 				} else {
-					NavNode* nextNode = GetNode(next);
-					if (GetMask(nextNode->mask_) == 0) {
+					NavNode* next_node = GetNode(next);
+					if (GetMask(next_node->mask_) == 0) {
 						GetIntersectPoint(pt3, pt4, pt1, pt0, stop);
 						return 0;
 					}
 
-					if (debugNodeFunc_) {
-						debugNodeFunc_(debugNodeUserdata_, next);
+					if (debug_node_func_) {
+						debug_node_func_(debug_node_userdata_, next);
 					}
 
 					cross = true;
-					node = nextNode;
+					node = next_node;
 					break;
 				}
 			}
@@ -227,91 +229,91 @@ int NavPathFinder::Raycast(const Math::Vector3& from, const Math::Vector3& to, M
 	return -1;
 }
 
-NavNode* NavPathFinder::NextBorder(NavNode* node, const Math::Vector3& wp, int& linkBorder) {
+NavNode* NavPathFinder::NextEdge(NavNode* node, const Math::Vector3& wp, int& link_edge) {
 	Math::Vector3 vt0, vt1;
-	linkBorder = node->linkBorder_;
-	while (linkBorder != -1) {
-		NavBorder* border = GetBorder(linkBorder);
-		vt0 = mesh_->vertice_[border->a_] - wp;
-		vt1 = mesh_->vertice_[border->b_] - wp;
+	link_edge = node->link_edge_;
+	while (link_edge != -1) {
+		NavEdge* edge = GetEdge(link_edge);
+		vt0 = mesh_->vertice_[edge->a_] - wp;
+		vt1 = mesh_->vertice_[edge->b_] - wp;
 		if ((vt0.x == 0 && vt0.z == 0) || (vt1.x == 0 && vt1.z == 0)) {
-			node = node->linkParent_;
-			linkBorder = node->linkBorder_;
+			node = node->link_parent_;
+			link_edge = node->link_edge_;
 		} else {
 			break;
 		}
 	}
-	if (linkBorder != -1) {
+	if (link_edge != -1) {
 		return node;
 	}
 
 	return NULL;
 }
 
-bool NavPathFinder::UpdateWp(const Math::Vector3& from, NavNode*& node, NavNode*& parent, Math::Vector3& ptWp, int& linkBorder, Math::Vector3& lPt, Math::Vector3& rPt, Math::Vector3& lVt, Math::Vector3& rVt, NavNode*& lNode, NavNode*& rNode) {
-	PathAdd(ptWp);
+bool NavPathFinder::UpdateWp(const Math::Vector3& src, NavNode*& node, NavNode*& parent, Math::Vector3& pt_wp, int& link_edge, Math::Vector3& lpt, Math::Vector3& rpt, Math::Vector3& lvt, Math::Vector3& rvt, NavNode*& lnode, NavNode*& rnode) {
+	PathAdd(pt_wp);
 
-	node = NextBorder(node, ptWp, linkBorder);
+	node = NextEdge(node, pt_wp, link_edge);
 	if (node == NULL) {
-		PathAdd((Math::Vector3&)from);
+		PathAdd((Math::Vector3&)src);
 		return false;
 	}
 
-	NavBorder* border = GetBorder(linkBorder);
+	NavEdge* edge = GetEdge(link_edge);
 
-	lPt = mesh_->vertice_[border->a_];
-	rPt = mesh_->vertice_[border->b_];
+	lpt = mesh_->vertice_[edge->a_];
+	rpt = mesh_->vertice_[edge->b_];
 
-	lVt = lPt - ptWp;
-	rVt = rPt - ptWp;
+	lvt = lpt - pt_wp;
+	rvt = rpt - pt_wp;
 
-	parent = node->linkParent_;
+	parent = node->link_parent_;
 
-	lNode = parent;
-	rNode = parent;
+	lnode = parent;
+	rnode = parent;
 
 	return true;
 }
 
-void NavPathFinder::BuildPath(const Math::Vector3& from, const Math::Vector3& to, NavNode* node, std::vector<const Math::Vector3*>& list) {
-	PathAdd((Math::Vector3&)to);
+void NavPathFinder::BuildPath(const Math::Vector3& src, const Math::Vector3& dst, NavNode* node, std::vector<const Math::Vector3*>& list) {
+	PathAdd((Math::Vector3&)dst);
 
-	int linkBorder = node->linkBorder_;
-	NavBorder* border = GetBorder(linkBorder);
+	int link_edge = node->link_edge_;
+	NavEdge* edge = GetEdge(link_edge);
 
-	Math::Vector3 ptWp = to;
+	Math::Vector3 pt_wp = dst;
 
-	Math::Vector3 lPt = mesh_->vertice_[border->a_];
-	Math::Vector3 rPt = mesh_->vertice_[border->b_];
+	Math::Vector3 lpt = mesh_->vertice_[edge->a_];
+	Math::Vector3 rpt = mesh_->vertice_[edge->b_];
 
-	Math::Vector3 lVt = lPt - ptWp;
-	Math::Vector3 rVt = rPt - ptWp;
+	Math::Vector3 lvt = lpt - pt_wp;
+	Math::Vector3 rvt = rpt - pt_wp;
 
-	NavNode* lNode = node->linkParent_;
-	NavNode* rNode = node->linkParent_;
+	NavNode* lnode = node->link_parent_;
+	NavNode* rnode = node->link_parent_;
 
-	NavNode* parent = node->linkParent_;
+	NavNode* parent = node->link_parent_;
 	while (parent) {
-		int linkBorder = parent->linkBorder_;
-		if (linkBorder == -1) {
-			Math::Vector3 target = from - ptWp;
+		int link_edge = parent->link_edge_;
+		if (link_edge == -1) {
+			Math::Vector3 target = src - pt_wp;
 
-			float lCross = Math::CrossY(lVt, target);
-			float rCross = Math::CrossY(rVt, target);
+			float lcross = Math::CrossY(lvt, target);
+			float rcross = Math::CrossY(rvt, target);
 
-			if (lCross < 0 && rCross > 0) {
-				PathAdd((Math::Vector3&)from);
+			if (lcross < 0 && rcross > 0) {
+				PathAdd((Math::Vector3&)src);
 				break;
 			} else {
-				if (lCross > 0 && rCross > 0) {
-					ptWp = lPt;
-					if (!UpdateWp(from, lNode, parent, ptWp, linkBorder, lPt, rPt, lVt, rVt, lNode, rNode)) {
+				if (lcross > 0 && rcross > 0) {
+					pt_wp = lpt;
+					if (!UpdateWp(src, lnode, parent, pt_wp, link_edge, lpt, rpt, lvt, rvt, lnode, rnode)) {
 						break;
 					}
 					continue;
-				} else if (lCross < 0 && rCross < 0) {
-					ptWp = rPt;
-					if (!UpdateWp(from, rNode, parent, ptWp, linkBorder, lPt, rPt, lVt, rVt, lNode, rNode)) {
+				} else if (lcross < 0 && rcross < 0) {
+					pt_wp = rpt;
+					if (!UpdateWp(src, rnode, parent, pt_wp, link_edge, lpt, rpt, lvt, rvt, lnode, rnode)) {
 						break;
 					}
 					continue;
@@ -321,32 +323,32 @@ void NavPathFinder::BuildPath(const Math::Vector3& from, const Math::Vector3& to
 
 		}
 
-		border = GetBorder(linkBorder);
+		edge = GetEdge(link_edge);
 
-		Math::Vector3& lPtTmp = mesh_->vertice_[border->a_];
-		Math::Vector3& rPtTmp = mesh_->vertice_[border->b_];
+		Math::Vector3& lpt_tmp = mesh_->vertice_[edge->a_];
+		Math::Vector3& rpt_tmp = mesh_->vertice_[edge->b_];
 
-		Math::Vector3 lVtTmp = lPtTmp - ptWp;
-		Math::Vector3 rVtTmp = rPtTmp - ptWp;
+		Math::Vector3 lvt_tmp = lpt_tmp - pt_wp;
+		Math::Vector3 rvt_tmp = rpt_tmp - pt_wp;
 
-		float lCrossA = Math::CrossY(lVt, lVtTmp);
-		float lCrossB = Math::CrossY(rVt, lVtTmp);
+		float l_cross_a = Math::CrossY(lvt, lvt_tmp);
+		float l_cross_b = Math::CrossY(rvt, lvt_tmp);
 
-		float rCrossA = Math::CrossY(lVt, rVtTmp);
-		float rCrossB = Math::CrossY(rVt, rVtTmp);
+		float r_cross_a = Math::CrossY(lvt, rvt_tmp);
+		float r_cross_b = Math::CrossY(rvt, rvt_tmp);
 
 		uint8_t mask = 0;
-		if (lCrossA < 0 && lCrossB > 0) {
-			lNode = parent->linkParent_;
-			lPt = lPtTmp;
-			lVt = lPt - ptWp;
+		if (l_cross_a < 0 && l_cross_b > 0) {
+			lnode = parent->link_parent_;
+			lpt = lpt_tmp;
+			lvt = lpt - pt_wp;
 			mask |= 0x01;
 		}
 
-		if (rCrossA < 0 && rCrossB > 0) {
-			rNode = parent->linkParent_;
-			rPt = rPtTmp;
-			rVt = rPt - ptWp;
+		if (r_cross_a < 0 && r_cross_b > 0) {
+			rnode = parent->link_parent_;
+			rpt = rpt_tmp;
+			rvt = rpt - pt_wp;
 			mask |= 0x02;
 		}
 
@@ -354,23 +356,23 @@ void NavPathFinder::BuildPath(const Math::Vector3& from, const Math::Vector3& to
 			continue;
 		}
 
-		if (lCrossA > 0 && lCrossB > 0 && rCrossA > 0 && rCrossB > 0) {
-			ptWp = lPt;
-			if (!UpdateWp(from, lNode, parent, ptWp, linkBorder, lPt, rPt, lVt, rVt, lNode, rNode)) {
+		if (l_cross_a > 0 && l_cross_b > 0 && r_cross_a > 0 && r_cross_b > 0) {
+			pt_wp = lpt;
+			if (!UpdateWp(src, lnode, parent, pt_wp, link_edge, lpt, rpt, lvt, rvt, lnode, rnode)) {
 				break;
 			}
 			continue;
 		}
 
-		if (lCrossA < 0 && lCrossB < 0 && rCrossA < 0 && rCrossB < 0) {
-			ptWp = rPt;
-			if (!UpdateWp(from, rNode, parent, ptWp, linkBorder, lPt, rPt, lVt, rVt, lNode, rNode)) {
+		if (l_cross_a < 0 && l_cross_b < 0 && r_cross_a < 0 && r_cross_b < 0) {
+			pt_wp = rpt;
+			if (!UpdateWp(src, rnode, parent, pt_wp, link_edge, lpt, rpt, lvt, rvt, lnode, rnode)) {
 				break;
 			}
 			continue;
 		}
 
-		parent = parent->linkParent_;
+		parent = parent->link_parent_;
 	}
 
 	PathCollect(list);
@@ -401,21 +403,21 @@ bool NavPathFinder::InsidePoly(std::vector<int>& index, const Math::Vector3& pos
 	return true;
 }
 
-bool NavPathFinder::InsideNode(int nodeId, const Math::Vector3& pos) {
-	NavNode* node = &mesh_->node_[nodeId];
+bool NavPathFinder::InsideNode(int node_id, const Math::Vector3& pos) {
+	NavNode* node = &mesh_->node_[node_id];
 	return InsidePoly(node->vertice_, pos);
 }
 
 void NavPathFinder::GetLink(NavNode* node, NavNode** link) {
 	for (int i = 0; i < node->size_; i++) {
-		int borderId = node->border_[i];
-		NavBorder* border = GetBorder(borderId);
+		int edge_id = node->edge_[i];
+		NavEdge* edge = GetEdge(edge_id);
 
 		int linked = -1;
-		if (border->node_[0] == node->id_) {
-			linked = border->node_[1];
+		if (edge->node_[0] == node->id_) {
+			linked = edge->node_[1];
 		} else {
-			linked = border->node_[0];
+			linked = edge->node_[0];
 		}
 
 		if (linked == -1) {
@@ -430,8 +432,8 @@ void NavPathFinder::GetLink(NavNode* node, NavNode** link) {
 		if (GetMask(tmp->mask_)) {
 			tmp->next_ = (*link);
 			(*link) = tmp;
-			tmp->reserve_ = border->opposite_;
-			tmp->pos_ = border->center_;
+			tmp->reserve_ = edge->inverse_;
+			tmp->pos_ = edge->center_;
 		}
 	}
 }

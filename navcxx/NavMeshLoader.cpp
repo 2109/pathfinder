@@ -9,18 +9,18 @@ struct TileAux {
 	Math::Vector3 pos_[4];
 };
 
-void NavPathFinder::CreateMesh(float** vert, int vertTotal, int** index, int indexTotal) {
+void NavPathFinder::CreateMesh(float** vert, int vert_total, int** index, int index_total) {
 	mesh_ = new NavMesh();
 
-	mesh_->vertice_.resize(vertTotal);
+	mesh_->vertice_.resize(vert_total);
 
 	std::vector<std::unordered_map<int, int>> searcher;
-	searcher.resize(vertTotal);
+	searcher.resize(vert_total);
 
-	mesh_->lt_.x = mesh_->lt_.y = mesh_->lt_.z = DBL_MAX;
-	mesh_->br_.x = mesh_->br_.y = mesh_->br_.z = DBL_MIN;
+	mesh_->lt_.x = mesh_->lt_.y = mesh_->lt_.z = FLT_MAX;
+	mesh_->br_.x = mesh_->br_.y = mesh_->br_.z = FLT_MIN;
 
-	for (int i = 0; i < vertTotal; ++i) {
+	for (int i = 0; i < vert_total; ++i) {
 		Math::Vector3& pos = mesh_->vertice_[i];
 		pos.x = vert[i][0];
 		pos.y = vert[i][1];
@@ -36,9 +36,9 @@ void NavPathFinder::CreateMesh(float** vert, int vertTotal, int** index, int ind
 	mesh_->width_ = (uint32_t)(mesh_->br_.x - mesh_->lt_.x);
 	mesh_->height_ = (uint32_t)(mesh_->br_.z - mesh_->lt_.z);
 
-	mesh_->node_.resize(indexTotal);
+	mesh_->node_.resize(index_total);
 
-	for (int i = 0; i < indexTotal; ++i) {
+	for (int i = 0; i < index_total; ++i) {
 		NavNode* node = &mesh_->node_[i];
 		node->Init(i, index[i][0]);
 
@@ -49,7 +49,7 @@ void NavPathFinder::CreateMesh(float** vert, int vertTotal, int** index, int ind
 		}
 
 		node->center_ = tmp / node->size_;
-		node->area_ = CalcNodeArea(node);
+		node->area_ = CountNodeArea(node);
 		mesh_->area_ += node->area_;
 
 		SortNode(node);
@@ -61,32 +61,32 @@ void NavPathFinder::CreateMesh(float** vert, int vertTotal, int** index, int ind
 			int a = node->vertice_[index0];
 			int b = node->vertice_[index1];
 
-			NavBorder* border0 = SearchBorder(searcher, a, b);
-			BorderLinkNode(border0, node->id_);
-			node->border_[j] = border0->id_;
+			NavEdge* edge = SearchEdge(searcher, a, b);
+			EdgeLinkNode(edge, node->id_);
+			node->edge_[j] = edge->id_;
 
-			NavBorder* border1 = SearchBorder(searcher, b, a);
-			BorderLinkNode(border1, node->id_);
-			border1->opposite_ = border0->id_;
-			border0->opposite_ = border1->id_;
+			NavEdge* edge_inverse = SearchEdge(searcher, b, a);
+			EdgeLinkNode(edge_inverse, node->id_);
+			edge_inverse->inverse_ = edge->id_;
+			edge->inverse_ = edge_inverse->id_;
 		}
 	}
 }
 
 void NavPathFinder::CreateTile(uint32_t unit) {
-	mesh_->tileUnit_ = unit;
-	mesh_->tileWidth_ = mesh_->width_ / unit + 1;
-	mesh_->tileHeight_ = mesh_->height_ / unit + 1;
+	mesh_->tile_unit_ = unit;
+	mesh_->tile_width_ = mesh_->width_ / unit + 1;
+	mesh_->tile_height_ = mesh_->height_ / unit + 1;
 
-	int total = mesh_->tileWidth_ * mesh_->tileHeight_;
+	int total = mesh_->tile_width_ * mesh_->tile_height_;
 	mesh_->tile_.resize(total);
 
 	std::vector<TileAux> tileInfo;
 	tileInfo.resize(total);
 
-	for (uint32_t z = 0; z < mesh_->tileHeight_; ++z) {
-		for (uint32_t x = 0; x < mesh_->tileWidth_; ++x) {
-			uint32_t index = x + z * mesh_->tileWidth_;
+	for (uint32_t z = 0; z < mesh_->tile_height_; ++z) {
+		for (uint32_t x = 0; x < mesh_->tile_width_; ++x) {
+			uint32_t index = x + z * mesh_->tile_width_;
 			TileAux* ti = &tileInfo[index];
 			ti->pos_[0].x = mesh_->lt_.x + x * unit;
 			ti->pos_[0].z = mesh_->lt_.z + z * unit;
@@ -110,8 +110,8 @@ void NavPathFinder::CreateTile(uint32_t unit) {
 
 	for (int i = 0; i < (int)mesh_->node_.size(); ++i) {
 		NavNode* node = &mesh_->node_[i];
-		Math::Vector3 lt(DBL_MAX, DBL_MAX, DBL_MAX);
-		Math::Vector3 br(DBL_MIN, DBL_MIN, DBL_MIN);
+		Math::Vector3 lt(FLT_MAX, FLT_MAX, FLT_MAX);
+		Math::Vector3 br(FLT_MIN, FLT_MIN, FLT_MIN);
 		for (int n = 0; n < (int)node->vertice_.size(); ++n) {
 			const Math::Vector3& pos = mesh_->vertice_[node->vertice_[n]];
 			lt.x = std::min(lt.x, pos.x);
@@ -128,7 +128,7 @@ void NavPathFinder::CreateTile(uint32_t unit) {
 
 		for (int z = zMin; z <= zMax; ++z) {
 			for (int x = xMin; x <= xMax; ++x) {
-				uint32_t index = x + z * mesh_->tileWidth_;
+				uint32_t index = x + z * mesh_->tile_width_;
 				TileAux* ti = &tileInfo[index];
 				NavTile* tile = &mesh_->tile_[index];
 				bool inside = false;
@@ -143,8 +143,8 @@ void NavPathFinder::CreateTile(uint32_t unit) {
 
 				if (inside) {
 					if (InsideNode(node->id_, ti->center_)) {
-						assert(tile->centerNode_ != node->id_);
-						tile->centerNode_ = node->id_;
+						assert(tile->center_node_ != node->id_);
+						tile->center_node_ = node->id_;
 					}
 				}
 			}
@@ -169,15 +169,15 @@ NavPathFinder* NavPathFinder::LoadMesh(const char* file) {
 		ms >> pos.x >> pos.y >> pos.z;
 	}
 
-	int nborder = 0;
-	ms >> nborder;
-	mesh->border_.resize(nborder);
-	for (int i = 0; i < nborder; ++i) {
-		NavBorder* border = new NavBorder();
-		ms >> border->node_[0] >> border->node_[1];
-		ms >> border->a_ >> border->b_ >> border->opposite_;
-		ms >> border->center_.x >> border->center_.y >> border->center_.z;
-		mesh->border_.push_back(border);
+	int nedge = 0;
+	ms >> nedge;
+	mesh->edge_.resize(nedge);
+	for (int i = 0; i < nedge; ++i) {
+		NavEdge* edge = new NavEdge();
+		ms >> edge->node_[0] >> edge->node_[1];
+		ms >> edge->a_ >> edge->b_ >> edge->inverse_;
+		ms >> edge->center_.x >> edge->center_.y >> edge->center_.z;
+		mesh->edge_.push_back(edge);
 	}
 
 	int nnode = 0;
@@ -195,13 +195,13 @@ NavPathFinder* NavPathFinder::LoadMesh(const char* file) {
 			node.vertice_[j] = index;
 		}
 
-		int nborder = 0;
-		ms >> nborder;
-		node.border_.resize(nborder);
-		for (int j = 0; j < nborder; ++j) {
+		int nedge = 0;
+		ms >> nedge;
+		node.edge_.resize(nedge);
+		for (int j = 0; j < nedge; ++j) {
 			int index = 0;
 			ms >> index;
-			node.border_[j] = index;
+			node.edge_[j] = index;
 		}
 		ms >> node.size_;
 		ms >> node.center_.x >> node.center_.y >> node.center_.z;
@@ -222,43 +222,43 @@ NavPathFinder* NavPathFinder::LoadMeshEx(const char* file) {
 		return NULL;
 	}
 
-	uint32_t numOfVertice = 0;
-	ms >> numOfVertice;
-	float** verticePtr = (float**)malloc(sizeof(*verticePtr) * numOfVertice);
-	for (uint32_t i = 0; i < numOfVertice; ++i) {
-		verticePtr[i] = (float*)malloc(sizeof(float) * 3);
+	uint32_t nvert = 0;
+	ms >> nvert;
+	float** vert_ptr = (float**)malloc(sizeof(*vert_ptr) * nvert);
+	for (uint32_t i = 0; i < nvert; ++i) {
+		vert_ptr[i] = (float*)malloc(sizeof(float) * 3);
 		for (int j = 0; j < 3; ++j) {
-			ms >> verticePtr[i][j];
+			ms >> vert_ptr[i][j];
 		}
 	}
 
-	uint32_t numOfPoly = 0;
-	ms >> numOfPoly;
-	int** polyPtr = (int**)malloc(sizeof(*polyPtr) * numOfPoly);
-	for (uint32_t i = 0; i < numOfPoly; ++i) {
-		uint8_t numOfIndex = 0;
-		ms >> numOfIndex;
-		polyPtr[i] = (int*)malloc(sizeof(int) * (numOfIndex + 1));
-		polyPtr[i][0] = numOfIndex;
-		for (int j = 1; j <= numOfIndex; ++j) {
+	uint32_t nindex = 0;
+	ms >> nindex;
+	int** index_ptr = (int**)malloc(sizeof(*index_ptr) * nindex);
+	for (uint32_t i = 0; i < nindex; ++i) {
+		uint8_t index = 0;
+		ms >> index;
+		index_ptr[i] = (int*)malloc(sizeof(int) * (index + 1));
+		index_ptr[i][0] = index;
+		for (int j = 1; j <= index; ++j) {
 			uint16_t val;
 			ms >> val;
-			polyPtr[i][j] = val;
+			index_ptr[i][j] = val;
 		}
 	}
 
 	NavPathFinder* finder = new NavPathFinder();
-	finder->CreateMesh(verticePtr, numOfVertice, polyPtr, numOfPoly);
+	finder->CreateMesh(vert_ptr, nvert, index_ptr, nindex);
 
-	for (uint32_t i = 0; i < numOfVertice; i++) {
-		free(verticePtr[i]);
+	for (uint32_t i = 0; i < nvert; i++) {
+		free(vert_ptr[i]);
 	}
-	free(verticePtr);
+	free(vert_ptr);
 
-	for (uint32_t i = 0; i < numOfPoly; i++) {
-		free(polyPtr[i]);
+	for (uint32_t i = 0; i < nindex; i++) {
+		free(index_ptr[i]);
 	}
-	free(polyPtr);
+	free(index_ptr);
 
 	return finder;
 }
@@ -269,7 +269,7 @@ void NavPathFinder::LoadTile(const char* file) {
 		return;
 	}
 
-	ms >> mesh_->tileUnit_ >> mesh_->tileWidth_ >> mesh_->tileHeight_;
+	ms >> mesh_->tile_unit_ >> mesh_->tile_width_ >> mesh_->tile_height_;
 
 	int ntile = 0;
 	ms >> ntile;
@@ -284,7 +284,7 @@ void NavPathFinder::LoadTile(const char* file) {
 			ms >> index;
 			tile.node_[j] = index;
 		}
-		ms >> tile.centerNode_;
+		ms >> tile.center_node_;
 		ms >> tile.center_.x >> tile.center_.y >> tile.center_.z;
 	}
 }
@@ -296,7 +296,7 @@ void NavPathFinder::LoadTileEx(const char* file) {
 	}
 
 	uint32_t count = 0;
-	ms >> mesh_->tileUnit_ >> count;
+	ms >> mesh_->tile_unit_ >> count;
 
 	mesh_->tile_.resize(count);
 
@@ -313,10 +313,10 @@ void NavPathFinder::LoadTileEx(const char* file) {
 			}
 		}
 		tile->center_.y = 0;
-		ms >> tile->center_.x >> tile->center_.z >> tile->centerNode_;
+		ms >> tile->center_.x >> tile->center_.z >> tile->center_node_;
 	}
-	mesh_->tileWidth_ = mesh_->width_ / mesh_->tileUnit_ + 1;
-	mesh_->tileHeight_ = mesh_->height_ / mesh_->tileUnit_ + 1;
+	mesh_->tile_width_ = mesh_->width_ / mesh_->tile_unit_ + 1;
+	mesh_->tile_height_ = mesh_->height_ / mesh_->tile_unit_ + 1;
 }
 
 void NavPathFinder::SerializeMesh(const char* file) {
@@ -328,12 +328,12 @@ void NavPathFinder::SerializeMesh(const char* file) {
 		ms << pos.x << pos.y << pos.z;
 	}
 
-	ms << (int)mesh_->border_.size();
-	for (int i = 0; i < (int)mesh_->border_.size(); ++i) {
-		const NavBorder* border = mesh_->border_[i];
-		ms << border->node_[0] << border->node_[1];
-		ms << border->a_ << border->b_ << border->opposite_;
-		ms << border->center_.x << border->center_.y << border->center_.z;
+	ms << (int)mesh_->edge_.size();
+	for (int i = 0; i < (int)mesh_->edge_.size(); ++i) {
+		const NavEdge* edge = mesh_->edge_[i];
+		ms << edge->node_[0] << edge->node_[1];
+		ms << edge->a_ << edge->b_ << edge->inverse_;
+		ms << edge->center_.x << edge->center_.y << edge->center_.z;
 	}
 
 	ms << (int)mesh_->node_.size();
@@ -345,9 +345,9 @@ void NavPathFinder::SerializeMesh(const char* file) {
 			ms << node.vertice_[j];
 		}
 
-		ms << (int)node.border_.size();
-		for (int j = 0; j < (int)node.border_.size(); ++j) {
-			ms << node.border_[j];
+		ms << (int)node.edge_.size();
+		for (int j = 0; j < (int)node.edge_.size(); ++j) {
+			ms << node.edge_[j];
 		}
 		ms << node.size_;
 		ms << node.center_.x << node.center_.y << node.center_.z;
@@ -366,7 +366,7 @@ void NavPathFinder::SerializeMesh(const char* file) {
 
 void NavPathFinder::SerializeTile(const char* file) {
 	MemoryStream ms;
-	ms << mesh_->tileUnit_ << mesh_->tileWidth_ << mesh_->tileHeight_;
+	ms << mesh_->tile_unit_ << mesh_->tile_width_ << mesh_->tile_height_;
 	ms << (int)mesh_->tile_.size();
 	for (int i = 0; i < (int)mesh_->tile_.size(); ++i) {
 		const NavTile& tile = mesh_->tile_[i];
@@ -374,7 +374,7 @@ void NavPathFinder::SerializeTile(const char* file) {
 		for (int j = 0; j < (int)tile.node_.size(); ++j) {
 			ms << tile.node_[j];
 		}
-		ms << tile.centerNode_;
+		ms << tile.center_node_;
 		ms << tile.center_.x << tile.center_.y << tile.center_.z;
 	}
 	FILE* fp = fopen(file, "wb");
@@ -398,31 +398,31 @@ void NavPathFinder::SortNode(NavNode* node) {
 	}
 }
 
-NavBorder* NavPathFinder::SearchBorder(std::vector<std::unordered_map<int, int>>& searcher, int lhs, int rhs) {
+NavEdge* NavPathFinder::SearchEdge(std::vector<std::unordered_map<int, int>>& searcher, int lhs, int rhs) {
 	assert(lhs < (int)mesh_->vertice_.size());
 	assert(rhs < (int)mesh_->vertice_.size());
 
-	std::unordered_map<int, int>& borderMap = searcher[lhs];
-	std::unordered_map<int, int>::iterator itr = borderMap.find(rhs);
-	if (borderMap.find(rhs) != borderMap.end()) {
+	std::unordered_map<int, int>& edge_map = searcher[lhs];
+	auto itr = edge_map.find(rhs);
+	if (edge_map.find(rhs) != edge_map.end()) {
 		int index = itr->second;
-		return mesh_->border_[index];
+		return mesh_->edge_[index];
 	}
 
-	NavBorder* border = AddBorder(lhs, rhs);
-	borderMap[rhs] = border->id_;
-	return border;
+	NavEdge* edge = AddEdge(lhs, rhs);
+	edge_map[rhs] = edge->id_;
+	return edge;
 }
 
-NavBorder* NavPathFinder::AddBorder(int lhs, int rhs) {
-	NavBorder* border = new NavBorder();
-	border->id_ = mesh_->border_.size();
-	mesh_->border_.push_back(border);
-	border->node_[0] = -1;
-	border->node_[1] = -1;
-	border->a_ = lhs;
-	border->b_ = rhs;
-	border->opposite_ = -1;
-	border->center_ = mesh_->vertice_[lhs] + mesh_->vertice_[rhs];
-	return border;
+NavEdge* NavPathFinder::AddEdge(int lhs, int rhs) {
+	NavEdge* edge = new NavEdge();
+	edge->id_ = mesh_->edge_.size();
+	mesh_->edge_.push_back(edge);
+	edge->node_[0] = -1;
+	edge->node_[1] = -1;
+	edge->a_ = lhs;
+	edge->b_ = rhs;
+	edge->inverse_ = -1;
+	edge->center_ = mesh_->vertice_[lhs] + mesh_->vertice_[rhs];
+	return edge;
 }

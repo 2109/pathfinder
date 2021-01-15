@@ -6,35 +6,12 @@ extern "C" {
 }
 #include "Math.h"
 #include "Vector3.h"
-
-struct VertexAux {
-	int index_;
-	Math::Vector3 pos_;
-	Math::Vector3 center_;
-};
-
-static inline bool AngleCompare(const VertexAux& lhs, const VertexAux& rhs) {
-	Math::Vector3 v0 = lhs.center_ - lhs.pos_;
-	float angle0 = atan2(v0.z, v0.x) * 180 / PI;
-	if (angle0 < 0) {
-		angle0 += 360;
-	}
-
-	Math::Vector3 v1 = rhs.center_ - rhs.pos_;
-	float angle1 = atan2(v1.z, v1.x) * 180 / PI;
-	if (angle1 < 0) {
-		angle1 += 360;
-	}
-
-	return angle0 < angle1;
-}
-
 struct NavNode {
 	mh_elt_t elt_;
 	NavNode* next_;
 	int id_;
 	std::vector<int> vertice_;
-	std::vector<int> border_;
+	std::vector<int> edge_;
 	int size_;
 
 	Math::Vector3 center_;
@@ -51,8 +28,8 @@ struct NavNode {
 
 	bool close_;
 
-	NavNode* linkParent_;
-	int linkBorder_;
+	NavNode* link_parent_;
+	int link_edge_;
 
 	int reserve_;
 	Math::Vector3 pos_;
@@ -61,7 +38,7 @@ struct NavNode {
 		id_ = id;
 		size_ = size;
 		vertice_.resize(size_);
-		border_.resize(size_);
+		edge_.resize(size_);
 		mask_ = 0;
 		area_ = 0;
 		Reset();
@@ -69,8 +46,8 @@ struct NavNode {
 
 	inline void Reset() {
 		mh_init(&elt_);
-		linkParent_ = NULL;
-		linkBorder_ = -1;
+		link_parent_ = NULL;
+		link_edge_ = -1;
 		F = G = H = 0;
 		next_ = NULL;
 		record_ = false;
@@ -78,37 +55,37 @@ struct NavNode {
 	}
 };
 
-struct NavBorder {
+struct NavEdge {
 	int id_;
 	int node_[2];
 	int a_;
 	int b_;
-	int opposite_;
+	int inverse_;
 	Math::Vector3 center_;
 };
 
 #define NAV_DEBUG_TILE
 struct NavTile {
 	std::vector<int> node_;
-	int centerNode_;
+	int center_node_;
 	Math::Vector3 center_;
 #ifdef NAV_DEBUG_TILE
 	Math::Vector3 pos_[4];
 #endif
 	NavTile() {
-		centerNode_ = -1;
+		center_node_ = -1;
 	}
 };
 
 struct NavMesh {
 	std::vector<Math::Vector3> vertice_;
-	std::vector<NavBorder*> border_;
+	std::vector<NavEdge*> edge_;
 	std::vector<NavNode> node_;
 
 	std::vector<NavTile> tile_;
-	uint32_t tileUnit_;
-	uint32_t tileWidth_;
-	uint32_t tileHeight_;
+	uint32_t tile_unit_;
+	uint32_t tile_width_;
+	uint32_t tile_height_;
 
 	double area_;
 
@@ -119,18 +96,18 @@ struct NavMesh {
 	uint32_t height_;
 
 	NavMesh() {
-		tileUnit_ = 0;
-		tileWidth_ = 0;
-		tileHeight_ = 0;
+		tile_unit_ = 0;
+		tile_width_ = 0;
+		tile_height_ = 0;
 		area_ = 0;
 		width_ = 0;
 		height_ = 0;
 	}
 
 	~NavMesh() {
-		for (size_t i = 0; i < border_.size(); ++i) {
-			NavBorder* border = border_[i];
-			delete border;
+		for (size_t i = 0; i < edge_.size(); ++i) {
+			NavEdge* edge = edge_[i];
+			delete edge;
 		}
 	}
 };
@@ -156,6 +133,13 @@ public:
 		}
 	};
 
+	struct VertexAux {
+		int index_;
+		Math::Vector3 pos_;
+		Math::Vector3 center_;
+	};
+
+
 public:
 	NavPathFinder();
 
@@ -169,49 +153,49 @@ public:
 	}
 
 	inline void SetDebugNodeFunc(DebugFunc func, void* userdata) {
-		debugNodeFunc_ = func;
-		debugNodeUserdata_ = userdata;
+		debug_node_func_ = func;
+		debug_node_userdata_ = userdata;
 	}
 
 	inline void SetDebugTileFunc(DebugFunc func, void* userdata) {
-		debugTileFunc_ = func;
-		debugTileUserdata_ = userdata;
+		debug_tile_func_ = func;
+		debug_tile_userdata_ = userdata;
 	}
 
 	inline void SetDebugOverlapFunc(DebugOverlapFunc func, void* userdata) {
-		debugOverlapFunc_ = func;
-		debugOverlapUserdata_ = userdata;
+		debug_overlap_func_ = func;
+		debug_overlap_userdata_ = userdata;
 	}
 
-	inline NavNode* GetNode(int nodeId) {
-		if (nodeId < 0 || (size_t)nodeId >= mesh_->node_.size()) {
+	inline NavNode* GetNode(int node_id) {
+		if (node_id < 0 || (size_t)node_id >= mesh_->node_.size()) {
 			return NULL;
 		}
-		return &mesh_->node_[nodeId];
+		return &mesh_->node_[node_id];
 	}
 
-	inline NavBorder* GetBorder(int borderId) {
-		if (borderId < 0 || (size_t)borderId >= mesh_->border_.size()) {
+	inline NavEdge* GetEdge(int edge_id) {
+		if (edge_id < 0 || (size_t)edge_id >= mesh_->edge_.size()) {
 			return NULL;
 		}
-		return mesh_->border_[borderId];
+		return mesh_->edge_[edge_id];
 	}
 
-	inline NavTile* GetTile(int tileId) {
-		if (tileId < 0 || (size_t)tileId >= mesh_->tile_.size()) {
+	inline NavTile* GetTile(int tile_id) {
+		if (tile_id < 0 || (size_t)tile_id >= mesh_->tile_.size()) {
 			return NULL;
 		}
-		return &mesh_->tile_[tileId];
+		return &mesh_->tile_[tile_id];
 	}
 
-	inline NavTile* GetTile(int xIndex, int zIndex) {
-		if (xIndex < 0 || xIndex >= (int)mesh_->tileWidth_) {
+	inline NavTile* GetTile(int x_index, int z_index) {
+		if (x_index < 0 || x_index >= (int)mesh_->tile_width_) {
 			return NULL;
 		}
-		if (zIndex < 0 || zIndex >= (int)mesh_->tileHeight_) {
+		if (z_index < 0 || z_index >= (int)mesh_->tile_height_) {
 			return NULL;
 		}
-		int index = xIndex + zIndex * mesh_->tileWidth_;
+		int index = x_index + z_index * mesh_->tile_width_;
 		return GetTile(index);
 	}
 
@@ -223,22 +207,22 @@ public:
 			return NULL;
 		}
 
-		int xIndex = (pos.x - mesh_->lt_.x) / mesh_->tileUnit_;
-		int zIndex = (pos.z - mesh_->lt_.z) / mesh_->tileUnit_;
+		int x_index = (pos.x - mesh_->lt_.x) / mesh_->tile_unit_;
+		int z_index = (pos.z - mesh_->lt_.z) / mesh_->tile_unit_;
 
-		return GetTile(xIndex, zIndex);
+		return GetTile(x_index, z_index);
 	}
 
 	inline bool GetMask(int index) {
 		if (index < 0 || (size_t)index >= mask_.size()) {
-			return NULL;
+			return false;
 		}
 		return mask_[index];
 	}
 
 	void CreateTile(uint32_t unit);
 
-	void CreateMesh(float** vert, int vertTotal, int** index, int indexTotal);
+	void CreateMesh(float** vert, int vert_total, int** index, int index_total);
 
 	static NavPathFinder* LoadMesh(const char* file);
 
@@ -256,32 +240,26 @@ public:
 
 	NavNode* SearchNode(const Math::Vector3& pos, int depth = 1);
 
-	Math::Vector3* SearchInRectangle(const Math::Vector3& pos, int depth, int* centerNode);
+	Math::Vector3* SearchInRectangle(const Math::Vector3& pos, int depth, int* center_node);
 
-	Math::Vector3* SearchInCircle(const Math::Vector3& pos, int depth, int* centerNode);
+	Math::Vector3* SearchInCircle(const Math::Vector3& pos, int depth, int* center_node);
 
-	int Find(const Math::Vector3& from, const Math::Vector3& to, std::vector<const Math::Vector3*>& list);
+	int Find(const Math::Vector3& src, const Math::Vector3& dst, std::vector<const Math::Vector3*>& list);
 
-	int Raycast(const Math::Vector3& from, const Math::Vector3& to, Math::Vector3& stop);
+	int Raycast(const Math::Vector3& src, const Math::Vector3& dst, Math::Vector3& stop);
 
-	bool Movable(const Math::Vector3& pos, float fix, float* dtOffset);
+	bool Movable(const Math::Vector3& pos, float fix, float* dt_offset);
 
-	Math::Vector3 RandomMovable(int nodeId);
+	Math::Vector3 RandomMovable(int node_id);
 
 	bool RandomInCircle(Math::Vector3& pos, const Math::Vector3& center, int radius);
 
 	float GetHeight(const Math::Vector3& pos);
 
-	void GetOverlapPoly(std::vector<Math::Vector3>& poly, int nodeId, std::vector<const Math::Vector3*>& result);
+	void GetOverlapPoly(std::vector<Math::Vector3>& poly, int node_id, std::vector<const Math::Vector3*>& result);
 
 public:
-	NavNode* NextBorder(NavNode* node, const Math::Vector3& wp, int& linkBorder);
-
-	bool UpdateWp(const Math::Vector3& from, NavNode*& node, NavNode*& parent, Math::Vector3& ptWp, int& linkBorder, Math::Vector3& lhsPt, Math::Vector3& rhsPt, Math::Vector3& lhsVt, Math::Vector3& rhsVt, NavNode*& lhsNode, NavNode*& rhsNode);
-
-	void BuildPath(const Math::Vector3& from, const Math::Vector3& to, NavNode* node, std::vector<const Math::Vector3*>& list);
-
-	inline double CalcNodeArea(NavNode* node) {
+	inline double CountNodeArea(NavNode* node) {
 		std::vector<const Math::Vector3*> vertice;
 		for (int i = 0; i < (int)node->vertice_.size(); ++i) {
 			const Math::Vector3* pos = &mesh_->vertice_[node->vertice_[i]];
@@ -290,34 +268,36 @@ public:
 		return Math::CalcPolyArea(vertice);
 	}
 
-	inline double CalcTriangleArea(int a, int b, int c) {
+	inline double CountTriangleArea(int a, int b, int c) {
 		std::vector<const Math::Vector3*> vertice = { &mesh_->vertice_[a], &mesh_->vertice_[b], &mesh_->vertice_[c] };
 		return Math::CalcPolyArea(vertice);
 	}
 
-	void SortNode(NavNode* node);
-
-	NavBorder* SearchBorder(std::vector<std::unordered_map<int, int>>& searcher, int lhs, int rhs);
-
-	NavBorder* AddBorder(int lhs, int rhs);
-
-	inline void BorderLinkNode(NavBorder* border, int id) {
-		if (border->node_[0] == -1) {
-			border->node_[0] = id;
-		} else if (border->node_[1] == -1) {
-			border->node_[1] = id;
+	inline void EdgeLinkNode(NavEdge* edge, int id) {
+		if (edge->node_[0] == -1) {
+			edge->node_[0] = id;
+		} else if (edge->node_[1] == -1) {
+			edge->node_[1] = id;
 		} else {
 			assert(0);
 		}
 	}
 
-	double Dot2Node(const Math::Vector3& pos, int nodeId);
+	static inline bool AngleCompare(const VertexAux& lhs, const VertexAux& rhs) {
+		Math::Vector3 v0 = lhs.center_ - lhs.pos_;
+		float angle0 = atan2(v0.z, v0.x) * 180 / PI;
+		if (angle0 < 0) {
+			angle0 += 360;
+		}
 
-	bool InsidePoly(std::vector<int>& index, const Math::Vector3& pos);
+		Math::Vector3 v1 = rhs.center_ - rhs.pos_;
+		float angle1 = atan2(v1.z, v1.x) * 180 / PI;
+		if (angle1 < 0) {
+			angle1 += 360;
+		}
 
-	bool InsideNode(int nodeId, const Math::Vector3& pos);
-
-	void GetLink(NavNode* node, NavNode** link);
+		return angle0 < angle1;
+	}
 
 	static inline void ClearHeap(mh_elt_t* elt) {
 		NavNode* node = (NavNode*)elt;
@@ -325,48 +305,68 @@ public:
 	}
 
 	inline void Reset() {
-		NavNode* node = closeList_;
+		NavNode* node = close_list_;
 		while (node) {
 			NavNode* tmp = node;
 			node = tmp->next_;
 			tmp->Reset();
 		}
-		closeList_ = NULL;
-		mh_clear(&openList_, ClearHeap);
-		pathIndex_ = 0;
+		close_list_ = NULL;
+		mh_clear(&open_list_, ClearHeap);
+		path_index_ = 0;
 	}
 
 	inline void PathAdd(Math::Vector3& pos) {
-		if ((size_t)pathIndex_ >= path_.size()) {
+		if ((size_t)path_index_ >= path_.size()) {
 			path_.resize(path_.size() * 2);
 		}
-		path_[pathIndex_++] = pos;
+		path_[path_index_++] = pos;
 	}
 
 	inline void PathCollect(std::vector<const Math::Vector3*>& list) {
-		for (int i = pathIndex_ - 1; i >= 0; --i) {
+		for (int i = path_index_ - 1; i >= 0; --i) {
 			list.push_back(&path_[i]);
 		}
 	}
 
+	NavNode* NextEdge(NavNode* node, const Math::Vector3& wp, int& link_edge);
+
+	bool UpdateWp(const Math::Vector3& src, NavNode*& node, NavNode*& parent, Math::Vector3& ptWp, int& link_edge, Math::Vector3& lpt, Math::Vector3& rpt, Math::Vector3& lvt, Math::Vector3& rvt, NavNode*& lnode, NavNode*& rnode);
+
+	void BuildPath(const Math::Vector3& src, const Math::Vector3& dst, NavNode* node, std::vector<const Math::Vector3*>& list);
+
+	void SortNode(NavNode* node);
+
+	NavEdge* SearchEdge(std::vector<std::unordered_map<int, int>>& searcher, int lhs, int rhs);
+
+	NavEdge* AddEdge(int lhs, int rhs);
+
+	double Dot2Node(const Math::Vector3& pos, int node_id);
+
+	bool InsidePoly(std::vector<int>& index, const Math::Vector3& pos);
+
+	bool InsideNode(int node_id, const Math::Vector3& pos);
+
+	void GetLink(NavNode* node, NavNode** link);
+
 public:
-	NavMesh* mesh_;
-	mh_t openList_;
-	NavNode* closeList_;
-	int pathIndex_;
-	std::vector<Math::Vector3> path_;
-	std::vector<bool> mask_;
+	NavMesh*                             mesh_;
+	mh_t                                 open_list_;
+	NavNode*                             close_list_;
+	int                                  path_index_;
+	std::vector<Math::Vector3>           path_;
+	std::vector<bool>                    mask_;
 
-	std::vector<std::vector<IndexPair>*> circleIndex_;
+	std::vector<std::vector<IndexPair>*> circle_index_;
 
-	DebugFunc debugNodeFunc_;
-	void* debugNodeUserdata_;
+	DebugFunc                            debug_node_func_;
+	void*                                debug_node_userdata_;
 
-	DebugFunc debugTileFunc_;
-	void* debugTileUserdata_;
+	DebugFunc                            debug_tile_func_;
+	void*                                debug_tile_userdata_;
 
-	DebugOverlapFunc debugOverlapFunc_;
-	void* debugOverlapUserdata_;
+	DebugOverlapFunc                     debug_overlap_func_;
+	void*                                debug_overlap_userdata_;
 };
 
 #endif

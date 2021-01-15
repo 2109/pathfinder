@@ -137,7 +137,7 @@ BOOL CNavDlg::OnInitDialog() {
 	m_offset_z = 0;
 	CBrush brushWalk(RGB(255, 0, 0));
 	CBrush brushBlock(RGB(88, 88, 0));
-	for (int i = 0; i < 20;i++) {
+	for (int i = 0; i < 20; i++) {
 		m_scale = 0.005 * i + 0.005;
 		CDC* memdc = new CDC();
 		m_cdc[i] = memdc;
@@ -328,7 +328,7 @@ void CNavDlg::DrawMap() {
 
 	int check = ((CButton *)GetDlgItem(IDC_CHECK1))->GetCheck();
 	if (check) {
-		for (int i = 0; i < m_finder->mesh_->tileWidth_ * m_finder->mesh_->tileHeight_; i++) {
+		for (int i = 0; i < m_finder->mesh_->tile_width_ * m_finder->mesh_->tile_height_; i++) {
 			NavTile* tile = &m_finder->mesh_->tile_[i];
 			CPoint pt[4];
 
@@ -454,18 +454,20 @@ void CNavDlg::DrawBegin(CPoint& pos) {
 
 	//m_finder->SetDebugOverlapFunc(OnOverlayDump, this);
 
-	//CClientDC dc(this);
-	//for (int i = 0; i < 1; i++) {
-	//	Math::Vector3 result;
-	//	//Math::Vector3 result = m_finder->RandomMovable(-1);
-	//	if (m_finder->RandomInCircle(result, Math::Vector3(nav_x, 0, nav_z), 2000)) {
-	//		printf("%f,%f\n", result.x*m_scale + m_offset_x, result.z*m_scale + m_offset_z);
-	//		dc.SetPixel(result.x*m_scale + m_offset_x, result.z*m_scale + m_offset_z, RGB(255, 111, 250));
-	//	}
+	CClientDC dc(this);
+	int count = 0;
+	for (int i = 0; i < 1000; i++) {
+		Math::Vector3 result;
+		//Math::Vector3 result = m_finder->RandomMovable(-1);
+		if (m_finder->RandomInCircle(result, Math::Vector3(nav_x, 0, nav_z), 2000)) {
+			//printf("%f,%f\n", result.x*m_scale + m_offset_x, result.z*m_scale + m_offset_z);
+			dc.SetPixel(result.x*m_scale + m_offset_x, result.z*m_scale + m_offset_z, RGB(255, 111, 250));
+		}
 
-	//}
+	}
 
-	Invalidate();
+
+	//Invalidate();
 }
 
 
