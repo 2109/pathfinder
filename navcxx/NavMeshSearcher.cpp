@@ -281,29 +281,38 @@ bool NavPathFinder::Movable(const Math::Vector3& pos, float fix, float* dt_offse
 	NavNode* search_node = NULL;
 	double dtmin = -1;
 
-	for (int x = x_index - 1; x <= x_index + 1; x++) {
+	int indexes[9][2] = { {0, 0}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1} };
+
+	for (int i = 0; i < 9; i++) {
+		int x = x_index + indexes[i][0];
+		int z = z_index + indexes[i][1];
 		if (x < 0 || x >= (int)mesh_->tile_width_) {
 			continue;
 		}
-		for (int z = z_index - 1; z <= z_index + 1; z++) {
-			if (z < 0 || z >= (int)mesh_->tile_height_) {
-				continue;
-			}
-			int index = x + z * mesh_->tile_width_;
-			tile = &mesh_->tile_[index];
+		if (z < 0 || z >= (int)mesh_->tile_height_) {
+			continue;
+		}
+		int index = x + z * mesh_->tile_width_;
+		tile = &mesh_->tile_[index];
 
-			for (int i = 0; i < (int)tile->node_.size(); i++) {
-				int node_id = tile->node_[i];
+		if (debug_tile_func_) {
+			debug_tile_func_(debug_tile_userdata_, x + z * mesh_->tile_width_);
+		}
 
-				node = GetNode(node_id);
-				if (!node->record_) {
-					node->record_ = true;
-					node->next_ = search_node;
-					search_node = node;
-					double dt = Dot2Node(pos, node_id);
-					if (dtmin < 0 || dtmin > dt) {
-						dtmin = dt;
-					}
+		for (int i = 0; i < (int)tile->node_.size(); i++) {
+			int node_id = tile->node_[i];
+
+			node = GetNode(node_id);
+			if (!node->record_) {
+				node->record_ = true;
+				node->next_ = search_node;
+				search_node = node;
+				if (debug_node_func_) {
+					debug_node_func_(debug_node_userdata_, node_id);
+				}
+				double dt = Dot2Node(pos, node_id);
+				if (dtmin < 0 || dtmin > dt) {
+					dtmin = dt;
 				}
 			}
 		}
