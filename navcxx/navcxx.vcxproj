@@ -83,6 +83,7 @@
     <ClInclude Include="minheap-adapter.h" />
     <ClInclude Include="minheap-internal.h" />
     <ClInclude Include="NavMeshFinder.h" />
+    <ClInclude Include="Plane.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TilePathFinder.h" />

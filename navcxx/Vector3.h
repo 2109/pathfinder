@@ -38,6 +38,7 @@ namespace Math {
 		bool		operator==(const Vector3& vector) const;
 		bool		operator!=(const Vector3& vector) const;
 
+		static const float Epsilon;
 		static const Vector3 Zero;
 		static const Vector3 Left;
 		static const Vector3 Right;
