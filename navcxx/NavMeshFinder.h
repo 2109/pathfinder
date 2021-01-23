@@ -148,6 +148,10 @@ public:
 
 	virtual ~NavPathFinder();
 
+	inline NavMesh* GetMesh() {
+		return mesh_;
+	}
+
 	inline void SetMask(int index, int enable) {
 		if ((size_t)index >= mask_.size()) {
 			mask_.resize(mask_.size() * 2);
@@ -261,6 +265,18 @@ public:
 
 	void GetOverlapPoly(std::vector<Math::Vector3>& poly, int node_id, std::vector<const Math::Vector3*>& result);
 
+	inline void PathAdd(Math::Vector3& pos) {
+		if ((size_t)path_index_ >= path_.size()) {
+			path_.resize(path_.size() * 2);
+		}
+		path_[path_index_++] = pos;
+	}
+
+	inline void PathCollect(std::vector<const Math::Vector3*>& list) {
+		for (int i = path_index_ - 1; i >= 0; --i) {
+			list.push_back(&path_[i]);
+		}
+	}
 public:
 	inline double CountNodeArea(NavNode* node) {
 		std::vector<const Math::Vector3*> vertice;
@@ -319,24 +335,13 @@ public:
 		path_index_ = 0;
 	}
 
-	inline void PathAdd(Math::Vector3& pos) {
-		if ((size_t)path_index_ >= path_.size()) {
-			path_.resize(path_.size() * 2);
-		}
-		path_[path_index_++] = pos;
-	}
-
-	inline void PathCollect(std::vector<const Math::Vector3*>& list) {
-		for (int i = path_index_ - 1; i >= 0; --i) {
-			list.push_back(&path_[i]);
-		}
-	}
-
 	NavNode* NextEdge(NavNode* node, const Math::Vector3& wp, int& link_edge);
 
 	bool UpdateWp(const Math::Vector3& src, NavNode*& node, NavNode*& parent, Math::Vector3& ptWp, int& link_edge, Math::Vector3& lpt, Math::Vector3& rpt, Math::Vector3& lvt, Math::Vector3& rvt, NavNode*& lnode, NavNode*& rnode);
 
 	void BuildPath(const Math::Vector3& src, const Math::Vector3& dst, NavNode* node, std::vector<const Math::Vector3*>& list);
+
+	void BuildPathUseFunnel(const Math::Vector3& src, const Math::Vector3& dst, NavNode* node, std::vector<const Math::Vector3*>& list);
 
 	void SortNode(NavNode* node);
 

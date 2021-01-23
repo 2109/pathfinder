@@ -163,7 +163,8 @@ int NavPathFinder::Find(const Math::Vector3& src, const Math::Vector3& dst, std:
 		close_list_ = node;
 
 		if (node == dst_node) {
-			BuildPath(src, dst, node, list);
+			//BuildPath(src, dst, node, list);
+			BuildPathUseFunnel(src, dst, node, list);
 			Reset();
 			return 0;
 		}
@@ -392,6 +393,7 @@ void NavPathFinder::BuildPath(const Math::Vector3& src, const Math::Vector3& dst
 		}
 
 		if (mask == 0x03) {
+			parent = parent->link_parent_;
 			continue;
 		}
 
@@ -410,8 +412,183 @@ void NavPathFinder::BuildPath(const Math::Vector3& src, const Math::Vector3& dst
 			}
 			continue;
 		}
-
 		parent = parent->link_parent_;
+	}
+
+	PathCollect(list);
+}
+
+struct Funnel {
+	enum SIDE {
+		eLEFT,
+		eSAME,
+		eRIGHT
+	};
+	NavPathFinder* finder_;
+	Math::Vector3 pivot_;
+	Math::Vector3 lvt_;
+	Math::Vector3 rvt_;
+	Math::Vector3 lpt_;
+	Math::Vector3 rpt_;
+	NavNode* lnode_;
+	NavNode* rnode_;
+	Funnel(NavPathFinder* finder) {
+		finder_ = finder;
+	}
+
+	void Set(const Math::Vector3& pivot, NavNode* node) {
+		lnode_ = node;
+		rnode_ = node;
+		NavEdge* edge = finder_->GetEdge(node->link_edge_);
+		NavMesh* mesh = finder_->GetMesh();
+		pivot_ = pivot;
+		lpt_ = mesh->vertice_[edge->a_];
+		rpt_ = mesh->vertice_[edge->b_];
+		lvt_ = lpt_ - pivot_;
+		rvt_ = rpt_ - pivot_;
+	}
+
+	void SetLeft(NavNode* node, const Math::Vector3& pt) {
+		lnode_ = node;
+		lpt_ = pt;
+		lvt_ = lpt_ - pivot_;
+	}
+
+	NavNode* UpdateLeft() {
+		int link_edge;
+		NavNode* node = finder_->NextEdge(lnode_, pivot_, link_edge);
+		if (node == NULL) {
+			return NULL;
+		}
+		finder_->PathAdd((Math::Vector3&)lpt_);
+		Set(lpt_, node);
+		return node;
+	}
+
+	void SetRight(NavNode* node, const Math::Vector3& pt) {
+		rnode_ = node;
+		rpt_ = pt;
+		rvt_ = rpt_ - pivot_;
+	}
+
+	NavNode* UpdateRight() {
+		int link_edge;
+		NavNode* node = finder_->NextEdge(rnode_, pivot_, link_edge);
+		if (node == NULL) {
+			return NULL;
+		}
+		finder_->PathAdd((Math::Vector3&)rpt_);
+		Set(rpt_, node);
+		return node;
+	}
+
+	SIDE SideLeft(const Math::Vector3& pt) { 
+		Math::Vector3 tmp = pt - pivot_;
+		float cross = Math::CrossY(lvt_, tmp);
+		if (cross < 0) {
+			return eRIGHT;
+		} else if (cross > 0) {
+			return eLEFT;
+		}
+		return eSAME;
+	}
+
+	SIDE SideRight(const Math::Vector3& pt) {
+		Math::Vector3 tmp = pt - pivot_;
+		float cross = Math::CrossY(rvt_, tmp);
+		if (cross < 0) {
+			return eRIGHT;
+		} else if (cross > 0) {
+			return eLEFT;
+		}
+		return eSAME;
+	}
+};
+
+void NavPathFinder::BuildPathUseFunnel(const Math::Vector3& src, const Math::Vector3& dst, NavNode* node, std::vector<const Math::Vector3*>& list) {
+	PathAdd((Math::Vector3&)dst);
+	Funnel funnel(this);
+	funnel.Set(dst, node);
+
+	node = node->link_parent_;
+	while (node) {
+		int link_edge = node->link_edge_;
+		NavEdge* edge = GetEdge(link_edge);
+		if (!edge) {
+			Funnel::SIDE side_l = funnel.SideLeft(src);
+			Funnel::SIDE side_r = funnel.SideRight(src);
+			if (side_l == Funnel::eLEFT && side_r == Funnel::eLEFT) {
+				node = funnel.UpdateLeft();
+				if (node == NULL) {
+					PathAdd((Math::Vector3&)src);
+					break;
+				}
+				node = node->link_parent_;
+				continue;
+
+			} else if (side_l == Funnel::eRIGHT && side_r == Funnel::eRIGHT) {
+				node = funnel.UpdateRight();
+				if (node == NULL) {
+					PathAdd((Math::Vector3&)src);
+					break;
+				}
+				node = node->link_parent_;
+				continue;
+			}
+			PathAdd((Math::Vector3&)src);
+			break;
+		}
+
+		Math::Vector3& lpt_tmp = mesh_->vertice_[edge->a_];
+		Math::Vector3& rpt_tmp = mesh_->vertice_[edge->b_];
+
+		Funnel::SIDE lvt_side_l = funnel.SideLeft(lpt_tmp);
+		Funnel::SIDE lvt_side_r = funnel.SideLeft(rpt_tmp);
+		Funnel::SIDE rvt_side_l = funnel.SideRight(lpt_tmp);
+		Funnel::SIDE rvt_side_r = funnel.SideRight(rpt_tmp);
+
+		uint8_t mask = 0;
+		//下一条边的左点在漏斗里，更新为新的左点,同时记录当前左点的多边形
+		if (lvt_side_l != Funnel::eLEFT && rvt_side_l != Funnel::eRIGHT) {
+			funnel.SetLeft(node, lpt_tmp);
+			mask |= 0x01;
+		}
+		//下一条边的右点在漏斗里，更新为新的右点,同时记录当前右点的多边形
+		if (lvt_side_r != Funnel::eLEFT && rvt_side_r != Funnel::eRIGHT) {
+			funnel.SetRight(node, rpt_tmp);
+			mask |= 0x02;
+		}
+
+		if (mask == 0x03) {
+			//如果左右两点同时更新了，直接跳到一个多边形
+			node = node->link_parent_;
+			continue;
+		}
+		
+		if (lvt_side_l == Funnel::eLEFT && rvt_side_l == Funnel::eLEFT &&
+			lvt_side_r == Funnel::eLEFT && rvt_side_r == Funnel::eLEFT) {
+			//左右两点都在漏斗左边，更新漏斗，以左点为新的拐点,同时以左点的当时多边形为基础，一直找到一边不共边的多边形
+			node = funnel.UpdateLeft();
+			if (node == NULL) {
+				PathAdd((Math::Vector3&)src);
+				break;
+			}
+			node = node->link_parent_;
+			continue;
+		}
+
+		if (lvt_side_l == Funnel::eRIGHT && rvt_side_l == Funnel::eRIGHT &&
+			lvt_side_r == Funnel::eRIGHT && rvt_side_r == Funnel::eRIGHT) {
+			//左右两点都在漏斗右边，更新漏斗，以右点为新的拐点,同时以右点的当时多边形为基础，一直找到一边不共边的多边形
+			node = funnel.UpdateRight();
+			if (node == NULL) {
+				PathAdd((Math::Vector3&)src);
+				break;
+			}
+			node = node->link_parent_;
+			continue;
+		}
+		node = node->link_parent_;
 	}
 
 	PathCollect(list);
