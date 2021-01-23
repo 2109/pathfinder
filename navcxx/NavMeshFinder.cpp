@@ -482,7 +482,7 @@ struct Funnel {
 		return node;
 	}
 
-	SIDE SideLeft(const Math::Vector3& pt) { 
+	SIDE SideLeft(const Math::Vector3& pt) {
 		Math::Vector3 tmp = pt - pivot_;
 		float cross = Math::CrossY(lvt_, tmp);
 		if (cross < 0) {
@@ -564,7 +564,7 @@ void NavPathFinder::BuildPathUseFunnel(const Math::Vector3& src, const Math::Vec
 			node = node->link_parent_;
 			continue;
 		}
-		
+
 		if (lvt_side_l == Funnel::eLEFT && rvt_side_l == Funnel::eLEFT &&
 			lvt_side_r == Funnel::eLEFT && rvt_side_r == Funnel::eLEFT) {
 			//左右两点都在漏斗左边，更新漏斗，以左点为新的拐点,同时以左点的当时多边形为基础，一直找到一边不共边的多边形

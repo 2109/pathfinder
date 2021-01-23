@@ -32,8 +32,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 };
 
-CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD) {
-}
+CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD) {}
 
 void CAboutDlg::DoDataExchange(CDataExchange* pDX) {
 	CDialogEx::DoDataExchange(pDX);
@@ -143,7 +142,7 @@ BOOL CTilePathFinderDlg::OnInitDialog() {
 	bNeedPaint = true;
 
 	USES_CONVERSION;
-	char * pFileName = T2A(tile_file);
+	char* pFileName = T2A(tile_file);
 	m_tile_finder = TilePathFinder::LoadFromFile(pFileName);
 
 	CRect rect;
@@ -162,7 +161,7 @@ BOOL CTilePathFinderDlg::OnInitDialog() {
 		memdc->FillSolidRect(0, 0, rect.Width(), rect.Height(), RGB(255, 255, 255));
 
 		CPen pen(PS_SOLID, 1, RGB(0, 0, 0));
-		CPen *oriOpen = memdc->SelectObject(&pen);
+		CPen* oriOpen = memdc->SelectObject(&pen);
 
 		for (int x = 0; x < m_tile_finder->GetWidth(); x++) {
 			for (int z = 0; z < m_tile_finder->GetHeight(); z++) {
@@ -215,7 +214,7 @@ BOOL CTilePathFinderDlg::OnInitDialog() {
 	AllocConsole();
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	int hCrt = _open_osfhandle((long)handle, _O_TEXT);
-	FILE * hf = _fdopen(hCrt, "w");
+	FILE* hf = _fdopen(hCrt, "w");
 	*stdout = *hf;
 
 	Invalidate();
@@ -301,7 +300,7 @@ void CTilePathFinderDlg::OnFindPath() {
 	QueryPerformanceCounter(&over);
 
 	CClientDC cdc(this);
-	CPen *oriPen = cdc.SelectObject(pPenLine);
+	CPen* oriPen = cdc.SelectObject(pPenLine);
 	if (m_smooth_head) {
 		oriPen = cdc.SelectObject(pPenLine1);
 	}
@@ -466,7 +465,7 @@ void CTilePathFinderDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 }
 
 
-void CTilePathFinderDlg::OnUpdateIddTileFindpathDialog(CCmdUI *pCmdUI) {
+void CTilePathFinderDlg::OnUpdateIddTileFindpathDialog(CCmdUI* pCmdUI) {
 	// TODO: 在此添加命令更新用户界面处理程序代码
 	UpdateDialog();
 }
@@ -483,7 +482,7 @@ void CTilePathFinderDlg::OnClose() {
 	CString tile_file;
 	tile_file.Format(_T("./tile/%s"), AfxGetApp()->m_lpCmdLine);
 	USES_CONVERSION;
-	char * pFileName = T2A(tile_file);
+	char* pFileName = T2A(tile_file);
 	m_tile_finder->Serialize(pFileName);
 	CDialogEx::OnClose();
 }
@@ -528,9 +527,9 @@ void CTilePathFinderDlg::RayCast(int type) {
 	Math::Vector2 stop;
 
 	if (type == 0) {
-		m_tile_finder->Raycast(fromPos, toPos, false, &result, &stop);
+		m_tile_finder->Raycast(fromPos, toPos, false, &result, &stop, true);
 	} else {
-		m_tile_finder->Raycast(fromPos, toPos, false, &result, &stop);
+		m_tile_finder->Raycast(fromPos, toPos, false, &result, &stop, false);
 	}
 
 	QueryPerformanceCounter(&over);

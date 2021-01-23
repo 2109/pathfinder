@@ -32,7 +32,7 @@ static inline float GoalEstimate(TilePathFinder::PathNode* from, TilePathFinder:
 }
 
 static inline void ClearHeap(mh_elt_t* elt) {
-	TilePathFinder::PathNode *node = (TilePathFinder::PathNode*)elt;
+	TilePathFinder::PathNode* node = (TilePathFinder::PathNode*)elt;
 	node->Reset();
 }
 
@@ -370,7 +370,7 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 				const Math::Vector2* checkNode = path[j];
 
 				Math::Vector2 result;
-				Raycast(*startNode, *checkNode, true, &result, NULL);
+				Raycast(*startNode, *checkNode, true, &result, NULL, false);
 				if ((int)result.x == (int)checkNode->x &&
 					(int)result.y == (int)checkNode->y) {
 					last = j;
@@ -399,7 +399,7 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 				const Math::Vector2* headNode = list[head];
 				const Math::Vector2* tailNode = list[tail];
 				Math::Vector2 result;
-				Raycast(*headNode, *tailNode, true, &result, NULL);
+				Raycast(*headNode, *tailNode, true, &result, NULL, false);
 				if ((int)result.x == (int)tailNode->x && (int)result.y == (int)tailNode->y) {
 					head = tail - 1;
 					break;
@@ -432,7 +432,7 @@ int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, Smo
 		return STATUS_SAME_POINT;
 	}
 
-	if (Raycast(from, to, false, NULL, NULL) == 0) {
+	if (Raycast(from, to, false, NULL, NULL, false) == 0) {
 		list.push_back(&fromNode->pos_);
 		list.push_back(&toNode->pos_);
 		return STATUS_OK;
@@ -490,158 +490,158 @@ int TilePathFinder::Find(int x0, int z0, int x1, int z1, SmoothType smooth, std:
 	return Find(from, to, smooth, list, estimate);
 }
 
-int TilePathFinder::Raycast(const Math::Vector2& from, const Math::Vector2& to, bool ignore, Math::Vector2* result, Math::Vector2* stop) {
-	return Raycast((int)from.x, (int)from.y, (int)to.x, (int)to.y, ignore, result, stop);
+int TilePathFinder::Raycast(const Math::Vector2& from, const Math::Vector2& to, bool ignore, Math::Vector2* result, Math::Vector2* stop, bool use_breshemham) {
+	return Raycast((int)from.x, (int)from.y, (int)to.x, (int)to.y, ignore, result, stop, use_breshemham);
 }
 
-int TilePathFinder::Raycast(int x0, int z0, int x1, int z1, bool ignore, Math::Vector2* result, Math::Vector2* stop) {
-#ifdef RAYCAST_USE_BRESHENHAM
-	int rx = x0;
-	int rz = z0;
+int TilePathFinder::Raycast(int x0, int z0, int x1, int z1, bool ignore, Math::Vector2* result, Math::Vector2* stop, bool use_breshemham) {
+	if (use_breshemham) {
+		int rx = x0;
+		int rz = z0;
 
-	int dx = abs(x1 - x0);
-	int dz = abs(z1 - z0);
+		int dx = abs(x1 - x0);
+		int dz = abs(z1 - z0);
 
-	int steep = dz > dx ? 1 : 0;
-	if (steep) {
-		std::swap(x0, z0);
-		std::swap(x1, z1);
-		std::swap(dx, dz);
-	}
-
-	int xstep = x0 < x1 ? 1 : -1;
-	int zstep = z0 < z1 ? 1 : -1;
-
-	for (int dt = dz - dx; xstep == 1 ? x0 <= x1 : x1 <= x0;) {
-		int x, z;
+		int steep = dz > dx ? 1 : 0;
 		if (steep) {
-			x = z0;
-			z = x0;
-		} else {
-			x = x0;
-			z = z0;
+			std::swap(x0, z0);
+			std::swap(x1, z1);
+			std::swap(dx, dz);
 		}
 
-		if (!Movable(x, z, ignore)) {
-			stop->x = x;
-			stop->y = z;
-			break;
-		}
-		rx = x;
-		rz = z;
+		int xstep = x0 < x1 ? 1 : -1;
+		int zstep = z0 < z1 ? 1 : -1;
 
-		if (debugFunc_) {
-			debugFunc_(debugUserdata_, x, z);
-		}
-
-		if (dt >= 0) {
-			z0 += zstep;
-			dt -= dx;
-		}
-		x0 += xstep;
-		dt += dz;
-	}
-
-	if (result) {
-		result->x = floor(rx);
-		result->y = floor(rz);
-	}
-
-	if (stop) {
-		stop->x = floor(stop->x);
-		stop->y = floor(stop->y);
-	}
-
-	if (rx == x1 && rz == z1) {
-		return 0;
-	}
-	return -1;
-#else
-	float fx0 = x0 + 0.5f;
-	float fz0 = z0 + 0.5f;
-	float fx1 = x1 + 0.5f;
-	float fz1 = z1 + 0.5f;
-	float rx = fx0;
-	float rz = fz0;
-
-	if (fx0 == fx1) {
-		for (float z = z0; z0 < z1 ? z <= z1 : z >= z1; z0 < z1 ? z++ : z--) {
-			if (debugFunc_) {
-				debugFunc_(debugUserdata_, x0, z);
-			}
-
-			if (!Movable(x0, z, ignore)) {
-				if (stop) {
-					stop->x = x0;
-					stop->y = z;
-				}
-				break;
+		for (int dt = dz - dx; xstep == 1 ? x0 <= x1 : x1 <= x0;) {
+			int x, z;
+			if (steep) {
+				x = z0;
+				z = x0;
 			} else {
-				rx = x0;
-				rz = z;
+				x = x0;
+				z = z0;
 			}
-		}
-	} else {
-		float slope = (fz1 - fz0) / (fx1 - fx0);
-		if (fabs(slope) < 1) {
-			float inc = fx1 >= fx0 ? 1 : -1;
-			for (float x = fx0; fx1 >= fx0 ? x <= fx1 : x >= fx1; x += inc) {
-				float z = slope * (x - fx0) + fz0;
 
+			if (!Movable(x, z, ignore)) {
+				stop->x = x;
+				stop->y = z;
+				break;
+			}
+			rx = x;
+			rz = z;
+
+			if (debugFunc_) {
+				debugFunc_(debugUserdata_, x, z);
+			}
+
+			if (dt >= 0) {
+				z0 += zstep;
+				dt -= dx;
+			}
+			x0 += xstep;
+			dt += dz;
+		}
+
+		if (result) {
+			result->x = floor(rx);
+			result->y = floor(rz);
+		}
+
+		if (stop) {
+			stop->x = floor(stop->x);
+			stop->y = floor(stop->y);
+		}
+
+		if (rx == x1 && rz == z1) {
+			return 0;
+		}
+		return -1;
+	} else {
+		float fx0 = x0 + 0.5f;
+		float fz0 = z0 + 0.5f;
+		float fx1 = x1 + 0.5f;
+		float fz1 = z1 + 0.5f;
+		float rx = fx0;
+		float rz = fz0;
+
+		if (fx0 == fx1) {
+			for (float z = z0; z0 < z1 ? z <= z1 : z >= z1; z0 < z1 ? z++ : z--) {
 				if (debugFunc_) {
-					debugFunc_(debugUserdata_, x, z);
+					debugFunc_(debugUserdata_, x0, z);
 				}
 
-				if (!Movable(x, z, ignore)) {
+				if (!Movable(x0, z, ignore)) {
 					if (stop) {
-						stop->x = x;
+						stop->x = x0;
 						stop->y = z;
 					}
 					break;
 				} else {
-					rx = x;
+					rx = x0;
 					rz = z;
 				}
 			}
 		} else {
-			float inc = fz1 >= fz0 ? 1 : -1;
-			for (float z = fz0; fz1 >= fz0 ? z <= fz1 : z >= fz1; z += inc) {
-				float x = (z - fz0) / slope + fx0;
+			float slope = (fz1 - fz0) / (fx1 - fx0);
+			if (fabs(slope) < 1) {
+				float inc = fx1 >= fx0 ? 1 : -1;
+				for (float x = fx0; fx1 >= fx0 ? x <= fx1 : x >= fx1; x += inc) {
+					float z = slope * (x - fx0) + fz0;
 
-				if (debugFunc_) {
-					debugFunc_(debugUserdata_, x, z);
-				}
-
-				if (!Movable(x, z, ignore)) {
-					if (stop) {
-						stop->x = x;
-						stop->y = z;
+					if (debugFunc_) {
+						debugFunc_(debugUserdata_, x, z);
 					}
-					break;
-				} else {
-					rx = x;
-					rz = z;
+
+					if (!Movable(x, z, ignore)) {
+						if (stop) {
+							stop->x = x;
+							stop->y = z;
+						}
+						break;
+					} else {
+						rx = x;
+						rz = z;
+					}
+				}
+			} else {
+				float inc = fz1 >= fz0 ? 1 : -1;
+				for (float z = fz0; fz1 >= fz0 ? z <= fz1 : z >= fz1; z += inc) {
+					float x = (z - fz0) / slope + fx0;
+
+					if (debugFunc_) {
+						debugFunc_(debugUserdata_, x, z);
+					}
+
+					if (!Movable(x, z, ignore)) {
+						if (stop) {
+							stop->x = x;
+							stop->y = z;
+						}
+						break;
+					} else {
+						rx = x;
+						rz = z;
+					}
 				}
 			}
 		}
-	}
 
-	if (result) {
-		result->x = floor(rx);
-		result->y = floor(rz);
-	}
+		if (result) {
+			result->x = floor(rx);
+			result->y = floor(rz);
+		}
 
-	if (stop) {
-		stop->x = floor(stop->x);
-		stop->y = floor(stop->y);
-	}
+		if (stop) {
+			stop->x = floor(stop->x);
+			stop->y = floor(stop->y);
+		}
 
-	if ((int)rx == x1 && (int)rz == z1) {
-		return 0;
-	}
-	return -1;
+		if ((int)rx == x1 && (int)rz == z1) {
+			return 0;
+		}
+		return -1;
 
-#endif
+	}
 }
 
 void TilePathFinder::Random(Math::Vector2& result) {

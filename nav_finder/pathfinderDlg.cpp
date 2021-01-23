@@ -428,7 +428,7 @@ void CNavDlg::DrawBegin(CPoint& pos) {
 	m_finder->SetDebugTileFunc(OnAroundDump, this);
 	m_finder->SetDebugNodeFunc(OnSearchDump, this);
 	/*m_finder->Movable(Math::Vector3(nav_x, 0, nav_z), 10, NULL);*/
-	NavNode* node = m_finder->SearchNode(Math::Vector3(nav_x, 0, nav_z), 1);
+	NavNode* node = m_finder->SearchNode(Math::Vector3(nav_x, 0, nav_z), 7);
 	if (node == NULL)
 		return;
 
@@ -712,7 +712,7 @@ void CNavDlg::OnEnChangeEdit4() {
 
 void CNavDlg::DrawPath(std::vector<const Math::Vector3*>& path) {
 	CClientDC dc(this);
-	CPen pen(PS_SOLID, 1, RGB(255, 255, 255));
+	CPen pen(PS_SOLID, 1, RGB(100, 188, 255));
 	CPen* open = dc.SelectObject(&pen);
 
 
