@@ -141,6 +141,26 @@ void NavPathFinder::CreateTile(uint32_t unit) {
 					}
 				}
 
+				if (!inside) {
+					bool cross = false;
+					for (int j = 0; j < 4; j++) {
+						const Math::Vector3& pos = ti->pos_[j];
+						for (int k = 0; k < node->edge_.size(); k++) {
+							NavEdge* edge = GetEdge(node->edge_[k]);
+							if (Intersect(tile->pos_[j], tile->pos_[(j + 1) % 4], mesh_->vertice_[edge->a_], mesh_->vertice_[edge->b_])) {
+								cross = true;
+								break;
+							}
+						}
+						if (cross) {
+							break;
+						}
+					}
+					if (cross) {
+						inside = true;
+					}
+				}
+
 				if (inside) {
 					if (InsideNode(node->id_, ti->center_)) {
 						assert(tile->center_node_ != node->id_);
