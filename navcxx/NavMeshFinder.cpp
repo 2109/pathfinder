@@ -573,11 +573,7 @@ void NavPathFinder::BuildPathUseFunnel(const Math::Vector3& src, const Math::Vec
 				PathAdd((Math::Vector3&)src);
 				break;
 			}
-			node = node->link_parent_;
-			continue;
-		}
-
-		if (lvt_side_l == Funnel::eRIGHT && rvt_side_l == Funnel::eRIGHT &&
+		} else if (lvt_side_l == Funnel::eRIGHT && rvt_side_l == Funnel::eRIGHT &&
 			lvt_side_r == Funnel::eRIGHT && rvt_side_r == Funnel::eRIGHT) {
 			//左右两点都在漏斗右边，更新漏斗，以右点为新的拐点,同时以右点的当时多边形为基础，一直找到一边不共边的多边形
 			node = funnel.UpdateRight();
@@ -585,8 +581,6 @@ void NavPathFinder::BuildPathUseFunnel(const Math::Vector3& src, const Math::Vec
 				PathAdd((Math::Vector3&)src);
 				break;
 			}
-			node = node->link_parent_;
-			continue;
 		}
 		node = node->link_parent_;
 	}
