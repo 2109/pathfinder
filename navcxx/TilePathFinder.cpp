@@ -502,7 +502,7 @@ int TilePathFinder::Raycast(int x0, int z0, int x1, int z1, bool ignore, Math::V
 		int dx = abs(x1 - x0);
 		int dz = abs(z1 - z0);
 
-		int steep = dz > dx ? 1 : 0;
+		bool steep = dz > dx ? 1 : 0;
 		if (steep) {
 			std::swap(x0, z0);
 			std::swap(x1, z1);

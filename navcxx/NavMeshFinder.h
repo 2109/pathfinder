@@ -6,6 +6,8 @@ extern "C" {
 }
 #include "Math.h"
 #include "Vector3.h"
+#include "Plane.h"
+
 struct NavNode {
 	mh_elt_t elt_;
 	NavNode* next_;
@@ -13,6 +15,8 @@ struct NavNode {
 	std::vector<int> vertice_;
 	std::vector<int> edge_;
 	int size_;
+
+	Math::Plane plane_;
 
 	Math::Vector3 center_;
 
@@ -262,6 +266,9 @@ public:
 	bool RandomInCircle(Math::Vector3& pos, const Math::Vector3& center, int radius);
 
 	float GetHeight(const Math::Vector3& pos);
+
+	float GetHeightNew(const Math::Vector3& pos);
+
 
 	void GetOverlapPoly(std::vector<Math::Vector3>& poly, int node_id, std::vector<const Math::Vector3*>& result);
 

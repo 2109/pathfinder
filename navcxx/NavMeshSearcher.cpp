@@ -529,6 +529,34 @@ float NavPathFinder::GetHeight(const Math::Vector3& p) {
 	return -1;
 }
 
+
+float NavPathFinder::GetHeightNew(const Math::Vector3& p) {
+	NavTile* tile = GetTile(p);
+	if (!tile) {
+		return -1;
+	}
+
+	NavNode* node = NULL;
+	for (size_t i = 0; i < tile->node_.size(); ++i) {
+		int node_id = tile->node_[i];
+		if (debug_node_func_) {
+			debug_node_func_(debug_node_userdata_, node_id);
+		}
+		if (InsideNode(node_id, p)) {
+			node = &mesh_->node_[node_id];
+			break;
+		}
+	}
+
+	if (!node) {
+		return -1;
+	}
+
+	Math::Vector3 result;
+	node->plane_.LineHit(p, Math::Vector3(p.x, 0, p.z), result);
+	return result.y;
+}
+
 void NavPathFinder::GetOverlapPoly(std::vector<Math::Vector3>& poly, int node_id, std::vector<const Math::Vector3*>& result) {
 	NavNode* node = GetNode(node_id);
 
