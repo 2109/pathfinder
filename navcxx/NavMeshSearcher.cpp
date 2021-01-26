@@ -139,7 +139,7 @@ Math::Vector3* NavPathFinder::SearchInRectangle(const Math::Vector3& pos, int de
 	aux.pos_ = NULL;
 
 	SearchTile(pos, depth, TileChoose, &aux);
-	if (*center_node) {
+	if (center_node) {
 		*center_node = aux.center_node_;
 	}
 
@@ -244,7 +244,7 @@ NavNode* NavPathFinder::SearchNode(const Math::Vector3& pos, int depth) {
 			debug_node_func_(debug_node_userdata_, node_id);
 		}
 		double dt = Dot2Node(pos, node_id);
-		if (dtmin < dt) {
+		if (dtmin > dt) {
 			dtmin = dt;
 			nearest = node_id;
 		}
