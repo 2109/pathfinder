@@ -119,7 +119,7 @@ BOOL CNavDlg::OnInitDialog() {
 	nav_tile.Format(_T("./nav/%s"), AfxGetApp()->m_lpCmdLine);
 	USES_CONVERSION;
 	m_finder = NavPathFinder::LoadMeshEx(T2A(nav_tile.GetBuffer(0)));
-	m_finder->CreateTile(100);
+	m_finder->CreateTile(500);
 
 	m_mouse_state = true;
 	m_mouse_point = NULL;
@@ -189,6 +189,8 @@ BOOL CNavDlg::OnInitDialog() {
 	int hCrt = _open_osfhandle((long)handle, _O_TEXT);
 	FILE * hf = _fdopen(hCrt, "w");
 	*stdout = *hf;
+	
+	size_t mem = m_finder->CountMemory();
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -425,8 +427,8 @@ void CNavDlg::DrawBegin(CPoint& pos) {
 
 	printf("nav begin:%f,%f\n", nav_x, nav_z);
 
-	m_finder->SetDebugTileFunc(OnAroundDump, this);
-	m_finder->SetDebugNodeFunc(OnSearchDump, this);
+	//m_finder->SetDebugTileFunc(OnAroundDump, this);
+	//m_finder->SetDebugNodeFunc(OnSearchDump, this);
 	/*m_finder->Movable(Math::Vector3(nav_x, 0, nav_z), 10, NULL);*/
 	NavNode* node = m_finder->SearchNode(Math::Vector3(nav_x, 0, nav_z), 7);
 	if (node == NULL)
@@ -469,7 +471,7 @@ void CNavDlg::DrawBegin(CPoint& pos) {
 	//}
 
 
-	//Invalidate();
+	Invalidate();
 }
 
 

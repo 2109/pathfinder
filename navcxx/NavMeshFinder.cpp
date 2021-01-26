@@ -647,3 +647,18 @@ void NavPathFinder::GetLink(NavNode* node, NavNode** link) {
 		}
 	}
 }
+
+size_t NavPathFinder::CountMemory() {
+	size_t total = 0;
+	total += sizeof(*mesh_);
+	total += sizeof(Math::Vector3) * mesh_->vertice_.size();
+	total += sizeof(NavEdge) * mesh_->edge_.size();
+	total += sizeof(NavNode) * mesh_->node_.size();
+	for (size_t i = 0; i < mesh_->node_.size(); ++i) {
+		NavNode& node = mesh_->node_[i];
+		total += sizeof(int) * node.vertice_.size();
+		total += sizeof(int) * node.edge_.size();
+	}
+	total += sizeof(NavTile) * mesh_->tile_.size();
+	return total;
+}

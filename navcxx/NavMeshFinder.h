@@ -265,6 +265,8 @@ public:
 
 	void GetOverlapPoly(std::vector<Math::Vector3>& poly, int node_id, std::vector<const Math::Vector3*>& result);
 
+	size_t CountMemory();
+
 	inline void PathAdd(Math::Vector3& pos) {
 		if ((size_t)path_index_ >= path_.size()) {
 			path_.resize(path_.size() * 2);
