@@ -263,10 +263,9 @@ public:
 
 	bool RandomInCircle(Math::Vector3& pos, const Math::Vector3& center, int radius);
 
-	float GetHeight(const Math::Vector3& pos);
+	float GetHeight(const Math::Vector3& pos, int* node_id);
 
-	float GetHeightNew(const Math::Vector3& pos);
-
+	float GetHeightNew(const Math::Vector3& pos, int* node_id);
 
 	void GetOverlapPoly(std::vector<Math::Vector3>& poly, int node_id, std::vector<const Math::Vector3*>& result);
 

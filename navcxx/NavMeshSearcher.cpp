@@ -210,30 +210,15 @@ Math::Vector3* NavPathFinder::SearchInCircle(const Math::Vector3& pos, int depth
 }
 
 NavNode* NavPathFinder::SearchNode(const Math::Vector3& pos, int depth) {
-	if (mesh_->tile_.size() == 0) {
-		for (size_t i = 0; i < mesh_->node_.size(); ++i) {
-			if (debug_node_func_) {
-				debug_node_func_(debug_node_userdata_, i);
-			}
-			if (InsideNode(i, pos)) {
-				return &mesh_->node_[i];
-			}
-		}
-	}
-
 	NavTile* tile = GetTile(pos);
 	if (!tile) {
 		return NULL;
 	}
 
-	for (size_t i = 0; i < tile->node_.size(); ++i) {
-		int node_id = tile->node_[i];
-		if (debug_node_func_) {
-			debug_node_func_(debug_node_userdata_, node_id);
-		}
-		if (InsideNode(node_id, pos)) {
-			return &mesh_->node_[node_id];
-		}
+	int node_id = -1;
+	float height = GetHeight(pos, &node_id);
+	if (height >= 0) {
+		return &mesh_->node_[node_id];
 	}
 
 	double dtmin = DBL_MAX;
@@ -461,13 +446,13 @@ bool NavPathFinder::RandomInCircle(Math::Vector3& pos, const Math::Vector3& cent
 	return status;
 }
 
-float NavPathFinder::GetHeight(const Math::Vector3& p) {
+float NavPathFinder::GetHeight(const Math::Vector3& p, int* result_node) {
 	NavTile* tile = GetTile(p);
 	if (!tile) {
-		return 0;
+		return -1;
 	}
 	std::vector<int> vert = { 0, 0, 0 };
-	float height = 0;
+	float height = -1;
 	for (size_t i = 0; i < tile->node_.size(); ++i) {
 		int node_id = tile->node_[i];
 		if (debug_node_func_) {
@@ -512,6 +497,9 @@ float NavPathFinder::GetHeight(const Math::Vector3& p) {
 				float tmp = a.y + (v0.y * u + v1.y * v) / denom;
 				if (tmp > height) {
 					height = tmp;
+					if (result_node) {
+						*result_node = node_id;
+					}
 				}
 			}
 		}
@@ -520,13 +508,13 @@ float NavPathFinder::GetHeight(const Math::Vector3& p) {
 	return height;
 }
 
-float NavPathFinder::GetHeightNew(const Math::Vector3& p) {
+float NavPathFinder::GetHeightNew(const Math::Vector3& p, int* result_node) {
 	NavTile* tile = GetTile(p);
 	if (!tile) {
-		return 0;
+		return -1;
 	}
 	std::vector<int> vert = { 0, 0, 0 };
-	float height = 0;
+	float height = -1;
 	for (size_t i = 0; i < tile->node_.size(); ++i) {
 		int node_id = tile->node_[i];
 		if (debug_node_func_) {
@@ -554,6 +542,9 @@ float NavPathFinder::GetHeightNew(const Math::Vector3& p) {
 			plane.LineHit(p, Math::Vector3(p.x, 0, p.z), result);
 			if (result.y > height) {
 				height = result.y;
+				if (result_node) {
+					*result_node = node_id;
+				}
 			}
 		}
 	}
