@@ -246,9 +246,9 @@ public:
 
 	NavNode* SearchNode(const Math::Vector3& pos, int depth = 1);
 
-	int SearchInRectangle(const Math::Vector3& pos, Math::Vector3* out, int depth);
+	int SearchInRectangle(const Math::Vector3& pos, Math::Vector3* out, int depth, float* out_dt);
 
-	int SearchInCircle(const Math::Vector3& pos, Math::Vector3* out, int depth);
+	int SearchInCircle(const Math::Vector3& pos, Math::Vector3* out, int depth, float* out_dt);
 
 	int Find(const Math::Vector3& src, const Math::Vector3& dst, std::vector<const Math::Vector3*>& list);
 
