@@ -516,9 +516,9 @@ float NavPathFinder::GetHeight(const Math::Vector3& p, int* result_node) {
 			const Math::Vector3& b = mesh_->vertice_[node->vertice_[index]];
 			const Math::Vector3& c = mesh_->vertice_[node->vertice_[index + 1]];
 
-			const Math::Vector3& v0 = c - a;
-			const Math::Vector3& v1 = b - a;
-			const Math::Vector3& v2 = p - a;
+			const Math::Vector3 v0 = c - a;
+			const Math::Vector3 v1 = b - a;
+			const Math::Vector3 v2 = p - a;
 
 			float denom = v0.x * v1.z - v0.z * v1.x;
 			if (fabsf(denom) < 1e-6f) {
