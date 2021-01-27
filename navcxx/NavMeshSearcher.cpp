@@ -141,10 +141,14 @@ int NavPathFinder::SearchInRectangle(const Math::Vector3& pos, Math::Vector3* ou
 	float dt_min = -1;
 	int node_id = -1;
 	Math::Vector3 p;
+	Math::Vector3* ptr = NULL;
+	if (out) {
+		ptr = &p;
+	}
 	SearchTile(pos, depth, TileChoose, &aux);
 	while (link) {
 		NavNode* ori = link;
-		double dt = Dot2Node(pos, ori->id_, &p);
+		double dt = Dot2Node(pos, ori->id_, ptr);
 		if (dt_min < 0 || dt_min > dt) {
 			dt_min = dt;
 			node_id = ori->id_;
@@ -374,11 +378,15 @@ double NavPathFinder::Dot2Node(const Math::Vector3& pos, int node_id, Math::Vect
 	NavNode* node = &mesh_->node_[node_id];
 	double min = DBL_MAX;
 	Math::Vector3 point;
+	Math::Vector3* ptr = NULL;
+	if (p) {
+		ptr = &point;
+	}
 	for (int i = 0; i < node->size_; ++i) {
 		const Math::Vector3& pt0 = mesh_->vertice_[node->vertice_[i]];
 		const Math::Vector3& pt1 = mesh_->vertice_[node->vertice_[(i + 1) % node->size_]];
 
-		double dt = Math::DistancePointToSegment(pt0, pt1, pos, &point);
+		double dt = Math::DistancePointToSegment(pt0, pt1, pos, ptr);
 		if (dt < min) {
 			min = dt;
 			if (p) {
