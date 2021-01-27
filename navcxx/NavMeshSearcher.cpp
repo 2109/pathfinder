@@ -284,6 +284,7 @@ NavNode* NavPathFinder::SearchNode(const Math::Vector3& pos, int depth) {
 	return NULL;
 }
 
+static int sIndexes[9][2] = { {0, 0}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1} };
 bool NavPathFinder::Movable(const Math::Vector3& pos, float fix, float* dt_offset) {
 	if (dt_offset) {
 		*dt_offset = 0;
@@ -319,11 +320,9 @@ bool NavPathFinder::Movable(const Math::Vector3& pos, float fix, float* dt_offse
 	}
 
 	NavNode* node_head = NULL;
-	int indexes[9][2] = { {0, 0}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1} };
-
 	for (int i = 0; i < 9; i++) {
-		int x = x_index + indexes[i][0];
-		int z = z_index + indexes[i][1];
+		int x = x_index + sIndexes[i][0];
+		int z = z_index + sIndexes[i][1];
 		if (x < 0 || x >= (int)mesh_->tile_width_ || z < 0 || z >= (int)mesh_->tile_height_) {
 			continue;
 		}
