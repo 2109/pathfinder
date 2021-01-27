@@ -46,7 +46,7 @@ void NavPathFinder::SearchTile(const Math::Vector3& pos, int depth, SearchFunc f
 	if (depth <= kSearchDepth) {
 		int xmin = x_index - depth;
 		int zmin = z_index - depth;
-		std::vector<IndexPair>* indexes = reactangle_index_[depth-1];
+		std::vector<IndexPair>* indexes = reactangle_index_[depth - 1];
 		for (int i = 0; i < indexes->size(); i++) {
 			IndexPair& pair = (*indexes)[i];
 			int x = xmin + pair.x_;
@@ -464,118 +464,101 @@ bool NavPathFinder::RandomInCircle(Math::Vector3& pos, const Math::Vector3& cent
 float NavPathFinder::GetHeight(const Math::Vector3& p) {
 	NavTile* tile = GetTile(p);
 	if (!tile) {
-		return -1;
+		return 0;
 	}
-
-	NavNode* node = NULL;
+	std::vector<int> vert = { 0, 0, 0 };
+	float height = 0;
 	for (size_t i = 0; i < tile->node_.size(); ++i) {
 		int node_id = tile->node_[i];
 		if (debug_node_func_) {
 			debug_node_func_(debug_node_userdata_, node_id);
 		}
 		if (InsideNode(node_id, p)) {
-			node = &mesh_->node_[node_id];
-			break;
+			NavNode* node = &mesh_->node_[node_id];
+
+			int index = 0;
+			for (index = 0; index < node->size_; ++index) {
+				vert[0] = node->vertice_[0];
+				vert[1] = node->vertice_[index];
+				vert[2] = node->vertice_[index + 1];
+				if (InsidePoly(vert, p)) {
+					break;
+				}
+			}
+
+			const Math::Vector3& a = mesh_->vertice_[node->vertice_[0]];
+			const Math::Vector3& b = mesh_->vertice_[node->vertice_[index]];
+			const Math::Vector3& c = mesh_->vertice_[node->vertice_[index + 1]];
+
+			const Math::Vector3& v0 = c - a;
+			const Math::Vector3& v1 = b - a;
+			const Math::Vector3& v2 = p - a;
+
+			float denom = v0.x * v1.z - v0.z * v1.x;
+			if (fabsf(denom) < 1e-6f) {
+				continue;
+			}
+
+			float u = v1.z * v2.x - v1.x * v2.z;
+			float v = v0.x * v2.z - v0.z * v2.x;
+
+			if (denom < 0) {
+				denom = -denom;
+				u = -u;
+				v = -v;
+			}
+
+			if (u >= 0.0f && v >= 0.0f && (u + v) <= denom) {
+				float tmp = a.y + (v0.y * u + v1.y * v) / denom;
+				if (tmp > height) {
+					height = tmp;
+				}
+			}
 		}
 	}
 
-	if (!node) {
-		return -1;
-	}
-
-	std::vector<int> vert = { 0, 0, 0 };
-	int index = -1;
-	for (int i = 0; i < node->size_; ++i) {
-		vert[0] = node->vertice_[0];
-		vert[1] = node->vertice_[i];
-		vert[2] = node->vertice_[i + 1];
-		if (InsidePoly(vert, p)) {
-			index = i;
-			break;
-		}
-	}
-
-	if (index < 0) {
-		return -1;
-	}
-
-	const float EPS = 1e-6f;
-
-	const Math::Vector3& a = mesh_->vertice_[vert[0]];
-	const Math::Vector3& b = mesh_->vertice_[vert[1]];
-	const Math::Vector3& c = mesh_->vertice_[vert[2]];
-
-	const Math::Vector3& v0 = c - a;
-	const Math::Vector3& v1 = b - a;
-	const Math::Vector3& v2 = p - a;
-
-	float denom = v0.x * v1.z - v0.z * v1.x;
-	if (fabsf(denom) < EPS) {
-		return -1;
-	}
-
-	float u = v1.z * v2.x - v1.x * v2.z;
-	float v = v0.x * v2.z - v0.z * v2.x;
-
-	if (denom < 0) {
-		denom = -denom;
-		u = -u;
-		v = -v;
-	}
-
-	if (u >= 0.0f && v >= 0.0f && (u + v) <= denom) {
-		return a.y + (v0.y * u + v1.y * v) / denom;
-	}
-	return -1;
+	return height;
 }
-
 
 float NavPathFinder::GetHeightNew(const Math::Vector3& p) {
 	NavTile* tile = GetTile(p);
 	if (!tile) {
-		return -1;
+		return 0;
 	}
-
-	NavNode* node = NULL;
+	std::vector<int> vert = { 0, 0, 0 };
+	float height = 0;
 	for (size_t i = 0; i < tile->node_.size(); ++i) {
 		int node_id = tile->node_[i];
 		if (debug_node_func_) {
 			debug_node_func_(debug_node_userdata_, node_id);
 		}
 		if (InsideNode(node_id, p)) {
-			node = &mesh_->node_[node_id];
-			break;
+			NavNode* node = &mesh_->node_[node_id];
+
+			int index = 0;
+			for (index = 0; index < node->size_; ++index) {
+				vert[0] = node->vertice_[0];
+				vert[1] = node->vertice_[index];
+				vert[2] = node->vertice_[index + 1];
+				if (InsidePoly(vert, p)) {
+					break;
+				}
+			}
+			const Math::Vector3& a = mesh_->vertice_[node->vertice_[0]];
+			const Math::Vector3& b = mesh_->vertice_[node->vertice_[index]];
+			const Math::Vector3& c = mesh_->vertice_[node->vertice_[index + 1]];
+
+			Math::Plane plane;
+			plane.Set(a, b, c);
+			Math::Vector3 result;
+			plane.LineHit(p, Math::Vector3(p.x, 0, p.z), result);
+			if (result.y > height) {
+				height = result.y;
+			}
 		}
 	}
 
-	if (!node) {
-		return -1;
-	}
-	std::vector<int> vert = { 0, 0, 0 };
-	int index = -1;
-	for (int i = 0; i < node->size_; ++i) {
-		vert[0] = node->vertice_[0];
-		vert[1] = node->vertice_[i];
-		vert[2] = node->vertice_[i + 1];
-		if (InsidePoly(vert, p)) {
-			index = i;
-			break;
-		}
-	}
-
-	if (index < 0) {
-		return -1;
-	}
-
-	const Math::Vector3& a = mesh_->vertice_[vert[0]];
-	const Math::Vector3& b = mesh_->vertice_[vert[1]];
-	const Math::Vector3& c = mesh_->vertice_[vert[2]];
-
-	Math::Plane plane;
-	plane.Set(a, b, c);
-	Math::Vector3 result;
-	plane.LineHit(p, Math::Vector3(p.x, 0, p.z), result);
-	return result.y;
+	return height;
 }
 
 void NavPathFinder::GetOverlapPoly(std::vector<Math::Vector3>& poly, int node_id, std::vector<const Math::Vector3*>& result) {
