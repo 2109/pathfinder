@@ -354,6 +354,8 @@ public:
 
 	double Dot2Node(const Math::Vector3& pos, int node_id, Math::Vector3* p = NULL);
 
+	bool InsideTriangle(int a, int b, int c, const Math::Vector3& pos);
+
 	bool InsidePoly(std::vector<int>& index, const Math::Vector3& pos);
 
 	bool InsideNode(int node_id, const Math::Vector3& pos);

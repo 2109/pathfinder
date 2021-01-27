@@ -131,7 +131,6 @@ void NavPathFinder::SearchTile(const Math::Vector3& pos, int depth, SearchFunc f
 			}
 		}
 	}
-
 }
 
 int NavPathFinder::SearchInRectangle(const Math::Vector3& pos, Math::Vector3* out, int depth) {
@@ -139,21 +138,23 @@ int NavPathFinder::SearchInRectangle(const Math::Vector3& pos, Math::Vector3* ou
 	SearchAux aux;
 	aux.link_ = &link;
 
-	float dtmin = -1;
+	float dt_min = -1;
 	int node_id = -1;
 	Math::Vector3 p;
 	SearchTile(pos, depth, TileChoose, &aux);
 	while (link) {
 		NavNode* ori = link;
 		double dt = Dot2Node(pos, ori->id_, &p);
-		if (dtmin < 0 || dtmin > dt) {
-			dtmin = dt;
+		if (dt_min < 0 || dt_min > dt) {
+			dt_min = dt;
 			node_id = ori->id_;
 			if (out) {
 				*out = p;
 			}
 		}
-
+		if (debug_node_func_) {
+			debug_node_func_(debug_node_userdata_, ori->id_);
+		}
 		link = link->next_;
 		ori->next_ = NULL;
 	}
@@ -257,7 +258,7 @@ NavNode* NavPathFinder::SearchNode(const Math::Vector3& pos, int depth) {
 		return &mesh_->node_[node_id];
 	}
 
-	double dtmin = DBL_MAX;
+	double dt_min = DBL_MAX;
 	int nearest = -1;
 	for (size_t i = 0; i < tile->node_.size(); ++i) {
 		int node_id = tile->node_[i];
@@ -265,8 +266,8 @@ NavNode* NavPathFinder::SearchNode(const Math::Vector3& pos, int depth) {
 			debug_node_func_(debug_node_userdata_, node_id);
 		}
 		double dt = Dot2Node(pos, node_id);
-		if (dtmin > dt) {
-			dtmin = dt;
+		if (dt_min > dt) {
+			dt_min = dt;
 			nearest = node_id;
 		}
 	}
@@ -380,10 +381,10 @@ double NavPathFinder::Dot2Node(const Math::Vector3& pos, int node_id, Math::Vect
 		double dt = Math::DistancePointToSegment(pt0, pt1, pos, &point);
 		if (dt < min) {
 			min = dt;
+			if (p) {
+				*p = point;
+			}
 		}
-	}
-	if (p) {
-		*p = point;
 	}
 	return min;
 }
@@ -475,7 +476,7 @@ float NavPathFinder::GetHeight(const Math::Vector3& p, int* result_node) {
 	if (!tile) {
 		return -1;
 	}
-	std::vector<int> vert = { 0, 0, 0 };
+
 	float height = -1;
 	for (size_t i = 0; i < tile->node_.size(); ++i) {
 		int node_id = tile->node_[i];
@@ -487,10 +488,7 @@ float NavPathFinder::GetHeight(const Math::Vector3& p, int* result_node) {
 
 			int index = 0;
 			for (index = 0; index < node->size_; ++index) {
-				vert[0] = node->vertice_[0];
-				vert[1] = node->vertice_[index];
-				vert[2] = node->vertice_[index + 1];
-				if (InsidePoly(vert, p)) {
+				if (InsideTriangle(node->vertice_[0], node->vertice_[index], node->vertice_[index + 1], p)) {
 					break;
 				}
 			}
@@ -537,7 +535,7 @@ float NavPathFinder::GetHeightNew(const Math::Vector3& p, int* result_node) {
 	if (!tile) {
 		return -1;
 	}
-	std::vector<int> vert = { 0, 0, 0 };
+
 	float height = -1;
 	for (size_t i = 0; i < tile->node_.size(); ++i) {
 		int node_id = tile->node_[i];
@@ -549,10 +547,7 @@ float NavPathFinder::GetHeightNew(const Math::Vector3& p, int* result_node) {
 
 			int index = 0;
 			for (index = 0; index < node->size_; ++index) {
-				vert[0] = node->vertice_[0];
-				vert[1] = node->vertice_[index];
-				vert[2] = node->vertice_[index + 1];
-				if (InsidePoly(vert, p)) {
+				if (InsideTriangle(node->vertice_[0], node->vertice_[index], node->vertice_[index + 1], p)) {
 					break;
 				}
 			}

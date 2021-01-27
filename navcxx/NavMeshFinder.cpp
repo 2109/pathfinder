@@ -588,6 +588,31 @@ void NavPathFinder::BuildPathUseFunnel(const Math::Vector3& src, const Math::Vec
 	PathCollect(list);
 }
 
+bool NavPathFinder::InsideTriangle(int a, int b, int c, const Math::Vector3& pos) {
+	int vert[3] = { a, b, c };
+	int sign = 0;
+	for (int i = 0; i < 3; ++i) {
+		const Math::Vector3& pt0 = mesh_->vertice_[vert[i]];
+		const Math::Vector3& pt1 = mesh_->vertice_[vert[(i + 1) % 3]];
+		Math::Vector3 vt0 = pos - pt0;
+		Math::Vector3 vt1 = pt1 - pt0;
+		float cross = Math::CrossY(vt0, vt1);
+		if (cross == 0) {
+			continue;
+		}
+		if (sign == 0) {
+			sign = cross > 0 ? 1 : -1;
+		} else {
+			if (sign == 1 && cross < 0) {
+				return false;
+			} else if (sign == -1 && cross > 0) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 bool NavPathFinder::InsidePoly(std::vector<int>& index, const Math::Vector3& pos) {
 	int sign = 0;
 	int count = index.size();
