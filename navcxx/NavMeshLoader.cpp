@@ -48,8 +48,6 @@ void NavPathFinder::CreateMesh(float** vert, int vert_total, int** index, int in
 			node->vertice_[j - 1] = index[i][j];
 			tmp += mesh_->vertice_[node->vertice_[j - 1]];
 		}
-		
-		node->plane_.Set(mesh_->vertice_[0], mesh_->vertice_[1], mesh_->vertice_[2]);
 
 		node->center_ = tmp / node->size_;
 		node->area_ = CountNodeArea(node);

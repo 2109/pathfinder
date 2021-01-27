@@ -16,8 +16,6 @@ struct NavNode {
 	std::vector<int> edge_;
 	int size_;
 
-	Math::Plane plane_;
-
 	Math::Vector3 center_;
 
 	int mask_;

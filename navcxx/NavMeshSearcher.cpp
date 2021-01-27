@@ -551,9 +551,30 @@ float NavPathFinder::GetHeightNew(const Math::Vector3& p) {
 	if (!node) {
 		return -1;
 	}
+	std::vector<int> vert = { 0, 0, 0 };
+	int index = -1;
+	for (int i = 0; i < node->size_; ++i) {
+		vert[0] = node->vertice_[0];
+		vert[1] = node->vertice_[i];
+		vert[2] = node->vertice_[i + 1];
+		if (InsidePoly(vert, p)) {
+			index = i;
+			break;
+		}
+	}
 
+	if (index < 0) {
+		return -1;
+	}
+
+	const Math::Vector3& a = mesh_->vertice_[vert[0]];
+	const Math::Vector3& b = mesh_->vertice_[vert[1]];
+	const Math::Vector3& c = mesh_->vertice_[vert[2]];
+
+	Math::Plane plane;
+	plane.Set(a, b, c);
 	Math::Vector3 result;
-	node->plane_.LineHit(p, Math::Vector3(p.x, 0, p.z), result);
+	plane.LineHit(p, Math::Vector3(p.x, 0, p.z), result);
 	return result.y;
 }
 
