@@ -61,9 +61,9 @@ namespace Math {
 
 	bool InsidePoly(std::vector<Math::Vector3>& vertice, const Math::Vector3& pos);
 
-	float SqrDistancePointToSegment(const Vector3& a, const Vector3& u, const Vector3& b);
+	float SqrDistancePointToSegment(const Vector3& a, const Vector3& u, const Vector3& b, Vector3* p);
 
-	float DistancePointToSegment(const Vector3& start, const Vector3& over, const Vector3& p);
+	float DistancePointToSegment(const Vector3& start, const Vector3& over, const Vector3& p, Vector3* result);
 
 	float CalcPolyArea(std::vector<const Vector3*>& vertice);
 

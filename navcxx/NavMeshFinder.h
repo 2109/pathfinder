@@ -249,9 +249,9 @@ public:
 
 	NavNode* SearchNode(const Math::Vector3& pos, int depth = 1);
 
-	Math::Vector3* SearchInRectangle(const Math::Vector3& pos, int depth, int* center_node);
+	int SearchInRectangle(const Math::Vector3& pos, Math::Vector3* out, int depth);
 
-	Math::Vector3* SearchInCircle(const Math::Vector3& pos, int depth, int* center_node);
+	int SearchInCircle(const Math::Vector3& pos, Math::Vector3* out, int depth);
 
 	int Find(const Math::Vector3& src, const Math::Vector3& dst, std::vector<const Math::Vector3*>& list);
 
@@ -355,7 +355,7 @@ public:
 
 	NavEdge* AddEdge(int lhs, int rhs);
 
-	double Dot2Node(const Math::Vector3& pos, int node_id);
+	double Dot2Node(const Math::Vector3& pos, int node_id, Math::Vector3* p = NULL);
 
 	bool InsidePoly(std::vector<int>& index, const Math::Vector3& pos);
 

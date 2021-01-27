@@ -40,48 +40,19 @@ namespace Math {
 		return true;
 	}
 
-	float SqrDistancePointToSegment(const Vector3& a, const Vector3& u, const Vector3& b) {
+	float SqrDistancePointToSegment(const Vector3& a, const Vector3& u, const Vector3& b, Vector3* p) {
 		float t = Dot(b - a, u) / SqrMagnitude(u);
 		Vector3 dot = a + u * Clamp(t, 0, 1);
+		if (p) {
+			*p = dot;
+		}
 		return DistanceSquared(b, dot);
 	}
 
-	float DistancePointToSegment(const Vector3& start, const Vector3& over, const Vector3& p) {
-#ifdef USE_AREA
-		const float EPS = 1e-6;
-		float a, b, c, s;
+	float DistancePointToSegment(const Vector3& start, const Vector3& over, const Vector3& p, Vector3* result) {
 
-		a = Math::Distance(p, over);
-		if (a < EPS) {
-			return 0.0f;
-		}
-
-		b = Math::Distance(p, start);
-		if (b < EPS) {
-			return 0.0f;
-		}
-
-		c = Math::Distance(start, over);
-		if (c < EPS) {
-			return a;
-		}
-
-		if (a * a >= b * b + c * c) {
-			return b;
-		}
-
-		if (b * b >= a * a + c * c) {
-			return a;
-		}
-
-		s = (a + b + c) / 2;
-		s = sqrt(s * (s - a) * (s - b) * (s - c));
-
-		return  2 * s / c;
-#else
 		Vector3 u = over - start;
-		return sqrt(SqrDistancePointToSegment(start, u, p));
-#endif
+		return sqrt(SqrDistancePointToSegment(start, u, p, result));
 	}
 
 	float CalcPolyArea(std::vector<const Vector3*>& vertice) {

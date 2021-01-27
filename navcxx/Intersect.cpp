@@ -6,7 +6,7 @@
 namespace Math {
 	bool IsCapsuleCircleIntersect(const Vector2& a, const Vector2& b, float cr, const Vector2& center, float r) {
 		Vector2 u = b - a;
-		return SqrDistancePointToSegment(a, u, center) <= (cr + r);
+		return SqrDistancePointToSegment(a, u, center, NULL) <= (cr + r);
 	}
 
 	bool IsCircleCircleIntersect(const Vector2& src, float l, const Vector2& center, float r) {
@@ -20,7 +20,7 @@ namespace Math {
 
 	bool IsSegmentCircleIntersect(const Vector2& x0, const Vector2& x1, const Vector2& center, float r) {
 		Vector2 u = x1 - x0;
-		return SqrDistancePointToSegment(x0, u, center) <= r;
+		return SqrDistancePointToSegment(x0, u, center, NULL) <= r;
 	}
 
 	bool IsRectangleCirecleIntersect(const Vector2& a, float l, float w, float angle, const Vector2& circleCenter, float r) {
@@ -64,7 +64,7 @@ namespace Math {
 		Vector2 p(px, py);
 
 
-		return SqrDistancePointToSegment(Vector2::Zero, q, p) <= r * r;
+		return SqrDistancePointToSegment(Vector2::Zero, q, p, NULL) <= r * r;
 	}
 
 	bool InFrontOf(const Vector2& a, float angle, const Vector2& dot) {
