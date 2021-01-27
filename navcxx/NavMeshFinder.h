@@ -20,8 +20,6 @@ struct NavNode {
 
 	int mask_;
 
-	bool record_;
-
 	double area_;
 
 	double G;
@@ -52,7 +50,6 @@ struct NavNode {
 		link_edge_ = -1;
 		F = G = H = 0;
 		next_ = NULL;
-		record_ = false;
 		close_ = false;
 	}
 };
@@ -257,7 +254,7 @@ public:
 
 	int Raycast(const Math::Vector3& src, const Math::Vector3& dst, Math::Vector3& stop);
 
-	bool Movable(const Math::Vector3& pos, float fix, float* dt_offset);
+	bool Movable(const Math::Vector3& pos, float fix, float* dt_offset = NULL);
 
 	Math::Vector3 RandomMovable(int node_id);
 

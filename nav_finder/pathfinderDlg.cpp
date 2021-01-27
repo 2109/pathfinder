@@ -34,8 +34,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 };
 
-CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD) {
-}
+CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD) {}
 
 void CAboutDlg::DoDataExchange(CDataExchange* pDX) {
 	CDialogEx::DoDataExchange(pDX);
@@ -119,7 +118,7 @@ BOOL CNavDlg::OnInitDialog() {
 	nav_tile.Format(_T("./nav/%s"), AfxGetApp()->m_lpCmdLine);
 	USES_CONVERSION;
 	m_finder = NavPathFinder::LoadMeshEx(T2A(nav_tile.GetBuffer(0)));
-	m_finder->CreateTile(500);
+	m_finder->CreateTile(100);
 
 	m_mouse_state = true;
 	m_mouse_point = NULL;
@@ -162,8 +161,8 @@ BOOL CNavDlg::OnInitDialog() {
 			for (int j = 0; j < node->size_; j++) {
 				Math::Vector3* pos = &m_finder->mesh_->vertice_[node->vertice_[j]];
 
-				pt[j].x = pos->x*m_scale + m_offset_x;
-				pt[j].y = pos->z*m_scale + m_offset_z;
+				pt[j].x = pos->x * m_scale + m_offset_x;
+				pt[j].y = pos->z * m_scale + m_offset_z;
 			}
 			memdc->Polygon(pt, node->size_);
 			delete[] pt;
@@ -187,9 +186,9 @@ BOOL CNavDlg::OnInitDialog() {
 	AllocConsole();
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	int hCrt = _open_osfhandle((long)handle, _O_TEXT);
-	FILE * hf = _fdopen(hCrt, "w");
+	FILE* hf = _fdopen(hCrt, "w");
 	*stdout = *hf;
-	
+
 	size_t mem = m_finder->CountMemory();
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
@@ -249,8 +248,8 @@ void OnSearchDump(void* self, int index) {
 	CPoint* pt = new CPoint[node->size_];
 	for (int j = 0; j < node->size_; j++) {
 		Math::Vector3* pos = &dlgPtr->m_finder->mesh_->vertice_[node->vertice_[j]];
-		pt[j].x = pos->x*dlgPtr->m_scale + dlgPtr->m_offset_x;
-		pt[j].y = pos->z*dlgPtr->m_scale + dlgPtr->m_offset_z;
+		pt[j].x = pos->x * dlgPtr->m_scale + dlgPtr->m_offset_x;
+		pt[j].y = pos->z * dlgPtr->m_scale + dlgPtr->m_offset_z;
 	}
 	dc.Polygon(pt, node->size_);
 	delete[] pt;
@@ -266,8 +265,8 @@ void OnOverlayDump(void* self, std::vector<const Math::Vector3*>& poly) {
 	CPoint* pt = new CPoint[poly.size()];
 	for (int j = 0; j < poly.size(); j++) {
 		const Math::Vector3* pos = poly[j];
-		pt[j].x = pos->x*dlgPtr->m_scale + dlgPtr->m_offset_x;
-		pt[j].y = pos->z*dlgPtr->m_scale + dlgPtr->m_offset_z;
+		pt[j].x = pos->x * dlgPtr->m_scale + dlgPtr->m_offset_x;
+		pt[j].y = pos->z * dlgPtr->m_scale + dlgPtr->m_offset_z;
 	}
 	dc.Polygon(pt, poly.size());
 	delete[] pt;
@@ -312,25 +311,25 @@ int CNavDlg::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message) {
 void CNavDlg::DrawMap() {
 	CRect rect;
 	GetClientRect(&rect);
-	
+
 	CDC* memdc = m_cdc[m_scale_base];
 
 	CDC* cdc = GetDC();
 	cdc->BitBlt(m_offset_x, m_offset_z, rect.Width(), rect.Height(), memdc, 0, 0, SRCCOPY);
 
 	CPen pen(PS_SOLID, 1, RGB(0, 0, 0));
-	CPen *oriPen = cdc->SelectObject(&pen);
+	CPen* oriPen = cdc->SelectObject(&pen);
 
 	CBrush brush(RGB(255, 0, 0));
-	CBrush *obrush = cdc->SelectObject(&brush);
+	CBrush* obrush = cdc->SelectObject(&brush);
 
 	CBrush brush_empty0(RGB(255, 255, 0));
 	CBrush brush_empty1(RGB(0, 0, 0));
 	CBrush brush_empty2(RGB(88, 88, 0));
 
-	int check = ((CButton *)GetDlgItem(IDC_CHECK1))->GetCheck();
+	int check = ((CButton*)GetDlgItem(IDC_CHECK1))->GetCheck();
 	if (check) {
-		for (int i = 0; i < m_finder->mesh_->tile_width_ * m_finder->mesh_->tile_height_; i++) {
+		/*for (int i = 0; i < m_finder->mesh_->tile_width_ * m_finder->mesh_->tile_height_; i++) {
 			NavTile* tile = &m_finder->mesh_->tile_[i];
 			CPoint pt[4];
 
@@ -347,7 +346,7 @@ void CNavDlg::DrawMap() {
 				pt[j].y = pos->z*m_scale + m_offset_z;
 			}
 			cdc->Polygon(pt, 4);
-		}
+		}*/
 	}
 
 	cdc->SelectObject(obrush);
@@ -359,8 +358,8 @@ void CNavDlg::DrawMap() {
 		CPoint* pt = new CPoint[node->size_];
 		for (int j = 0; j < node->size_; j++) {
 			Math::Vector3* pos = &m_finder->mesh_->vertice_[node->vertice_[j]];
-			pt[j].x = pos->x*m_scale + m_offset_x;
-			pt[j].y = pos->z*m_scale + m_offset_z;
+			pt[j].x = pos->x * m_scale + m_offset_x;
+			pt[j].y = pos->z * m_scale + m_offset_z;
 		}
 		cdc->Polygon(pt, node->size_);
 		delete[] pt;
@@ -374,8 +373,8 @@ void CNavDlg::DrawMap() {
 		CPoint* pt = new CPoint[node->size_];
 		for (int j = 0; j < node->size_; j++) {
 			Math::Vector3* pos = &m_finder->mesh_->vertice_[node->vertice_[j]];
-			pt[j].x = pos->x*m_scale + m_offset_x;
-			pt[j].y = pos->z*m_scale + m_offset_z;
+			pt[j].x = pos->x * m_scale + m_offset_x;
+			pt[j].y = pos->z * m_scale + m_offset_z;
 		}
 		cdc->Polygon(pt, node->size_);
 		delete[] pt;
@@ -400,7 +399,7 @@ void CNavDlg::DrawMap() {
 }
 
 void OnAroundDump(void* self, int index) {
-	CNavDlg* dlgPtr = (CNavDlg*)self;
+	/*CNavDlg* dlgPtr = (CNavDlg*)self;
 	CClientDC dc(dlgPtr);
 	CBrush brush(RGB(66, 66, 66));
 
@@ -418,7 +417,7 @@ void OnAroundDump(void* self, int index) {
 	}
 	dc.Polygon(pt, 4);
 	dc.SelectObject(obrush);
-	Sleep(100);
+	Sleep(100);*/
 }
 
 void CNavDlg::DrawBegin(CPoint& pos) {
@@ -439,6 +438,8 @@ void CNavDlg::DrawBegin(CPoint& pos) {
 		m_pt_begin = NULL;
 	}
 
+	float a = m_finder->GetHeight(Math::Vector3(nav_x, 10000, nav_z), NULL);
+	float b = m_finder->GetHeightNew(Math::Vector3(nav_x, 10000, nav_z), NULL);
 	m_finder->Dot2Node(Math::Vector3(nav_x, 0, nav_z), node->id_);
 
 	m_poly_begin = node->id_;
@@ -453,7 +454,7 @@ void CNavDlg::DrawBegin(CPoint& pos) {
 		printf("%d,%f\t", node->vertice_[i], m_finder->mesh_->vertice_[node->vertice_[i]].y);
 	printf("\n");
 
-	float h = m_finder->GetHeight(Math::Vector3(nav_x, 0, nav_z));
+	float h = m_finder->GetHeight(Math::Vector3(nav_x, 0, nav_z), NULL);
 	printf("heigh:%f\n", h);
 
 	m_finder->SetDebugOverlapFunc(OnOverlayDump, this);
@@ -489,9 +490,9 @@ void CNavDlg::DrawOver(CPoint& pos) {
 
 		m_finder->SetDebugTileFunc(OnAroundDump, this);
 
-		int nodeIndex = 0;
-		Math::Vector3* vt = m_finder->SearchInCircle(Math::Vector3(nav_x, 0, nav_z), 5, &nodeIndex);
-		if (!vt) {
+		Math::Vector3 vt;
+		int nodeIndex = m_finder->SearchInCircle(Math::Vector3(nav_x, 0, nav_z), &vt, 5);
+		if (nodeIndex < 0) {
 			printf("%f,%f\n", nav_x, nav_z);
 			return;
 		}
@@ -502,10 +503,10 @@ void CNavDlg::DrawOver(CPoint& pos) {
 		CBrush brush(RGB(66, 88, 188));
 		CClientDC dc(this);
 		CBrush* obrush = dc.SelectObject(&brush);
-		dc.Ellipse(vt->x*m_scale + m_offset_x - 3, vt->z*m_scale + m_offset_z - 3, vt->x*m_scale + m_offset_x + 3, vt->z*m_scale + m_offset_z + 3);
+		dc.Ellipse(vt.x * m_scale + m_offset_x - 3, vt.z * m_scale + m_offset_z - 3, vt.x * m_scale + m_offset_x + 3, vt.z * m_scale + m_offset_z + 3);
 		dc.SelectObject(obrush);
-		pos.x = vt->x*m_scale + m_offset_x;
-		pos.y = vt->z*m_scale + m_offset_z;
+		pos.x = vt.x * m_scale + m_offset_x;
+		pos.y = vt.z * m_scale + m_offset_z;
 
 		if (m_pt_over != NULL) {
 			free(m_pt_over);
@@ -513,10 +514,10 @@ void CNavDlg::DrawOver(CPoint& pos) {
 		}
 
 		m_pt_over = new Math::Vector3();
-		m_pt_over->x = vt->x*m_scale + m_offset_x;
-		m_pt_over->z = vt->z*m_scale + m_offset_z;
+		m_pt_over->x = vt.x * m_scale + m_offset_x;
+		m_pt_over->z = vt.z * m_scale + m_offset_z;
 
-		printf("nav over:%f,%f\n", vt->x, vt->z);
+		printf("nav over:%f,%f\n", vt.x, vt.z);
 		printf("nav node:%d\n", node->id_);
 
 		//vector3 start;
@@ -555,7 +556,7 @@ void CNavDlg::DrawOver(CPoint& pos) {
 
 }
 
-void CNavDlg::OnUpdateIddPathfindertestDialog(CCmdUI *pCmdUI) {
+void CNavDlg::OnUpdateIddPathfindertestDialog(CCmdUI* pCmdUI) {
 	// TODO:  在此添加命令更新用户界面处理程序代码
 	DrawMap();
 }
@@ -583,20 +584,20 @@ void CNavDlg::Straightline() {
 		Math::Vector3 over((m_pt_over->x - m_offset_x) / m_scale, 0, (m_pt_over->z - m_offset_z) / m_scale);
 
 		POINT from;
-		from.x = begin.x*m_scale + m_offset_x;
-		from.y = begin.z*m_scale + m_offset_z;
+		from.x = begin.x * m_scale + m_offset_x;
+		from.y = begin.z * m_scale + m_offset_z;
 
 		CPen pen(PS_SOLID, 1, RGB(255, 255, 255));
 		CClientDC dc(this);
-		CPen *open = dc.SelectObject(&pen);
+		CPen* open = dc.SelectObject(&pen);
 		dc.MoveTo(from);
 
 		Math::Vector3 result;
 		m_finder->Raycast(begin, over, result);
 
 		POINT to;
-		to.x = result.x*m_scale + m_offset_x;
-		to.y = result.z*m_scale + m_offset_z;
+		to.x = result.x * m_scale + m_offset_x;
+		to.y = result.z * m_scale + m_offset_z;
 
 		dc.LineTo(to);
 		dc.SelectObject(open);
@@ -643,20 +644,20 @@ void CNavDlg::OnIgnoreLine() {
 		Math::Vector3 over((m_pt_over->x - m_offset_x) / m_scale, 0, (m_pt_over->z - m_offset_z) / m_scale);
 
 		POINT from;
-		from.x = begin.x*m_scale + m_offset_x;
-		from.y = begin.z*m_scale + m_offset_z;
+		from.x = begin.x * m_scale + m_offset_x;
+		from.y = begin.z * m_scale + m_offset_z;
 
 		CPen pen(PS_SOLID, 1, RGB(255, 255, 255));
 		CClientDC dc(this);
-		CPen *open = dc.SelectObject(&pen);
+		CPen* open = dc.SelectObject(&pen);
 		dc.MoveTo(from);
 
 		Math::Vector3 result;
 		m_finder->Raycast(begin, over, result);
 
 		POINT to;
-		to.x = result.x*m_scale + m_offset_x;
-		to.y = result.z*m_scale + m_offset_z;
+		to.x = result.x * m_scale + m_offset_x;
+		to.y = result.z * m_scale + m_offset_z;
 
 		dc.LineTo(to);
 		dc.SelectObject(open);
@@ -718,10 +719,10 @@ void CNavDlg::DrawPath(std::vector<const Math::Vector3*>& path) {
 	CPen* open = dc.SelectObject(&pen);
 
 
-	dc.MoveTo(path[0]->x*m_scale + m_offset_x, path[0]->z*m_scale + m_offset_z);
+	dc.MoveTo(path[0]->x * m_scale + m_offset_x, path[0]->z * m_scale + m_offset_z);
 	for (int i = 1; i < path.size(); i++) {
-		dc.LineTo(path[i]->x*m_scale + m_offset_x, path[i]->z*m_scale + m_offset_z);
-		dc.MoveTo(path[i]->x*m_scale + m_offset_x, path[i]->z*m_scale + m_offset_z);
+		dc.LineTo(path[i]->x * m_scale + m_offset_x, path[i]->z * m_scale + m_offset_z);
+		dc.MoveTo(path[i]->x * m_scale + m_offset_x, path[i]->z * m_scale + m_offset_z);
 	}
 
 	dc.SelectObject(open);

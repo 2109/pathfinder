@@ -224,7 +224,7 @@ int NavPathFinder::SearchInCircle(const Math::Vector3& pos, Math::Vector3* out, 
 			}
 		}
 	}
-	
+
 	float dtmin = -1;
 	int node_id = -1;
 	Math::Vector3 p;
@@ -284,22 +284,13 @@ NavNode* NavPathFinder::SearchNode(const Math::Vector3& pos, int depth) {
 	return NULL;
 }
 
-
 bool NavPathFinder::Movable(const Math::Vector3& pos, float fix, float* dt_offset) {
-	if (pos.x < mesh_->lt_.x || pos.x > mesh_->br_.x) {
-		return false;
-	}
-
-	if (pos.z < mesh_->lt_.z || pos.z > mesh_->br_.z) {
-		return false;
-	}
-
-	if (mesh_->tile_.size() == 0) {
-		return false;
-	}
-
 	if (dt_offset) {
 		*dt_offset = 0;
+	}
+
+	if (pos.x < mesh_->lt_.x || pos.x > mesh_->br_.x || pos.z < mesh_->lt_.z || pos.z > mesh_->br_.z) {
+		return false;
 	}
 
 	NavNode* node = NULL;
@@ -309,7 +300,6 @@ bool NavPathFinder::Movable(const Math::Vector3& pos, float fix, float* dt_offse
 	int index = x_index + z_index * mesh_->tile_width_;
 
 	NavTile* tile = &mesh_->tile_[index];
-
 	for (int i = 0; i < (int)tile->node_.size(); i++) {
 		if (InsideNode(tile->node_[i], pos)) {
 			node = &mesh_->node_[tile->node_[i]];
@@ -328,20 +318,16 @@ bool NavPathFinder::Movable(const Math::Vector3& pos, float fix, float* dt_offse
 		return false;
 	}
 
-	NavNode* search_node = NULL;
-	double dtmin = -1;
-
+	NavNode* node_head = NULL;
 	int indexes[9][2] = { {0, 0}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1} };
 
 	for (int i = 0; i < 9; i++) {
 		int x = x_index + indexes[i][0];
 		int z = z_index + indexes[i][1];
-		if (x < 0 || x >= (int)mesh_->tile_width_) {
+		if (x < 0 || x >= (int)mesh_->tile_width_ || z < 0 || z >= (int)mesh_->tile_height_) {
 			continue;
 		}
-		if (z < 0 || z >= (int)mesh_->tile_height_) {
-			continue;
-		}
+
 		int index = x + z * mesh_->tile_width_;
 		tile = &mesh_->tile_[index];
 
@@ -353,33 +339,31 @@ bool NavPathFinder::Movable(const Math::Vector3& pos, float fix, float* dt_offse
 			int node_id = tile->node_[i];
 
 			node = GetNode(node_id);
-			if (!node->record_) {
-				node->record_ = true;
-				node->next_ = search_node;
-				search_node = node;
+			if (!node->next_) {
+				node->next_ = node_head;
+				node_head = node;
 				if (debug_node_func_) {
 					debug_node_func_(debug_node_userdata_, node_id);
-				}
-				double dt = Dot2Node(pos, node_id);
-				if (dtmin < 0 || dtmin > dt) {
-					dtmin = dt;
 				}
 			}
 		}
 	}
 
-	while (search_node) {
-		NavNode* current = search_node;
-		assert(current->record_);
-		current->record_ = false;
-		search_node = search_node->next_;
+	double dt_min = -1;
+	while (node_head) {
+		NavNode* current = node_head;
+		double dt = Dot2Node(pos, current->id_);
+		if (dt_min < 0 || dt_min > dt) {
+			dt_min = dt;
+		}
+		node_head = node_head->next_;
 		current->next_ = NULL;
 	}
 
 	if (dt_offset) {
-		*dt_offset = dtmin;
+		*dt_offset = dt_min;
 	}
-	if (dtmin > 0 && dtmin <= fix) {
+	if (dt_min > 0 && dt_min <= fix) {
 		return true;
 	}
 
@@ -393,7 +377,7 @@ double NavPathFinder::Dot2Node(const Math::Vector3& pos, int node_id, Math::Vect
 	for (int i = 0; i < node->size_; ++i) {
 		const Math::Vector3& pt0 = mesh_->vertice_[node->vertice_[i]];
 		const Math::Vector3& pt1 = mesh_->vertice_[node->vertice_[(i + 1) % node->size_]];
-		
+
 		double dt = Math::DistancePointToSegment(pt0, pt1, pos, &point);
 		if (dt < min) {
 			min = dt;
