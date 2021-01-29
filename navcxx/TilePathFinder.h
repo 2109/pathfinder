@@ -58,6 +58,29 @@ public:
 			prev_ = next_ = parent_ = NULL;
 			G = H = F = 0;
 		}
+
+		void Insert(PathNode* link) {
+			PathNode* next = link->next_;
+			next->prev_ = this;
+			next_ = next;
+			prev_ = link;
+			link->next_ = this;
+		}
+
+		void Remove() {
+			PathNode* prev = prev_;
+			PathNode* next = next_;
+			prev->next_ = next;
+			next->prev_ = prev;
+			prev_ = next_ = NULL;
+		}
+
+		void UpdateParent(PathNode* parent, float nG, float nH) {
+			parent_ = parent;
+			G = nG;
+			H = nH;
+			F = G + H;
+		}
 	};
 
 	struct IndexPair {
@@ -173,7 +196,7 @@ public:
 
 	int Find(const Math::Vector2& from, const Math::Vector2& to, SmoothType smooth, std::vector<const Math::Vector2*>& list, bool check_close = false, float estimate = 1.0f);
 
-	int Find(int x0, int z0, int x1, int z1, SmoothType smooth, std::vector<const Math::Vector2*>& list, float estimate = 1.0f);
+	int Find(int x0, int z0, int x1, int z1, SmoothType smooth, std::vector<const Math::Vector2*>& list, bool check_close = false, float estimate = 1.0f);
 
 	int Raycast(const Math::Vector2& from, const Math::Vector2& to, bool ignore, Math::Vector2* result, Math::Vector2* stop, bool use_breshemham);
 
@@ -193,14 +216,14 @@ private:
 	int tile_;
 	PathNode* node_;
 	int* nonblock_;
-	int nonblockCount_;
+	int nonblock_count_;
 	uint8_t mask_[kMaskMax];
-	mh_t openList_;
-	PathNode closeList_;
-	std::vector<std::vector<IndexPair>*> circleIndex_;
-	std::vector<std::vector<IndexPair>*> rangeIndex_;
-	DebugFunc debugFunc_;
-	void* debugUserdata_;
+	mh_t open_list_;
+	PathNode close_list_;
+	std::vector<std::vector<IndexPair>*> circle_index_;
+	std::vector<std::vector<IndexPair>*> range_index_;
+	DebugFunc debug_func_;
+	void* debug_userdata_;
 };
 
 #endif

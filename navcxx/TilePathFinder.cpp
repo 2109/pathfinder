@@ -59,20 +59,20 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 	}
 
 	nonblock_ = NULL;
-	mh_ctor(&openList_, NodeCmp);
-	closeList_.prev_ = &closeList_;
-	closeList_.next_ = &closeList_;
+	mh_ctor(&open_list_, NodeCmp);
+	close_list_.prev_ = &close_list_;
+	close_list_.next_ = &close_list_;
 
 	MaskReset();
 	MaskSet(0, 1);
 
-	debugFunc_ = NULL;
-	debugUserdata_ = NULL;
+	debug_func_ = NULL;
+	debug_userdata_ = NULL;
 
-	rangeIndex_.resize(kSearchDepth);
-	for (int i = 1; i <= (int)rangeIndex_.size(); ++i) {
-		std::vector<IndexPair>* pairInfo = new std::vector<IndexPair>();
-		rangeIndex_[i - 1] = pairInfo;
+	range_index_.resize(kSearchDepth);
+	for (int i = 1; i <= (int)range_index_.size(); ++i) {
+		std::vector<IndexPair>* pair_info = new std::vector<IndexPair>();
+		range_index_[i - 1] = pair_info;
 		std::unordered_map<int, std::unordered_set<int>> record = std::unordered_map<int, std::unordered_set<int>>();
 
 		int tx = 0;
@@ -84,18 +84,18 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 			for (int j = 0; j < 8; ++j) {
 				int xOffset = range[j][0];
 				int zOffset = range[j][1];
-				std::unordered_map<int, std::unordered_set<int>>::iterator itr = record.find(xOffset);
+				auto itr = record.find(xOffset);
 				if (itr != record.end()) {
 					std::unordered_set<int>& set = itr->second;
-					std::unordered_set<int>::iterator it = set.find(zOffset);
+					auto it = set.find(zOffset);
 					if (it == set.end()) {
 						set.insert(zOffset);
-						pairInfo->push_back(IndexPair(xOffset, zOffset));
+						pair_info->push_back(IndexPair(xOffset, zOffset));
 					}
 				} else {
 					record[xOffset] = std::unordered_set<int>();
 					record[xOffset].insert(zOffset);
-					pairInfo->push_back(IndexPair(xOffset, zOffset));
+					pair_info->push_back(IndexPair(xOffset, zOffset));
 				}
 			}
 
@@ -109,10 +109,10 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 		}
 	}
 
-	circleIndex_.resize(kMaxRandDepth);
-	for (int i = 1; i <= (int)circleIndex_.size(); ++i) {
-		std::vector<IndexPair>* pairInfo = new std::vector<IndexPair>();
-		circleIndex_[i - 1] = pairInfo;
+	circle_index_.resize(kMaxRandDepth);
+	for (int i = 1; i <= (int)circle_index_.size(); ++i) {
+		std::vector<IndexPair>* pair_info = new std::vector<IndexPair>();
+		circle_index_[i - 1] = pair_info;
 		std::unordered_map<int, std::unordered_set<int>> record = std::unordered_map<int, std::unordered_set<int>>();
 
 		int tx = 0;
@@ -126,18 +126,18 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 				for (int i = 0; i < 8; i++) {
 					int xOffset = range[i][0];
 					int zOffset = range[i][1];
-					std::unordered_map<int, std::unordered_set<int>>::iterator itr = record.find(xOffset);
+					auto itr = record.find(xOffset);
 					if (itr != record.end()) {
 						std::unordered_set<int>& set = itr->second;
-						std::unordered_set<int>::iterator it = set.find(zOffset);
+						auto it = set.find(zOffset);
 						if (it == set.end()) {
 							set.insert(zOffset);
-							pairInfo->push_back(IndexPair(xOffset, zOffset));
+							pair_info->push_back(IndexPair(xOffset, zOffset));
 						}
 					} else {
 						record[xOffset] = std::unordered_set<int>();
 						record[xOffset].insert(zOffset);
-						pairInfo->push_back(IndexPair(xOffset, zOffset));
+						pair_info->push_back(IndexPair(xOffset, zOffset));
 					}
 				}
 			}
@@ -154,7 +154,7 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 }
 
 TilePathFinder::~TilePathFinder() {
-	mh_dtor(&openList_);
+	mh_dtor(&open_list_);
 
 	delete[] node_;
 
@@ -163,14 +163,14 @@ TilePathFinder::~TilePathFinder() {
 	}
 
 	for (int i = 0; i < kSearchDepth; ++i) {
-		std::vector<IndexPair>* index = rangeIndex_[i];
+		std::vector<IndexPair>* index = range_index_[i];
 		if (index) {
 			delete index;
 		}
 	}
 
 	for (int i = 0; i < kMaxRandDepth; ++i) {
-		std::vector<IndexPair>* index = circleIndex_[i];
+		std::vector<IndexPair>* index = circle_index_[i];
 		if (index) {
 			delete index;
 		}
@@ -204,20 +204,20 @@ void TilePathFinder::Serialize(const char* file) {
 }
 
 void TilePathFinder::SetDebugCallback(DebugFunc func, void* userdata) {
-	debugFunc_ = func;
-	debugUserdata_ = userdata;
+	debug_func_ = func;
+	debug_userdata_ = userdata;
 }
 
 TilePathFinder::PathNode* TilePathFinder::SearchInCircle(int cx, int cz, int depth) {
 	for (int i = 1; i <= depth; ++i) {
-		if (i <= (int)rangeIndex_.size()) {
-			std::vector<IndexPair>* range = rangeIndex_[i - 1];
+		if (i <= (int)range_index_.size()) {
+			std::vector<IndexPair>* range = range_index_[i - 1];
 			for (size_t i = 0; i < range->size(); i++) {
 				const IndexPair& pair = (*range)[i];
 				PathNode* node = FindNode(cx + pair.x_, cz + pair.z_);
 				if (node) {
-					if (debugFunc_) {
-						debugFunc_(debugUserdata_, node->pos_.x, node->pos_.y);
+					if (debug_func_) {
+						debug_func_(debug_userdata_, node->pos_.x, node->pos_.y);
 					}
 					if (Movable(node, false)) {
 						return node;
@@ -236,8 +236,8 @@ TilePathFinder::PathNode* TilePathFinder::SearchInCircle(int cx, int cz, int dep
 					int zOffset = range[j][1];
 					PathNode* node = FindNode(cx + xOffset, cz + zOffset);
 					if (node) {
-						if (debugFunc_) {
-							debugFunc_(debugUserdata_, node->pos_.x, node->pos_.y);
+						if (debug_func_) {
+							debug_func_(debug_userdata_, node->pos_.x, node->pos_.y);
 						}
 						if (Movable(node, false)) {
 							return node;
@@ -282,8 +282,8 @@ TilePathFinder::PathNode* TilePathFinder::SearchInReactangle(int cx, int cz, int
 
 				PathNode* node = FindNode(x, z);
 				if (node) {
-					if (debugFunc_) {
-						debugFunc_(debugUserdata_, node->pos_.x, node->pos_.y);
+					if (debug_func_) {
+						debug_func_(debug_userdata_, node->pos_.x, node->pos_.y);
 					}
 					if (Movable(node, false)) {
 						return node;
@@ -306,8 +306,8 @@ TilePathFinder::PathNode* TilePathFinder::SearchInReactangle(int cx, int cz, int
 				}
 				PathNode* node = FindNode(x, z);
 				if (node) {
-					if (debugFunc_) {
-						debugFunc_(debugUserdata_, node->pos_.x, node->pos_.y);
+					if (debug_func_) {
+						debug_func_(debug_userdata_, node->pos_.x, node->pos_.y);
 					}
 					if (Movable(node, false)) {
 						return node;
@@ -367,13 +367,13 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 			int start = i;
 			int last = start - 1;
 			for (int j = i - 2; j >= 0; j--) {
-				const Math::Vector2* startNode = path[start];
-				const Math::Vector2* checkNode = path[j];
+				const Math::Vector2* start_node = path[start];
+				const Math::Vector2* check_node = path[j];
 
 				Math::Vector2 result;
-				Raycast(*startNode, *checkNode, true, &result, NULL, false);
-				if ((int)result.x == (int)checkNode->x &&
-					(int)result.y == (int)checkNode->y) {
+				Raycast(*start_node, *check_node, true, &result, NULL, false);
+				if ((int)result.x == (int)check_node->x &&
+					(int)result.y == (int)check_node->y) {
 					last = j;
 				} else {
 					break;
@@ -393,9 +393,9 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 	}
 
 	if (smooth & SmoothType::Tail) {
-		std::vector<const Math::Vector2*> smoothPath;
+		std::vector<const Math::Vector2*> smooth_path;
 		for (int head = 0; head < list.size() - 1; head++) {
-			smoothPath.push_back(list[head]);
+			smooth_path.push_back(list[head]);
 			for (int tail = list.size() - 1; tail > head + 1; tail--) {
 				const Math::Vector2* headNode = list[head];
 				const Math::Vector2* tailNode = list[tail];
@@ -407,51 +407,46 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 				}
 			}
 		}
-		smoothPath.push_back(list[list.size() - 1]);
-		std::swap(list, smoothPath);
+		smooth_path.push_back(list[list.size() - 1]);
+		std::swap(list, smooth_path);
 	}
 }
 
-//#define TILE_NEW_VERSION
 int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, SmoothType smooth, std::vector<const Math::Vector2*>& list, bool check_close, float estimate) {
-	PathNode* fromNode = FindNode((int)from.x, (int)from.y);
-	if (!fromNode || IsBlock(fromNode)) {
-		fromNode = SearchInCircle((int)from.x, (int)from.y, kSearchDepth);
-		if (!fromNode) {
+	PathNode* from_node = FindNode((int)from.x, (int)from.y);
+	if (!from_node || IsBlock(from_node)) {
+		from_node = SearchInCircle((int)from.x, (int)from.y, kSearchDepth);
+		if (!from_node) {
 			return STATUS_START_ERROR;
 		}
 	}
 
-	PathNode* toNode = FindNode((int)to.x, (int)to.y);
-	if (!toNode || IsBlock(toNode)) {
-		toNode = SearchInCircle((int)to.x, (int)to.y, kSearchDepth);
-		if (!toNode) {
+	PathNode* to_node = FindNode((int)to.x, (int)to.y);
+	if (!to_node || IsBlock(to_node)) {
+		to_node = SearchInCircle((int)to.x, (int)to.y, kSearchDepth);
+		if (!to_node) {
 			return STATUS_OVER_ERROR;
 		}
 	}
 
-	if (fromNode == toNode) {
+	if (from_node == to_node) {
 		return STATUS_SAME_POINT;
 	}
 
 	if (Raycast(from, to, false, NULL, NULL, false) == 0) {
-		list.push_back(&fromNode->pos_);
-		list.push_back(&toNode->pos_);
+		list.push_back(&from_node->pos_);
+		list.push_back(&to_node->pos_);
 		return STATUS_OK;
 	}
 
 	Status status = STATUS_CANNOT_REACH;
 
-	mh_push(&openList_, &fromNode->elt_);
+	mh_push(&open_list_, &from_node->elt_);
 	PathNode* node = NULL;
-	while ((node = (PathNode*)mh_pop(&openList_)) != NULL) {
-		PathNode* next = closeList_.next_;
-		next->prev_ = node;
-		node->next_ = next;
-		node->prev_ = &closeList_;
-		closeList_.next_ = node;
-		if (node == toNode) {
-			BuildPath(node, fromNode, smooth, list);
+	while ((node = (PathNode*)mh_pop(&open_list_)) != NULL) {
+		node->Insert(&close_list_);
+		if (node == to_node) {
+			BuildPath(node, from_node, smooth, list);
 			status = STATUS_OK;
 			break;
 		}
@@ -463,36 +458,24 @@ int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, Smo
 			int nG = node->G + NeighborEstimate(node, nei);
 			if (nei->next_) {
 				if (nG < nei->G) {
-					PathNode* prev = nei->prev_;
-					PathNode* next = nei->next_;
-					prev->next_ = next;
-					next->prev_ = prev;
-					nei->prev_ = nei->next_ = NULL;
-					nei->parent_ = node;
-					nei->G = nG;
-					nei->H = GoalEstimate(nei, toNode, estimate);
-					nei->F = nei->G + nei->H;
-					mh_push(&openList_, &nei->elt_);
-					if (debugFunc_) {
-						debugFunc_(debugUserdata_, nei->pos_.x, nei->pos_.y);
+					nei->Remove();
+					nei->UpdateParent(node, nG, GoalEstimate(nei, to_node, estimate));
+					mh_push(&open_list_, &nei->elt_);
+					if (debug_func_) {
+						debug_func_(debug_userdata_, nei->pos_.x, nei->pos_.y);
 					}
 				}
 			} else {
 				if (mh_elt_has_init(&nei->elt_)) {
 					if (nG < nei->G) {
-						nei->G = nG;
-						nei->F = nei->G + nei->H;
-						nei->parent_ = node;
-						mh_adjust(&openList_, &nei->elt_);
+						nei->UpdateParent(node, nG, nei->H);
+						mh_adjust(&open_list_, &nei->elt_);
 					}
 				} else {
-					nei->parent_ = node;
-					nei->G = nG;
-					nei->H = GoalEstimate(nei, toNode, estimate);
-					nei->F = nei->G + nei->H;
-					mh_push(&openList_, &nei->elt_);
-					if (debugFunc_) {
-						debugFunc_(debugUserdata_, nei->pos_.x, nei->pos_.y);
+					nei->UpdateParent(node, nG, GoalEstimate(nei, to_node, estimate));
+					mh_push(&open_list_, &nei->elt_);
+					if (debug_func_) {
+						debug_func_(debug_userdata_, nei->pos_.x, nei->pos_.y);
 					}
 				}
 			}
@@ -505,10 +488,10 @@ int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, Smo
 	return status;
 }
 
-int TilePathFinder::Find(int x0, int z0, int x1, int z1, SmoothType smooth, std::vector<const Math::Vector2*>& list, float estimate) {
+int TilePathFinder::Find(int x0, int z0, int x1, int z1, SmoothType smooth, std::vector<const Math::Vector2*>& list, bool check_close, float estimate) {
 	const Math::Vector2 from(x0, z0);
 	const Math::Vector2 to(x1, z1);
-	return Find(from, to, smooth, list, estimate);
+	return Find(from, to, smooth, list, check_close, estimate);
 }
 
 int TilePathFinder::Raycast(const Math::Vector2& from, const Math::Vector2& to, bool ignore, Math::Vector2* result, Math::Vector2* stop, bool use_breshemham) {
@@ -551,8 +534,8 @@ int TilePathFinder::Raycast(int x0, int z0, int x1, int z1, bool ignore, Math::V
 			rx = x;
 			rz = z;
 
-			if (debugFunc_) {
-				debugFunc_(debugUserdata_, x, z);
+			if (debug_func_) {
+				debug_func_(debug_userdata_, x, z);
 			}
 
 			if (dt >= 0) {
@@ -587,8 +570,8 @@ int TilePathFinder::Raycast(int x0, int z0, int x1, int z1, bool ignore, Math::V
 
 		if (fx0 == fx1) {
 			for (float z = z0; z0 < z1 ? z <= z1 : z >= z1; z0 < z1 ? z++ : z--) {
-				if (debugFunc_) {
-					debugFunc_(debugUserdata_, x0, z);
+				if (debug_func_) {
+					debug_func_(debug_userdata_, x0, z);
 				}
 
 				if (!Movable(x0, z, ignore)) {
@@ -609,8 +592,8 @@ int TilePathFinder::Raycast(int x0, int z0, int x1, int z1, bool ignore, Math::V
 				for (float x = fx0; fx1 >= fx0 ? x <= fx1 : x >= fx1; x += inc) {
 					float z = slope * (x - fx0) + fz0;
 
-					if (debugFunc_) {
-						debugFunc_(debugUserdata_, x, z);
+					if (debug_func_) {
+						debug_func_(debug_userdata_, x, z);
 					}
 
 					if (!Movable(x, z, ignore)) {
@@ -629,8 +612,8 @@ int TilePathFinder::Raycast(int x0, int z0, int x1, int z1, bool ignore, Math::V
 				for (float z = fz0; fz1 >= fz0 ? z <= fz1 : z >= fz1; z += inc) {
 					float x = (z - fz0) / slope + fx0;
 
-					if (debugFunc_) {
-						debugFunc_(debugUserdata_, x, z);
+					if (debug_func_) {
+						debug_func_(debug_userdata_, x, z);
 					}
 
 					if (!Movable(x, z, ignore)) {
@@ -667,7 +650,7 @@ int TilePathFinder::Raycast(int x0, int z0, int x1, int z1, bool ignore, Math::V
 
 void TilePathFinder::Random(Math::Vector2& result) {
 	if (!nonblock_) {
-		nonblock_ = new int[nonblockCount_];
+		nonblock_ = new int[nonblock_count_];
 		int index = 0;
 		for (int i = 0; i < width_ * height_; ++i) {
 			PathNode* node = &node_[i];
@@ -677,7 +660,7 @@ void TilePathFinder::Random(Math::Vector2& result) {
 		}
 	}
 
-	PathNode* node = &node_[nonblock_[Math::Rand(0, nonblockCount_ - 1)]];
+	PathNode* node = &node_[nonblock_[Math::Rand(0, nonblock_count_ - 1)]];
 	result = node->pos_;
 }
 
@@ -689,14 +672,14 @@ int TilePathFinder::RandomInCircle(int cx, int cz, int radius, Math::Vector2& re
 	int index = 0;
 	PathNode* link = NULL;
 
-	if (radius <= (int)circleIndex_.size() && circleIndex_[radius - 1]) {
-		std::vector<IndexPair>* range = circleIndex_[radius - 1];
+	if (radius <= (int)circle_index_.size() && circle_index_[radius - 1]) {
+		std::vector<IndexPair>* range = circle_index_[radius - 1];
 		for (size_t i = 0; i < range->size(); i++) {
 			const IndexPair& pair = (*range)[i];
 			PathNode* node = FindNode(cx + pair.x_, cz + pair.z_);
 			if (node && !IsBlock(node)) {
-				if (debugFunc_) {
-					debugFunc_(debugUserdata_, node->pos_.x, node->pos_.y);
+				if (debug_func_) {
+					debug_func_(debug_userdata_, node->pos_.x, node->pos_.y);
 				}
 				node->nei_ = link;
 				link = node;
@@ -722,8 +705,8 @@ int TilePathFinder::RandomInCircle(int cx, int cz, int radius, Math::Vector2& re
 								node->nei_ = link;
 								link = node;
 								index++;
-								if (debugFunc_) {
-									debugFunc_(debugUserdata_, node->pos_.x, node->pos_.y);
+								if (debug_func_) {
+									debug_func_(debug_userdata_, node->pos_.x, node->pos_.y);
 								}
 							}
 						}
@@ -761,15 +744,15 @@ int TilePathFinder::RandomInCircle(int cx, int cz, int radius, Math::Vector2& re
 }
 
 void TilePathFinder::Reset() {
-	PathNode* node = closeList_.next_;
-	while (node != &closeList_) {
+	PathNode* node = close_list_.next_;
+	while (node != &close_list_) {
 		PathNode* tmp = node;
 		node = tmp->next_;
 		tmp->Reset();
 	}
-	closeList_.prev_ = &closeList_;
-	closeList_.next_ = &closeList_;
-	mh_clear(&openList_, ClearHeap);
+	close_list_.prev_ = &close_list_;
+	close_list_.next_ = &close_list_;
+	mh_clear(&open_list_, ClearHeap);
 }
 
 void TilePathFinder::FindNeighbors(PathNode* node, PathNode** link, bool check_close) {
