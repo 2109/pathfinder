@@ -778,17 +778,10 @@ void TilePathFinder::FindNeighbors(PathNode* node, PathNode** link, bool check_c
 		int z = (int)node->pos_.y + kDirection[i][1];
 		PathNode* nei = FindNode(x, z);
 
-		if (nei) {
-			if (check_close) {
-				if (!IsBlock(nei)) {
-					nei->nei_ = (*link);
-					(*link) = nei;
-				}
-			} else if (!nei->next_) {
-				if (!IsBlock(nei)) {
-					nei->nei_ = (*link);
-					(*link) = nei;
-				}
+		if (nei && !IsBlock(nei)) {
+			if (check_close || !nei->next_) {
+				nei->nei_ = (*link);
+				(*link) = nei;
 			}
 		}
 	}
