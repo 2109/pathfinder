@@ -60,7 +60,8 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 
 	nonblock_ = NULL;
 	mh_ctor(&openList_, NodeCmp);
-	closeList_ = NULL;
+	closeList_.prev_ = &closeList_;
+	closeList_.next_ = &closeList_;
 
 	MaskReset();
 	MaskSet(0, 1);
@@ -411,6 +412,7 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 	}
 }
 
+//#define TILE_NEW_VERSION
 int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, SmoothType smooth, std::vector<const Math::Vector2*>& list, float estimate) {
 	PathNode* fromNode = FindNode((int)from.x, (int)from.y);
 	if (!fromNode || IsBlock(fromNode)) {
@@ -443,10 +445,11 @@ int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, Smo
 	mh_push(&openList_, &fromNode->elt_);
 	PathNode* node = NULL;
 	while ((node = (PathNode*)mh_pop(&openList_)) != NULL) {
-		node->next_ = closeList_;
-		closeList_ = node;
-		node->close_ = true;
-
+		PathNode* next = closeList_.next_;
+		next->prev_ = node;
+		node->next_ = next;
+		node->prev_ = &closeList_;
+		closeList_.next_ = node;
 		if (node == toNode) {
 			BuildPath(node, fromNode, smooth, list);
 			status = STATUS_OK;
@@ -457,27 +460,47 @@ int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, Smo
 		FindNeighbors(node, &link);
 		while (link) {
 			PathNode* nei = link;
-			if (mh_elt_has_init(&nei->elt_)) {
-				int nG = node->G + NeighborEstimate(node, nei);
+			int nG = node->G + NeighborEstimate(node, nei);
+			if (nei->next_) {
+#ifdef TILE_NEW_VERSION
 				if (nG < nei->G) {
-					nei->G = nG;
-					nei->F = nei->G + nei->H;
+					PathNode* prev = nei->prev_;
+					PathNode* next = nei->next_;
+					prev->next_ = next;
+					next->prev_ = prev;
+					nei->prev_ = nei->next_ = NULL;
 					nei->parent_ = node;
-					mh_adjust(&openList_, &nei->elt_);
+					nei->G = nG;
+					nei->H = GoalEstimate(nei, toNode, estimate);
+					nei->F = nei->G + nei->H;
+					mh_push(&openList_, &nei->elt_);
+					if (debugFunc_) {
+						debugFunc_(debugUserdata_, nei->pos_.x, nei->pos_.y);
+					}
 				}
+#endif
 			} else {
-				nei->parent_ = node;
-				nei->G = node->G + NeighborEstimate(node, nei);
-				nei->H = GoalEstimate(nei, toNode, estimate);
-				nei->F = nei->G + nei->H;
-				mh_push(&openList_, &nei->elt_);
-				if (debugFunc_) {
-					debugFunc_(debugUserdata_, nei->pos_.x, nei->pos_.y);
+				if (mh_elt_has_init(&nei->elt_)) {
+					if (nG < nei->G) {
+						nei->G = nG;
+						nei->F = nei->G + nei->H;
+						nei->parent_ = node;
+						mh_adjust(&openList_, &nei->elt_);
+					}
+				} else {
+					nei->parent_ = node;
+					nei->G = nG;
+					nei->H = GoalEstimate(nei, toNode, estimate);
+					nei->F = nei->G + nei->H;
+					mh_push(&openList_, &nei->elt_);
+					if (debugFunc_) {
+						debugFunc_(debugUserdata_, nei->pos_.x, nei->pos_.y);
+					}
 				}
 			}
 
-			link = nei->next_;
-			nei->next_ = NULL;
+			link = nei->nei_;
+			nei->nei_ = NULL;
 		}
 	}
 	Reset();
@@ -677,7 +700,7 @@ int TilePathFinder::RandomInCircle(int cx, int cz, int radius, Math::Vector2& re
 				if (debugFunc_) {
 					debugFunc_(debugUserdata_, node->pos_.x, node->pos_.y);
 				}
-				node->next_ = link;
+				node->nei_ = link;
 				link = node;
 				index++;
 			}
@@ -697,9 +720,8 @@ int TilePathFinder::RandomInCircle(int cx, int cz, int radius, Math::Vector2& re
 					PathNode* node = FindNode(cx + xOffset, cz + zOffset);
 					if (node) {
 						if (!IsBlock(node)) {
-							if (!node->record_) {
-								node->record_ = true;
-								node->next_ = link;
+							if (!node->nei_) {
+								node->nei_ = link;
 								link = node;
 								index++;
 								if (debugFunc_) {
@@ -730,9 +752,8 @@ int TilePathFinder::RandomInCircle(int cx, int cz, int radius, Math::Vector2& re
 	int i = 0;
 	while (link) {
 		PathNode* tmp = link;
-		link = tmp->next_;
-		tmp->record_ = false;
-		tmp->next_ = NULL;
+		link = tmp->nei_;
+		tmp->nei_ = NULL;
 		i++;
 		if (target == i) {
 			result = tmp->pos_;
@@ -742,41 +763,15 @@ int TilePathFinder::RandomInCircle(int cx, int cz, int radius, Math::Vector2& re
 }
 
 void TilePathFinder::Reset() {
-	PathNode* node = closeList_;
-	while (node) {
+	PathNode* node = closeList_.next_;
+	while (node != &closeList_) {
 		PathNode* tmp = node;
 		node = tmp->next_;
 		tmp->Reset();
 	}
-	closeList_ = NULL;
+	closeList_.prev_ = &closeList_;
+	closeList_.next_ = &closeList_;
 	mh_clear(&openList_, ClearHeap);
-}
-
-bool TilePathFinder::IsBestNode(int cx, int cz, int dx, int dz, int* dtMin, PathNode** list) {
-	int x = cx + dx;
-	int z = cz + dz;
-	PathNode* node = FindNode(x, z);
-	if (!node || node->record_) {
-		return false;
-	}
-	node->record_ = true;
-	node->next_ = *list;
-	*list = node;
-
-	if (debugFunc_) {
-		debugFunc_(debugUserdata_, node->pos_.x, node->pos_.y);
-	}
-
-	if (!Movable(node, false)) {
-		return false;
-	}
-
-	int dt = dx * dx + dz * dz;
-	if (*dtMin < 0 || *dtMin > dt) {
-		*dtMin = dt;
-		return true;
-	}
-	return false;
 }
 
 void TilePathFinder::FindNeighbors(PathNode* node, PathNode** link) {
@@ -784,9 +779,13 @@ void TilePathFinder::FindNeighbors(PathNode* node, PathNode** link) {
 		int x = (int)node->pos_.x + kDirection[i][0];
 		int z = (int)node->pos_.y + kDirection[i][1];
 		PathNode* nei = FindNode(x, z);
-		if (nei && !nei->close_) {
+#ifdef TILE_NEW_VERSION
+		if (nei) {
+#else
+		if (nei && !nei->next_) {
+#endif
 			if (!IsBlock(nei)) {
-				nei->next_ = (*link);
+				nei->nei_ = (*link);
 				(*link) = nei;
 			}
 		}

@@ -36,7 +36,9 @@ public:
 
 	struct PathNode {
 		mh_elt_t elt_;
+		PathNode* nei_;
 		PathNode* next_;
+		PathNode* prev_;
 		PathNode* parent_;
 		Math::Vector2 pos_;
 		int index_;
@@ -44,8 +46,6 @@ public:
 		float G;
 		float H;
 		float F;
-		bool close_;
-		bool record_;
 		PathNode() {
 			index_ = 0;
 			block_ = 0;
@@ -54,10 +54,9 @@ public:
 
 		void Reset() {
 			mh_init(&elt_);
-			next_ = parent_ = NULL;
+			nei_ = NULL;
+			prev_ = next_ = parent_ = NULL;
 			G = H = F = 0;
-			close_ = false;
-			record_ = false;
 		}
 	};
 
@@ -186,8 +185,6 @@ public:
 protected:
 	void Reset();
 
-	bool IsBestNode(int cx, int cz, int dx, int dz, int* dtMin, PathNode** list);
-
 	void FindNeighbors(PathNode* node, PathNode** link);
 
 private:
@@ -199,7 +196,7 @@ private:
 	int nonblockCount_;
 	uint8_t mask_[kMaskMax];
 	mh_t openList_;
-	PathNode* closeList_;
+	PathNode closeList_;
 	std::vector<std::vector<IndexPair>*> circleIndex_;
 	std::vector<std::vector<IndexPair>*> rangeIndex_;
 	DebugFunc debugFunc_;
