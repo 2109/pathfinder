@@ -399,7 +399,7 @@ void CNavDlg::DrawMap() {
 }
 
 void OnAroundDump(void* self, int index) {
-	/*CNavDlg* dlgPtr = (CNavDlg*)self;
+	CNavDlg* dlgPtr = (CNavDlg*)self;
 	CClientDC dc(dlgPtr);
 	CBrush brush(RGB(66, 66, 66));
 
@@ -412,12 +412,12 @@ void OnAroundDump(void* self, int index) {
 	for (int j = 0; j < 4; j++) {
 		Math::Vector3* pos = &tile->pos_[j];
 
-		pt[j].x = pos->x*dlgPtr->m_scale + dlgPtr->m_offset_x;
-		pt[j].y = pos->z*dlgPtr->m_scale + dlgPtr->m_offset_z;
+		pt[j].x = pos->x * dlgPtr->m_scale + dlgPtr->m_offset_x;
+		pt[j].y = pos->z * dlgPtr->m_scale + dlgPtr->m_offset_z;
 	}
 	dc.Polygon(pt, 4);
 	dc.SelectObject(obrush);
-	Sleep(100);*/
+	//Sleep(100);
 }
 
 void CNavDlg::DrawBegin(CPoint& pos) {
@@ -426,8 +426,8 @@ void CNavDlg::DrawBegin(CPoint& pos) {
 
 	printf("nav begin:%f,%f\n", nav_x, nav_z);
 
-	//m_finder->SetDebugTileFunc(OnAroundDump, this);
-	//m_finder->SetDebugNodeFunc(OnSearchDump, this);
+	/*	m_finder->SetDebugTileFunc(OnAroundDump, this);*/
+		//m_finder->SetDebugNodeFunc(OnSearchDump, this);
 	/*m_finder->Movable(Math::Vector3(nav_x, 0, nav_z), 10, NULL);*/
 	NavNode* node = m_finder->SearchNode(Math::Vector3(nav_x, 0, nav_z), 7);
 	if (node == NULL)
@@ -457,6 +457,16 @@ void CNavDlg::DrawBegin(CPoint& pos) {
 	float h = m_finder->GetHeight(Math::Vector3(nav_x, 0, nav_z), NULL);
 	printf("heigh:%f\n", h);
 
+	for (int i = 0; i < node->size_; i++) {
+		Math::Vector3 a = m_finder->mesh_->vertice_[node->vertice_[i]];
+		a.y = 0;
+		Math::Vector3 b = m_finder->mesh_->vertice_[node->vertice_[(i + 1)% node->size_]];
+		b.y = 0;
+		Math::Vector3 result;
+		Math::DistancePointToSegment(a, b, Math::Vector3(nav_x, 0, nav_z), &result);
+		CClientDC dc(this);
+		dc.Ellipse(result.x * m_scale + m_offset_x - 3, result.z * m_scale + m_offset_z - 3, result.x * m_scale + m_offset_x + 3, result.z * m_scale + m_offset_z + 3);
+	}
 	m_finder->SetDebugOverlapFunc(OnOverlayDump, this);
 
 	//CClientDC dc(this);
@@ -488,10 +498,10 @@ void CNavDlg::DrawOver(CPoint& pos) {
 	if (!m_finder->Movable(Math::Vector3(nav_x, 0, nav_z), 10, &offset)) {
 		printf("offset:%f\n", offset);
 
-		m_finder->SetDebugTileFunc(OnAroundDump, this);
-
+		//m_finder->SetDebugTileFunc(OnAroundDump, this);
+		m_finder->SetDebugNodeFunc(OnSearchDump, this);
 		Math::Vector3 vt;
-		int nodeIndex = m_finder->SearchInCircle(Math::Vector3(nav_x, 0, nav_z), &vt, 5);
+		int nodeIndex = m_finder->SearchInCircle(Math::Vector3(nav_x, 0, nav_z), &vt, 5, NULL);
 		if (nodeIndex < 0) {
 			printf("%f,%f\n", nav_x, nav_z);
 			return;
@@ -547,8 +557,11 @@ void CNavDlg::DrawOver(CPoint& pos) {
 		Invalidate();
 	}
 
-	for (int i = 0; i < node->size_; i++)
-		printf("%d\t", node->vertice_[i]);
+	for (int i = 0; i < node->size_; i++) {
+		Math::Vector3 pt = m_finder->mesh_->vertice_[node->vertice_[i]];
+		printf("%f,%f,%f\t", pt.x, pt.y, pt.z);
+	}
+
 	printf("\n");
 
 	m_poly_over = node->id_;

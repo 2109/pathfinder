@@ -266,9 +266,7 @@ HCURSOR CTilePathFinderDlg::OnQueryDragIcon() {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-void CTilePathFinderDlg::OnFindPath() {
-	// TODO: 在此添加控件通知处理程序代码
-
+void CTilePathFinderDlg::FindPath(bool check_close) {
 	m_path.clear();
 
 	LARGE_INTEGER freq;
@@ -289,7 +287,7 @@ void CTilePathFinderDlg::OnFindPath() {
 	Math::Vector2 to(m_over_x, m_over_z);
 
 	std::vector<const Math::Vector2*> list;
-	m_tile_finder->Find(from, to, (TilePathFinder::SmoothType)st, list, m_cost);
+	m_tile_finder->Find(from, to, (TilePathFinder::SmoothType)st, list, check_close, m_cost);
 	for (int i = 0; i < list.size(); i++) {
 		POINT* pt = new POINT();
 		pt->x = list[i]->x;
@@ -336,6 +334,12 @@ void CTilePathFinderDlg::OnFindPath() {
 
 	str.Format(_T("终点:%d,%d"), m_over_x, m_over_z);
 	m_pos_over->SetWindowText(str);
+}
+
+void CTilePathFinderDlg::OnFindPath() {
+	// TODO: 在此添加控件通知处理程序代码
+
+	FindPath(false);
 }
 
 void CTilePathFinderDlg::OnChangeX() {
@@ -501,13 +505,15 @@ void CTilePathFinderDlg::OnBnClickedLineCheck() {
 
 void CTilePathFinderDlg::OnStraightLine() {
 	// TODO: 在此添加控件通知处理程序代码
-	RayCast(0);
+	//RayCast(0);
+	FindPath(true);
 }
 
 
 void CTilePathFinderDlg::OnStraightLineEx() {
 	// TODO:  在此添加控件通知处理程序代码
-	RayCast(1);
+	//RayCast(1);
+	FindPath(false);
 }
 
 void CTilePathFinderDlg::RayCast(int type) {

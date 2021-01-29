@@ -51,6 +51,8 @@ public:
 
 	void DrawOver();
 
+	void FindPath(bool check_close);
+
 	static void OnSearchDump(void* userdata, int x, int z);
 
 	static void OnLineDump(void* userdata, int x, int z);
