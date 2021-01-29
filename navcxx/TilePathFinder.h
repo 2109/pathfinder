@@ -171,7 +171,7 @@ public:
 
 	void BuildPath(PathNode* node, PathNode* from, SmoothType smooth, std::vector<const Math::Vector2*>& list);
 
-	int Find(const Math::Vector2& from, const Math::Vector2& to, SmoothType smooth, std::vector<const Math::Vector2*>& list, float estimate = 1.0f);
+	int Find(const Math::Vector2& from, const Math::Vector2& to, SmoothType smooth, std::vector<const Math::Vector2*>& list, bool check_close = false, float estimate = 1.0f);
 
 	int Find(int x0, int z0, int x1, int z1, SmoothType smooth, std::vector<const Math::Vector2*>& list, float estimate = 1.0f);
 
@@ -185,7 +185,7 @@ public:
 protected:
 	void Reset();
 
-	void FindNeighbors(PathNode* node, PathNode** link);
+	void FindNeighbors(PathNode* node, PathNode** link, bool check_close);
 
 private:
 	int width_;

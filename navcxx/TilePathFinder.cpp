@@ -413,7 +413,7 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 }
 
 //#define TILE_NEW_VERSION
-int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, SmoothType smooth, std::vector<const Math::Vector2*>& list, float estimate) {
+int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, SmoothType smooth, std::vector<const Math::Vector2*>& list, bool check_close, float estimate) {
 	PathNode* fromNode = FindNode((int)from.x, (int)from.y);
 	if (!fromNode || IsBlock(fromNode)) {
 		fromNode = SearchInCircle((int)from.x, (int)from.y, kSearchDepth);
@@ -457,12 +457,11 @@ int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, Smo
 		}
 
 		PathNode* link = NULL;
-		FindNeighbors(node, &link);
+		FindNeighbors(node, &link, check_close);
 		while (link) {
 			PathNode* nei = link;
 			int nG = node->G + NeighborEstimate(node, nei);
 			if (nei->next_) {
-#ifdef TILE_NEW_VERSION
 				if (nG < nei->G) {
 					PathNode* prev = nei->prev_;
 					PathNode* next = nei->next_;
@@ -478,7 +477,6 @@ int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, Smo
 						debugFunc_(debugUserdata_, nei->pos_.x, nei->pos_.y);
 					}
 				}
-#endif
 			} else {
 				if (mh_elt_has_init(&nei->elt_)) {
 					if (nG < nei->G) {
@@ -774,19 +772,23 @@ void TilePathFinder::Reset() {
 	mh_clear(&openList_, ClearHeap);
 }
 
-void TilePathFinder::FindNeighbors(PathNode* node, PathNode** link) {
+void TilePathFinder::FindNeighbors(PathNode* node, PathNode** link, bool check_close) {
 	for (int i = 0; i < 8; ++i) {
 		int x = (int)node->pos_.x + kDirection[i][0];
 		int z = (int)node->pos_.y + kDirection[i][1];
 		PathNode* nei = FindNode(x, z);
-#ifdef TILE_NEW_VERSION
+
 		if (nei) {
-#else
-		if (nei && !nei->next_) {
-#endif
-			if (!IsBlock(nei)) {
-				nei->nei_ = (*link);
-				(*link) = nei;
+			if (check_close) {
+				if (!IsBlock(nei)) {
+					nei->nei_ = (*link);
+					(*link) = nei;
+				}
+			} else if (!nei->next_) {
+				if (!IsBlock(nei)) {
+					nei->nei_ = (*link);
+					(*link) = nei;
+				}
 			}
 		}
 	}
