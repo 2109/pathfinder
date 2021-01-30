@@ -41,7 +41,7 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 	height_ = height;
 	tile_ = tile;
 
-	nonblockCount_ = 0;
+	nonblock_count_ = 0;
 
 	node_ = new PathNode[width_ * height_];
 	for (int x = 0; x < width; ++x) {
@@ -53,7 +53,7 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 			node->block_ = data[node->index_];
 			mh_init(&node->elt_);
 			if (!IsBlock(node)) {
-				nonblockCount_++;
+				nonblock_count_++;
 			}
 		}
 	}
@@ -397,11 +397,11 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 		for (int head = 0; head < list.size() - 1; head++) {
 			smooth_path.push_back(list[head]);
 			for (int tail = list.size() - 1; tail > head + 1; tail--) {
-				const Math::Vector2* headNode = list[head];
-				const Math::Vector2* tailNode = list[tail];
+				const Math::Vector2* head = list[head];
+				const Math::Vector2* tail = list[tail];
 				Math::Vector2 result;
-				Raycast(*headNode, *tailNode, true, &result, NULL, false);
-				if ((int)result.x == (int)tailNode->x && (int)result.y == (int)tailNode->y) {
+				Raycast(*head, *tail, true, &result, NULL, false);
+				if ((int)result.x == (int)tail->x && (int)result.y == (int)tail->y) {
 					head = tail - 1;
 					break;
 				}
