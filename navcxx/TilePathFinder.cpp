@@ -397,11 +397,11 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 		for (int head = 0; head < list.size() - 1; head++) {
 			smooth_path.push_back(list[head]);
 			for (int tail = list.size() - 1; tail > head + 1; tail--) {
-				const Math::Vector2* head = list[head];
-				const Math::Vector2* tail = list[tail];
+				const Math::Vector2* head_node = list[head];
+				const Math::Vector2* tail_node = list[tail];
 				Math::Vector2 result;
-				Raycast(*head, *tail, true, &result, NULL, false);
-				if ((int)result.x == (int)tail->x && (int)result.y == (int)tail->y) {
+				Raycast(*head_node, *head_node, true, &result, NULL, false);
+				if ((int)result.x == (int)head_node->x && (int)result.y == (int)head_node->y) {
 					head = tail - 1;
 					break;
 				}
