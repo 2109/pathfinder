@@ -12,6 +12,8 @@ extern "C" {
 struct NavNode {
 	min_elt_t elt_;
 	NavNode* next_;
+	NavNode* prev_;
+	NavNode* link_;
 	int id_;
 	std::vector<int> vertice_;
 	std::vector<int> edge_;
@@ -27,8 +29,6 @@ struct NavNode {
 	double G;
 	double H;
 	double F;
-
-	bool close_;
 
 	NavNode* link_parent_;
 	int link_edge_;
@@ -52,8 +52,32 @@ struct NavNode {
 		link_parent_ = NULL;
 		link_edge_ = -1;
 		F = G = H = 0;
-		next_ = NULL;
-		close_ = false;
+		next_ = prev_ = NULL;
+		link_ = NULL;
+	}
+
+	inline void Insert(NavNode* link) {
+		NavNode* next = link->next_;
+		next->prev_ = this;
+		next_ = next;
+		prev_ = link;
+		link->next_ = this;
+	}
+
+	inline void Remove() {
+		NavNode* prev = prev_;
+		NavNode* next = next_;
+		prev->next_ = next;
+		next->prev_ = prev;
+		prev_ = next_ = NULL;
+	}
+
+	inline void UpdateParent(NavNode* parent, double nG, double nH) {
+		link_parent_ = parent;
+		link_edge_ = reserve_;
+		G = nG;
+		H = nH;
+		F = G + H;
 	}
 };
 
@@ -330,22 +354,19 @@ public:
 	}
 
 	inline void Reset() {
-		NavNode* node = close_list_;
-		while (node) {
+		NavNode* node = close_list_.next_;
+		while (node != &close_list_) {
 			NavNode* tmp = node;
 			node = tmp->next_;
 			tmp->Reset();
 		}
-		close_list_ = NULL;
+		close_list_.prev_ = &close_list_;
+		close_list_.next_ = &close_list_;
 		min_heap_clear_(&open_list_, ClearHeap);
 		path_index_ = 0;
 	}
 
 	NavNode* NextEdge(NavNode* node, const Math::Vector3& wp, int& link_edge);
-
-	bool UpdateWp(const Math::Vector3& src, NavNode*& node, NavNode*& parent, Math::Vector3& ptWp, int& link_edge, Math::Vector3& lpt, Math::Vector3& rpt, Math::Vector3& lvt, Math::Vector3& rvt, NavNode*& lnode, NavNode*& rnode);
-
-	void BuildPath(const Math::Vector3& src, const Math::Vector3& dst, NavNode* node, std::vector<const Math::Vector3*>& list);
 
 	void BuildPathUseFunnel(const Math::Vector3& src, const Math::Vector3& dst, NavNode* node, std::vector<const Math::Vector3*>& list);
 
@@ -363,7 +384,7 @@ public:
 
 	bool InsideNode(int node_id, const Math::Vector3& pos);
 
-	void GetLink(NavNode* node, NavNode** link);
+	void GetLink(NavNode* node, NavNode** link, bool check_close);
 
 	void MakeArea();
 
@@ -372,7 +393,7 @@ public:
 public:
 	NavMesh*                             mesh_;
 	min_heap_t                           open_list_;
-	NavNode*                             close_list_;
+	NavNode                              close_list_;
 	int                                  path_index_;
 	std::vector<Math::Vector3>           path_;
 	std::vector<bool>                    mask_;

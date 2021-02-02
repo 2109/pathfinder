@@ -461,7 +461,7 @@ int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, Smo
 		FindNeighbors(node, &link, check_close);
 		while (link) {
 			PathNode* nei = link;
-			int nG = node->G + NeighborEstimate(node, nei);
+			float nG = node->G + NeighborEstimate(node, nei);
 			if (nei->next_) {
 				if (nG < nei->G) {
 					nei->Remove();
