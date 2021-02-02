@@ -388,7 +388,7 @@ public:
 
 	void MakeArea();
 
-	void BFS(int area, int v, std::queue<NavNode*>& queue, uint8_t* visited);
+	void BFS(int area, int v, std::queue<NavNode*>& queue, std::vector<uint8_t>& visited);
 
 public:
 	NavMesh*                             mesh_;

@@ -779,20 +779,17 @@ void TilePathFinder::FindNeighbors(PathNode* node, PathNode** link, bool check_c
 void TilePathFinder::MakeArea() {
 	std::queue<PathNode*> queue;
 	int total = width_ * height_;
-	uint8_t* visited = new uint8_t[total];
-	for (int i = 0; i < total; i++) {
-		visited[i] = 0;
-	}
+	std::vector<uint8_t> visited;
+	visited.resize(total);
 	int area = 0;
 	for (int i = 0; i < total; i++) {
 		if (visited[i] == 0) {
 			BFS(area++, i, queue, visited);
 		}
 	}
-	delete[] visited;
 }
 
-void TilePathFinder::BFS(int area, int v, std::queue<PathNode*>& queue, uint8_t* visited) {
+void TilePathFinder::BFS(int area, int v, std::queue<PathNode*>& queue, std::vector<uint8_t>& visited) {
 	visited[v] = 1;
 	queue.push(&node_[v]);
 	while (!queue.empty()) {

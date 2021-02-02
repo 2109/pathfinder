@@ -215,7 +215,7 @@ protected:
 
 	void MakeArea();
 
-	void BFS(int area, int v, std::queue<PathNode*>& queue, uint8_t* visited);
+	void BFS(int area, int v, std::queue<PathNode*>& queue, std::vector<uint8_t>& visited);
 private:
 	int width_;
 	int height_;

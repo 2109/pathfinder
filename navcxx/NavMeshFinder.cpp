@@ -571,25 +571,24 @@ size_t NavPathFinder::CountMemory() {
 
 void NavPathFinder::MakeArea() {
 	std::queue<NavNode*> queue;
-	uint8_t* visited = new uint8_t[mesh_->node_.size()];
-	for (int i = 0; i < mesh_->node_.size(); i++) {
-		visited[i] = 0;
-	}
-	int area = 0;
+
+	std::vector<uint8_t> visited;
+	visited.resize(mesh_->node_.size());
+
+	int area_id = 0;
 	for (int i = 0; i < mesh_->node_.size(); i++) {
 		if (visited[i] == 0) {
-			BFS(area++, i, queue, visited);
+			BFS(area_id++, i, queue, visited);
 		}
 	}
-	delete[] visited;
 }
 
-void NavPathFinder::BFS(int area, int v, std::queue<NavNode*>& queue, uint8_t* visited) {
+void NavPathFinder::BFS(int area_id, int v, std::queue<NavNode*>& queue, std::vector<uint8_t>& visited) {
 	visited[v] = 1;
 	queue.push(&mesh_->node_[v]);
 	while (!queue.empty()) {
 		NavNode* node = queue.front();
-		node->area_id_ = area;
+		node->area_id_ = area_id;
 		queue.pop();
 
 		NavNode* link_node = NULL;
