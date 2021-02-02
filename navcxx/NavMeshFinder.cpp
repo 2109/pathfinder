@@ -152,6 +152,9 @@ int NavPathFinder::Find(const Math::Vector3& src, const Math::Vector3& dst, std:
 		PathCollect(list);
 		return 0;
 	}
+	if (src_node->area_id_ != dst_node->area_id_) {
+		return -1;
+	}
 
 	src_node->pos_ = src;
 	min_heap_push_(&open_list_, &src_node->elt_);
@@ -686,4 +689,44 @@ size_t NavPathFinder::CountMemory() {
 	}
 	total += sizeof(NavTile) * mesh_->tile_.size();
 	return total;
+}
+
+void NavPathFinder::MakeArea() {
+	std::queue<NavNode*> queue;
+	uint8_t* visited = new uint8_t[mesh_->node_.size()];
+	for (int i = 0; i < mesh_->node_.size(); i++) {
+		visited[i] = 0;
+	}
+	int area = 0;
+	for (int i = 0; i < mesh_->node_.size(); i++) {
+		if (visited[i] == 0) {
+			BFS(area++, i, queue, visited);
+		}
+	}
+	delete[] visited;
+}
+
+void NavPathFinder::BFS(int area, int v, std::queue<NavNode*>& queue, uint8_t* visited) {
+	visited[v] = 1;
+	queue.push(&mesh_->node_[v]);
+	while (!queue.empty()) {
+		NavNode* node = queue.front();
+		node->area_id_ = area;
+		queue.pop();
+
+		NavNode* link_node = NULL;
+		GetLink(node, &link_node);
+
+		while (link_node) {
+			if (link_node->mask_ == node->mask_) {
+				if (visited[link_node->id_] == 0) {
+					visited[link_node->id_] = 1;
+					queue.push(link_node);
+				}
+			}
+			NavNode* tmp = link_node;
+			link_node = link_node->next_;
+			tmp->next_ = NULL;
+		}
+	}
 }

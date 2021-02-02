@@ -72,6 +72,8 @@ void NavPathFinder::CreateMesh(float** vert, int vert_total, int** index, int in
 			edge->inverse_ = edge_inverse->id_;
 		}
 	}
+
+	MakeArea();
 }
 
 void NavPathFinder::CreateTile(uint32_t unit) {

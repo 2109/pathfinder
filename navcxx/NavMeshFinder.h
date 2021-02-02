@@ -7,6 +7,7 @@ extern "C" {
 #include "Math.h"
 #include "Vector3.h"
 #include "Plane.h"
+#include <queue>
 
 struct NavNode {
 	min_elt_t elt_;
@@ -19,6 +20,7 @@ struct NavNode {
 	Math::Vector3 center_;
 
 	int mask_;
+	int area_id_;
 
 	double area_;
 
@@ -37,6 +39,7 @@ struct NavNode {
 	inline void Init(int id, int size) {
 		id_ = id;
 		size_ = size;
+		area_id_ = -1;
 		vertice_.resize(size_);
 		edge_.resize(size_);
 		mask_ = 0;
@@ -362,9 +365,13 @@ public:
 
 	void GetLink(NavNode* node, NavNode** link);
 
+	void MakeArea();
+
+	void BFS(int area, int v, std::queue<NavNode*>& queue, uint8_t* visited);
+
 public:
 	NavMesh*                             mesh_;
-	min_heap_t                                 open_list_;
+	min_heap_t                           open_list_;
 	NavNode*                             close_list_;
 	int                                  path_index_;
 	std::vector<Math::Vector3>           path_;
