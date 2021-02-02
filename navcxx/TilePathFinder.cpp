@@ -3,6 +3,7 @@
 #include "Util.h"
 #include "TilePathFinder.h"
 
+
 #define DX(A,B) (A->pos_.x - B->pos_.x)
 #define DZ(A,B) (A->pos_.y - B->pos_.y)
 
@@ -151,6 +152,7 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 			tx++;
 		}
 	}
+	MakeArea();
 }
 
 TilePathFinder::~TilePathFinder() {
@@ -431,6 +433,10 @@ int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, Smo
 
 	if (from_node == to_node) {
 		return STATUS_SAME_POINT;
+	}
+
+	if (from_node->area_ != to_node->area_) {
+		return STATUS_ERROR_AREA;
 	}
 
 	if (Raycast(from, to, false, NULL, NULL, false) == 0) {
@@ -765,6 +771,44 @@ void TilePathFinder::FindNeighbors(PathNode* node, PathNode** link, bool check_c
 			if (check_close || !nei->next_) {
 				nei->nei_ = (*link);
 				(*link) = nei;
+			}
+		}
+	}
+}
+
+void TilePathFinder::MakeArea() {
+	std::queue<PathNode*> queue;
+	int total = width_ * height_;
+	uint8_t* visited = new uint8_t[total];
+	for (int i = 0; i < total; i++) {
+		visited[i] = 0;
+	}
+	int area = 0;
+	for (int i = 0; i < total; i++) {
+		if (visited[i] == 0) {
+			BFS(area++, i, queue, visited);
+		}
+	}
+	delete[] visited;
+}
+
+void TilePathFinder::BFS(int area, int v, std::queue<PathNode*>& queue, uint8_t* visited) {
+	visited[v] = 1;
+	queue.push(&node_[v]);
+	while (!queue.empty()) {
+		PathNode* node = queue.front();
+		node->area_ = area;
+		queue.pop();
+		for (int i = 0; i < 8; ++i) {
+			int x = (int)node->pos_.x + kDirection[i][0];
+			int z = (int)node->pos_.y + kDirection[i][1];
+			PathNode* nei = FindNode(x, z);
+
+			if (nei && node->block_ == nei->block_) {
+				if (visited[nei->index_] == 0) {
+					visited[nei->index_] = 1;
+					queue.push(nei);
+				}
 			}
 		}
 	}

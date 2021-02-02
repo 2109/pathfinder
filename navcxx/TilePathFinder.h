@@ -6,7 +6,7 @@ extern "C" {
 }
 #include "MathEx.h"
 #include "Vector2.h"
-
+#include <queue>
 
 namespace Math {
 	class Vector2;
@@ -26,6 +26,7 @@ public:
 		STATUS_OVER_ERROR = -2,
 		STATUS_SAME_POINT = -3,
 		STATUS_CANNOT_REACH = -4,
+		STATUS_ERROR_AREA = -5
 	};
 
 	enum SmoothType {
@@ -42,12 +43,14 @@ public:
 		PathNode* parent_;
 		Math::Vector2 pos_;
 		int index_;
+		int area_;
 		uint8_t block_;
 		float G;
 		float H;
 		float F;
 		PathNode() {
 			index_ = 0;
+			area_ = -1;
 			block_ = 0;
 			Reset();
 		}
@@ -210,6 +213,9 @@ protected:
 
 	void FindNeighbors(PathNode* node, PathNode** link, bool check_close);
 
+	void MakeArea();
+
+	void BFS(int area, int v, std::queue<PathNode*>& queue, uint8_t* visited);
 private:
 	int width_;
 	int height_;
