@@ -400,8 +400,8 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 				const Math::Vector2* head_node = list[head];
 				const Math::Vector2* tail_node = list[tail];
 				Math::Vector2 result;
-				Raycast(*head_node, *head_node, true, &result, NULL, false);
-				if ((int)result.x == (int)head_node->x && (int)result.y == (int)head_node->y) {
+				Raycast(*head_node, *tail_node, true, &result, NULL, false);
+				if ((int)result.x == (int)tail_node->x && (int)result.y == (int)tail_node->y) {
 					head = tail - 1;
 					break;
 				}

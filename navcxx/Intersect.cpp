@@ -60,7 +60,7 @@ namespace Math {
 			return true;
 		}
 
-		Vector2 q(l*cos(theta), l*sin(theta));
+		Vector2 q(l * cos(theta), l * sin(theta));
 		Vector2 p(px, py);
 
 
@@ -166,7 +166,7 @@ namespace Math {
 	}
 
 	static inline float determinant(float v1, float v2, float v3, float v4) {
-		return (v1*v3 - v2*v4);
+		return (v1 * v3 - v2 * v4);
 	}
 
 	bool SegmentIntersect(const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& d) {
