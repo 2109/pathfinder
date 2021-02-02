@@ -2,7 +2,7 @@
 #define TILE_PATH_FINDER_H
 
 extern "C" {
-#include "minheap-adapter.h"
+#include "minheap-internal.h"
 }
 #include "MathEx.h"
 #include "Vector2.h"
@@ -36,7 +36,7 @@ public:
 	};
 
 	struct PathNode {
-		mh_elt_t elt_;
+		min_elt_t elt_;
 		PathNode* nei_;
 		PathNode* next_;
 		PathNode* prev_;
@@ -56,7 +56,7 @@ public:
 		}
 
 		void Reset() {
-			mh_init(&elt_);
+			min_heap_elem_init_(&elt_);
 			nei_ = NULL;
 			prev_ = next_ = parent_ = NULL;
 			G = H = F = 0;
@@ -224,7 +224,7 @@ private:
 	int* nonblock_;
 	int nonblock_count_;
 	uint8_t mask_[kMaskMax];
-	mh_t open_list_;
+	min_heap_t open_list_;
 	PathNode close_list_;
 	std::vector<std::vector<IndexPair>*> circle_index_;
 	std::vector<std::vector<IndexPair>*> range_index_;

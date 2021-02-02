@@ -85,7 +85,6 @@
     <ClInclude Include="Intersect.h" />
     <ClInclude Include="MathEx.h" />
     <ClInclude Include="MemoryStream.h" />
-    <ClInclude Include="minheap-adapter.h" />
     <ClInclude Include="minheap-internal.h" />
     <ClInclude Include="NavMeshFinder.h" />
     <ClInclude Include="Plane.h" />

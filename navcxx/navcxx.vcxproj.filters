@@ -42,9 +42,6 @@
     <ClInclude Include="NavMeshFinder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="minheap-adapter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="minheap-internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>

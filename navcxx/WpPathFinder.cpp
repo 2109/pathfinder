@@ -2,7 +2,7 @@
 #include "Util.h"
 #include "WpPathFinder.h"
 
-static inline int NodeCmp(mh_elt_t* lhs, mh_elt_t* rhs) {
+static inline int NodeCmp(min_elt_t* lhs, min_elt_t* rhs) {
 	return ((WpPathFinder::WpNode*)lhs)->F > ((WpPathFinder::WpNode*)rhs)->F;
 }
 
@@ -14,15 +14,15 @@ static inline float GoalEstimate(WpPathFinder::WpNode* from, WpPathFinder::WpNod
 	return Math::Distance(from->pos_, to->pos_);
 }
 
-static inline void ClearHeap(mh_elt_t* elt) {
-	WpPathFinder::WpNode *node = (WpPathFinder::WpNode*)elt;
+static inline void ClearHeap(min_elt_t* elt) {
+	WpPathFinder::WpNode* node = (WpPathFinder::WpNode*)elt;
 	node->Reset();
 }
 
 WpPathFinder::WpPathFinder(const char* file) {
 	MemoryStream ms;
 	Util::ReadFile(file, ms);
-	
+
 	ms >> size_;
 
 	node_ = new WpNode[size_];
@@ -46,7 +46,7 @@ WpPathFinder::WpPathFinder(const char* file) {
 		}
 	}
 
-	mh_ctor(&openList_, NodeCmp);
+	min_heap_ctor_(&openList_, NodeCmp);
 	closeList_ = NULL;
 
 	debugFunc_ = NULL;
@@ -60,7 +60,7 @@ WpPathFinder::~WpPathFinder() {
 			delete[] node->link_;
 		}
 	}
-	mh_dtor(&openList_);
+	min_heap_dtor_(&openList_);
 
 	delete[] node_;
 }
@@ -110,12 +110,12 @@ int WpPathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, std::
 		return -1;
 	}
 
-	mh_push(&openList_, &fromNode->elt_);
+	min_heap_push_(&openList_, &fromNode->elt_);
 
 	int status = -1;
 
 	WpNode* node = NULL;
-	while ((node = (WpNode*)mh_pop(&openList_)) != NULL) {
+	while ((node = (WpNode*)min_heap_pop_(&openList_)) != NULL) {
 		node->next_ = closeList_;
 		closeList_ = node;
 		node->close_ = true;
@@ -130,20 +130,20 @@ int WpPathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, std::
 		FindNeighbors(node, &link);
 		while (link) {
 			WpNode* nei = link;
-			if (mh_elt_has_init(&nei->elt_)) {
+			if (nei->elt_.index >= 0) {
 				int nG = node->G + NeighborEstimate(node, nei);
 				if (nG < nei->G) {
 					nei->G = nG;
 					nei->F = nei->G + nei->H;
 					nei->parent_ = node;
-					mh_adjust(&openList_, &nei->elt_);
+					min_heap_adjust_(&openList_, &nei->elt_);
 				}
 			} else {
 				nei->parent_ = node;
 				nei->G = node->G + NeighborEstimate(node, nei);
 				nei->H = GoalEstimate(nei, toNode);
 				nei->F = nei->G + nei->H;
-				mh_push(&openList_, &nei->elt_);
+				min_heap_push_(&openList_, &nei->elt_);
 				if (debugFunc_) {
 					debugFunc_(debugUserdata_, nei->pos_);
 				}
@@ -171,7 +171,7 @@ void WpPathFinder::Reset() {
 		tmp->Reset();
 	}
 	closeList_ = NULL;
-	mh_clear(&openList_, ClearHeap);
+	min_heap_clear_(&openList_, ClearHeap);
 }
 
 void WpPathFinder::FindNeighbors(WpNode* node, WpNode** link) {

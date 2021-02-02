@@ -1,7 +1,7 @@
 #ifndef WP_PATH_FINDER_H
 #define WP_PATH_FINDER_H
 extern "C" {
-#include "minheap-adapter.h"
+#include "minheap-internal.h"
 }
 #include "MathEx.h"
 #include "Vector2.h"
@@ -12,7 +12,7 @@ public:
 	typedef void(*DebugFunc)(void* ud, const Math::Vector2& pos);
 
 	struct WpNode {
-		mh_elt_t elt_;
+		min_elt_t elt_;
 		WpNode* next_;
 		WpNode* parent_;
 		Math::Vector2 pos_;
@@ -29,7 +29,7 @@ public:
 		}
 
 		void Reset() {
-			mh_init(&elt_);
+			min_heap_elem_init_(&elt_);
 			next_ = parent_ = NULL;
 			G = H = F = 0;
 			close_ = false;
@@ -59,7 +59,7 @@ protected:
 public:
 	WpNode* node_;
 	uint32_t size_;
-	mh_t openList_;
+	min_heap_t openList_;
 	WpNode* closeList_;
 
 	DebugFunc debugFunc_;

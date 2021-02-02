@@ -3,7 +3,7 @@
 #include "NavMeshFinder.h"
 
 
-static inline int NodeCmp(mh_elt_t* lhs, mh_elt_t* rhs) {
+static inline int NodeCmp(min_elt_t* lhs, min_elt_t* rhs) {
 	return ((NavNode*)lhs)->F > ((NavNode*)rhs)->F;
 }
 
@@ -25,7 +25,7 @@ NavPathFinder::NavPathFinder() {
 	path_index_ = 0;
 	path_.resize(kDefaultPath);
 
-	mh_ctor(&open_list_, NodeCmp);
+	min_heap_ctor_(&open_list_, NodeCmp);
 	close_list_ = NULL;
 
 	mask_.resize(kMaskMax);
@@ -119,7 +119,7 @@ NavPathFinder::NavPathFinder() {
 }
 
 NavPathFinder::~NavPathFinder() {
-	mh_dtor(&open_list_);
+	min_heap_dtor_(&open_list_);
 
 	for (int i = 0; i < kSearchDepth; ++i) {
 		std::vector<IndexPair>* index = circle_index_[i];
@@ -154,10 +154,10 @@ int NavPathFinder::Find(const Math::Vector3& src, const Math::Vector3& dst, std:
 	}
 
 	src_node->pos_ = src;
-	mh_push(&open_list_, &src_node->elt_);
+	min_heap_push_(&open_list_, &src_node->elt_);
 	NavNode* node = NULL;
 
-	while ((node = (NavNode*)mh_pop(&open_list_)) != NULL) {
+	while ((node = (NavNode*)min_heap_pop_(&open_list_)) != NULL) {
 		node->close_ = true;
 		node->next_ = close_list_;
 		close_list_ = node;
@@ -173,14 +173,14 @@ int NavPathFinder::Find(const Math::Vector3& src, const Math::Vector3& dst, std:
 		GetLink(node, &link_node);
 
 		while (link_node) {
-			if (mh_elt_has_init(&link_node->elt_)) {
+			if (link_node->elt_.index >= 0) {
 				double nG = node->G + NeighborEstimate(node, link_node);
 				if (nG < link_node->G) {
 					link_node->G = nG;
 					link_node->F = link_node->G + link_node->H;
 					link_node->link_parent_ = node;
 					link_node->link_edge_ = link_node->reserve_;
-					mh_adjust(&open_list_, &link_node->elt_);
+					min_heap_adjust_(&open_list_, &link_node->elt_);
 				}
 			} else {
 				link_node->G = node->G + NeighborEstimate(node, link_node);
@@ -188,7 +188,7 @@ int NavPathFinder::Find(const Math::Vector3& src, const Math::Vector3& dst, std:
 				link_node->F = link_node->G + link_node->H;
 				link_node->link_parent_ = node;
 				link_node->link_edge_ = link_node->reserve_;
-				mh_push(&open_list_, &link_node->elt_);
+				min_heap_push_(&open_list_, &link_node->elt_);
 
 				if (debug_node_func_) {
 					debug_node_func_(debug_node_userdata_, link_node->id_);

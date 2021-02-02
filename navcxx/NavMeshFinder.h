@@ -2,14 +2,14 @@
 #define NAV_MESH_FINDER_H
 
 extern "C" {
-#include "minheap-adapter.h"
+#include "minheap-internal.h"
 }
 #include "Math.h"
 #include "Vector3.h"
 #include "Plane.h"
 
 struct NavNode {
-	mh_elt_t elt_;
+	min_elt_t elt_;
 	NavNode* next_;
 	int id_;
 	std::vector<int> vertice_;
@@ -45,7 +45,7 @@ struct NavNode {
 	}
 
 	inline void Reset() {
-		mh_init(&elt_);
+		min_heap_elem_init_(&elt_);
 		link_parent_ = NULL;
 		link_edge_ = -1;
 		F = G = H = 0;
@@ -321,7 +321,7 @@ public:
 		return angle0 < angle1;
 	}
 
-	static inline void ClearHeap(mh_elt_t* elt) {
+	static inline void ClearHeap(min_elt_t* elt) {
 		NavNode* node = (NavNode*)elt;
 		node->Reset();
 	}
@@ -334,7 +334,7 @@ public:
 			tmp->Reset();
 		}
 		close_list_ = NULL;
-		mh_clear(&open_list_, ClearHeap);
+		min_heap_clear_(&open_list_, ClearHeap);
 		path_index_ = 0;
 	}
 
@@ -364,7 +364,7 @@ public:
 
 public:
 	NavMesh*                             mesh_;
-	mh_t                                 open_list_;
+	min_heap_t                                 open_list_;
 	NavNode*                             close_list_;
 	int                                  path_index_;
 	std::vector<Math::Vector3>           path_;

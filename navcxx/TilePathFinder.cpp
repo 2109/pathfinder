@@ -10,7 +10,7 @@
 static int kDirection[8][2] = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 },
 { -1, -1 }, { -1, 1 }, { 1, -1 }, { 1, 1 } };
 
-static inline int NodeCmp(mh_elt_t* lhs, mh_elt_t* rhs) {
+static inline int NodeCmp(min_elt_t* lhs, min_elt_t* rhs) {
 	return ((TilePathFinder::PathNode*)lhs)->F > ((TilePathFinder::PathNode*)rhs)->F;
 }
 
@@ -32,7 +32,7 @@ static inline float GoalEstimate(TilePathFinder::PathNode* from, TilePathFinder:
 	return abs(DX(from, to)) * cost + abs(DZ(from, to)) * cost;
 }
 
-static inline void ClearHeap(mh_elt_t* elt) {
+static inline void ClearHeap(min_elt_t* elt) {
 	TilePathFinder::PathNode* node = (TilePathFinder::PathNode*)elt;
 	node->Reset();
 }
@@ -52,7 +52,7 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 			node->pos_.x = x;
 			node->pos_.y = z;
 			node->block_ = data[node->index_];
-			mh_init(&node->elt_);
+			min_heap_elem_init_(&node->elt_);
 			if (!IsBlock(node)) {
 				nonblock_count_++;
 			}
@@ -60,7 +60,7 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 	}
 
 	nonblock_ = NULL;
-	mh_ctor(&open_list_, NodeCmp);
+	min_heap_ctor_(&open_list_, NodeCmp);
 	close_list_.prev_ = &close_list_;
 	close_list_.next_ = &close_list_;
 
@@ -156,7 +156,7 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 }
 
 TilePathFinder::~TilePathFinder() {
-	mh_dtor(&open_list_);
+	min_heap_dtor_(&open_list_);
 
 	delete[] node_;
 
@@ -447,9 +447,9 @@ int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, Smo
 
 	Status status = STATUS_CANNOT_REACH;
 
-	mh_push(&open_list_, &from_node->elt_);
+	min_heap_push_(&open_list_, &from_node->elt_);
 	PathNode* node = NULL;
-	while ((node = (PathNode*)mh_pop(&open_list_)) != NULL) {
+	while ((node = (PathNode*)min_heap_pop_(&open_list_)) != NULL) {
 		node->Insert(&close_list_);
 		if (node == to_node) {
 			BuildPath(node, from_node, smooth, list);
@@ -466,20 +466,20 @@ int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, Smo
 				if (nG < nei->G) {
 					nei->Remove();
 					nei->UpdateParent(node, nG, GoalEstimate(nei, to_node, estimate));
-					mh_push(&open_list_, &nei->elt_);
+					min_heap_push_(&open_list_, &nei->elt_);
 					if (debug_func_) {
 						debug_func_(debug_userdata_, nei->pos_.x, nei->pos_.y);
 					}
 				}
 			} else {
-				if (mh_elt_has_init(&nei->elt_)) {
+				if (nei->elt_.index >= 0) {
 					if (nG < nei->G) {
 						nei->UpdateParent(node, nG, nei->H);
-						mh_adjust(&open_list_, &nei->elt_);
+						min_heap_adjust_(&open_list_, &nei->elt_);
 					}
 				} else {
 					nei->UpdateParent(node, nG, GoalEstimate(nei, to_node, estimate));
-					mh_push(&open_list_, &nei->elt_);
+					min_heap_push_(&open_list_, &nei->elt_);
 					if (debug_func_) {
 						debug_func_(debug_userdata_, nei->pos_.x, nei->pos_.y);
 					}
@@ -758,7 +758,7 @@ void TilePathFinder::Reset() {
 	}
 	close_list_.prev_ = &close_list_;
 	close_list_.next_ = &close_list_;
-	mh_clear(&open_list_, ClearHeap);
+	min_heap_clear_(&open_list_, ClearHeap);
 }
 
 void TilePathFinder::FindNeighbors(PathNode* node, PathNode** link, bool check_close) {

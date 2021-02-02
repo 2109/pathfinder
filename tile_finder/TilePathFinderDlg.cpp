@@ -710,7 +710,7 @@ void CTilePathFinderDlg::OnSearchDump(void* userdata, int x, int z) {
 
 	ptr->DrawTile(&cdc, x, z);
 	cdc.SelectObject(oriBrush);
-	Sleep(1);
+	//Sleep(1);
 }
 
 
