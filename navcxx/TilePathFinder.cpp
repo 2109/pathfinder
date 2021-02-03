@@ -414,7 +414,7 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 	}
 }
 
-int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, SmoothType smooth, std::vector<const Math::Vector2*>& list, bool check_close, float estimate) {
+int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, std::vector<const Math::Vector2*>& list, SmoothType smooth, bool check_close, float estimate) {
 	PathNode* from_node = FindNode((int)from.x, (int)from.y);
 	if (!from_node || IsBlock(from_node)) {
 		from_node = SearchInCircle((int)from.x, (int)from.y, kSearchDepth);
@@ -494,10 +494,10 @@ int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, Smo
 	return status;
 }
 
-int TilePathFinder::Find(int x0, int z0, int x1, int z1, SmoothType smooth, std::vector<const Math::Vector2*>& list, bool check_close, float estimate) {
+int TilePathFinder::Find(int x0, int z0, int x1, int z1, std::vector<const Math::Vector2*>& list, SmoothType smooth, bool check_close, float estimate) {
 	const Math::Vector2 from(x0, z0);
 	const Math::Vector2 to(x1, z1);
-	return Find(from, to, smooth, list, check_close, estimate);
+	return Find(from, to, list, smooth, check_close, estimate);
 }
 
 int TilePathFinder::Raycast(const Math::Vector2& from, const Math::Vector2& to, bool ignore, Math::Vector2* result, Math::Vector2* stop, bool use_breshemham) {

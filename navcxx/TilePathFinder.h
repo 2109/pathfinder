@@ -197,9 +197,9 @@ public:
 
 	void BuildPath(PathNode* node, PathNode* from, SmoothType smooth, std::vector<const Math::Vector2*>& list);
 
-	int Find(const Math::Vector2& from, const Math::Vector2& to, SmoothType smooth, std::vector<const Math::Vector2*>& list, bool check_close = false, float estimate = 1.0f);
+	int Find(const Math::Vector2& from, const Math::Vector2& to, std::vector<const Math::Vector2*>& list, SmoothType smooth = SmoothType::None, bool check_close = false, float estimate = 1.0f);
 
-	int Find(int x0, int z0, int x1, int z1, SmoothType smooth, std::vector<const Math::Vector2*>& list, bool check_close = false, float estimate = 1.0f);
+	int Find(int x0, int z0, int x1, int z1, std::vector<const Math::Vector2*>& list, SmoothType smooth = SmoothType::None, bool check_close = false, float estimate = 1.0f);
 
 	int Raycast(const Math::Vector2& from, const Math::Vector2& to, bool ignore, Math::Vector2* result, Math::Vector2* stop, bool use_breshemham);
 

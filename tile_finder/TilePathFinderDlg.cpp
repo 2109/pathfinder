@@ -287,7 +287,7 @@ void CTilePathFinderDlg::FindPath(bool check_close) {
 	Math::Vector2 to(m_over_x, m_over_z);
 
 	std::vector<const Math::Vector2*> list;
-	m_tile_finder->Find(from, to, (TilePathFinder::SmoothType)st, list, check_close, m_cost);
+	m_tile_finder->Find(from, to, list, (TilePathFinder::SmoothType)st, check_close, m_cost);
 	for (int i = 0; i < list.size(); i++) {
 		POINT* pt = new POINT();
 		pt->x = list[i]->x;
