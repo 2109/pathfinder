@@ -10,7 +10,7 @@
 static int kDirection[8][2] = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 },
 { -1, -1 }, { -1, 1 }, { 1, -1 }, { 1, 1 } };
 
-static inline int NodeCmp(min_elt_t* lhs, min_elt_t* rhs) {
+static inline int NodeCompare(min_elt_t* lhs, min_elt_t* rhs) {
 	return ((TilePathFinder::PathNode*)lhs)->F > ((TilePathFinder::PathNode*)rhs)->F;
 }
 
@@ -60,7 +60,7 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 	}
 
 	nonblock_ = NULL;
-	min_heap_ctor_(&open_list_, NodeCmp);
+	min_heap_ctor_(&open_list_, NodeCompare);
 	close_list_.prev_ = &close_list_;
 	close_list_.next_ = &close_list_;
 
@@ -261,61 +261,35 @@ TilePathFinder::PathNode* TilePathFinder::SearchInCircle(int cx, int cz, int dep
 }
 
 TilePathFinder::PathNode* TilePathFinder::SearchInReactangle(int cx, int cz, int depth) {
-	for (int r = 1; r <= depth; ++r) {
-		int xMin = cx - r;
-		int xMax = cx + r;
-		int zMin = cz - r;
-		int zMax = cz + r;
+	int x_index = cx - depth;
+	int z_index = cz - depth;
 
-		int zRange[2] = { zMin, zMax };
-
-		for (int i = 0; i < 2; i++) {
-			int z = zRange[i];
-
-			if (z < 0 || z >= height_) {
-				continue;
-			}
-
-			for (int x = xMin; x <= xMax; x++) {
-
-				if (x < 0 || x >= width_) {
-					continue;
-				}
-
-				PathNode* node = FindNode(x, z);
-				if (node) {
-					if (debug_func_) {
-						debug_func_(debug_userdata_, node->pos_.x, node->pos_.y);
-					}
-					if (Movable(node, false)) {
-						return node;
-					}
-				}
-			}
+	int size = depth * 2 + 1;
+	int z = size / 2, x = size / 2;
+	for (int i = 1; i <= size * size; i++) {
+		int tx = x_index + x;
+		int tz = z_index + z;
+		if (x <= size - z - 1 && x >= z) {
+			x++;
+		} else if (x > size - z - 1 && x > z) {
+			z++;
+		} else if (x > size - z - 1 && x <= z) {
+			x--;
+		} else if (x <= size - z - 1 && x < z) {
+			z--;
 		}
-
-		int xRange[2] = { xMin, xMax };
-
-		for (int i = 0; i < 2; i++) {
-			int x = xRange[i];
-			if (x < 0 || x >= width_) {
-				continue;
-			}
-
-			for (int z = zMin; z < zMax; z++) {
-				if (z < 0 || z >= height_) {
-					continue;
-				}
-				PathNode* node = FindNode(x, z);
-				if (node) {
-					if (debug_func_) {
-						debug_func_(debug_userdata_, node->pos_.x, node->pos_.y);
-					}
-					if (Movable(node, false)) {
-						return node;
-					}
-				}
-			}
+		if (tx < 0 || tx >= width_ || tz < 0 || tz >= height_) {
+			continue;
+		}
+		PathNode* node = FindNode(tx, tz);
+		if (!node) {
+			continue;
+		}
+		if (debug_func_) {
+			debug_func_(debug_userdata_, node->pos_.x, node->pos_.y);
+		}
+		if (Movable(node, false)) {
+			return node;
 		}
 	}
 
@@ -417,7 +391,7 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, std::vector<const Math::Vector2*>& list, SmoothType smooth, bool check_close, float estimate) {
 	PathNode* from_node = FindNode((int)from.x, (int)from.y);
 	if (!from_node || IsBlock(from_node)) {
-		from_node = SearchInCircle((int)from.x, (int)from.y, kSearchDepth);
+		from_node = SearchInReactangle((int)from.x, (int)from.y, kSearchDepth);
 		if (!from_node) {
 			return STATUS_START_ERROR;
 		}
@@ -425,7 +399,7 @@ int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, std
 
 	PathNode* to_node = FindNode((int)to.x, (int)to.y);
 	if (!to_node || IsBlock(to_node)) {
-		to_node = SearchInCircle((int)to.x, (int)to.y, kSearchDepth);
+		to_node = SearchInReactangle((int)to.x, (int)to.y, kSearchDepth);
 		if (!to_node) {
 			return STATUS_OVER_ERROR;
 		}
