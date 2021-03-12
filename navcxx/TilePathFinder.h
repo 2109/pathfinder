@@ -228,8 +228,11 @@ private:
 	PathNode close_list_;
 	std::vector<std::vector<IndexPair>*> circle_index_;
 	std::vector<std::vector<IndexPair>*> range_index_;
+
+#ifdef TILE_HAVE_DEBUG
 	DebugFunc debug_func_;
 	void* debug_userdata_;
+#endif
 };
 
 #endif
