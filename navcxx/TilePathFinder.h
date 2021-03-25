@@ -86,15 +86,6 @@ public:
 		}
 	};
 
-	struct IndexPair {
-		int x_;
-		int z_;
-		IndexPair(int x, int z) {
-			x_ = x;
-			z_ = z;
-		}
-	};
-
 public:
 
 	TilePathFinder(int width, int height, int tile, const uint8_t* data);
@@ -214,8 +205,6 @@ protected:
 	void FindNeighbors(PathNode* node, PathNode** link, bool check_close);
 
 	void MakeArea();
-
-	void BFS(int area, int v, std::queue<PathNode*>& queue, std::vector<uint8_t>& visited);
 private:
 	int width_;
 	int height_;
@@ -226,8 +215,8 @@ private:
 	uint8_t mask_[kMaskMax];
 	min_heap_t open_list_;
 	PathNode close_list_;
-	std::vector<std::vector<IndexPair>*> circle_index_;
-	std::vector<std::vector<IndexPair>*> range_index_;
+	std::vector<std::vector<Math::Vector2>*> circle_index_;
+	std::vector<std::vector<Math::Vector2>*> range_index_;
 
 #ifdef TILE_HAVE_DEBUG
 	DebugFunc debug_func_;

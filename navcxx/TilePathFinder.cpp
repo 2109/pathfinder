@@ -80,83 +80,16 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 
 	range_index_.resize(kSearchDepth);
 	for (int i = 1; i <= (int)range_index_.size(); ++i) {
-		std::vector<IndexPair>* pair_info = new std::vector<IndexPair>();
+		std::vector<Math::Vector2>* pair_info = new std::vector<Math::Vector2>();
+		Util::GetCircleRoundIndex(i, *pair_info);
 		range_index_[i - 1] = pair_info;
-		std::unordered_map<int, std::unordered_set<int>> record = std::unordered_map<int, std::unordered_set<int>>();
-
-		int tx = 0;
-		int tz = i;
-		int d = 3 - 2 * i;
-		while (tx <= tz) {
-			int range[][2] = { { tx, tz }, { -tx, tz }, { tx, -tz }, { -tx, -tz }, { tz, tx }, { -tz, tx }, { tz, -tx }, { -tz, -tx } };
-			for (int j = 0; j < 8; ++j) {
-				int xOffset = range[j][0];
-				int zOffset = range[j][1];
-				auto itr = record.find(xOffset);
-				if (itr != record.end()) {
-					std::unordered_set<int>& set = itr->second;
-					auto it = set.find(zOffset);
-					if (it == set.end()) {
-						set.insert(zOffset);
-						pair_info->push_back(IndexPair(xOffset, zOffset));
-					}
-				} else {
-					record[xOffset] = std::unordered_set<int>();
-					record[xOffset].insert(zOffset);
-					pair_info->push_back(IndexPair(xOffset, zOffset));
-				}
-			}
-
-			if (d < 0) {
-				d = d + 4 * tx + 6;
-			} else {
-				d = d + 4 * (tx - tz) + 10;
-				tz--;
-			}
-			tx++;
-		}
 	}
 
 	circle_index_.resize(kMaxRandDepth);
 	for (int i = 1; i <= (int)circle_index_.size(); ++i) {
-		std::vector<IndexPair>* pair_info = new std::vector<IndexPair>();
+		std::vector<Math::Vector2>* pair_info = new std::vector<Math::Vector2>();
+		Util::GetCircleIndex(i, *pair_info);
 		circle_index_[i - 1] = pair_info;
-		std::unordered_map<int, std::unordered_set<int>> record = std::unordered_map<int, std::unordered_set<int>>();
-
-		int tx = 0;
-		int tz = i;
-		int d = 3 - 2 * i;
-		while (tx <= tz) {
-			for (int zi = tx; zi <= tz; zi++) {
-				int range[][2] = { { tx, zi }, { -tx, zi }, { tx, -zi }, { -tx, -zi }, { zi, tx }, { -zi, tx }, { zi, -tx }, { -zi, -tx } };
-
-				for (int i = 0; i < 8; i++) {
-					int xOffset = range[i][0];
-					int zOffset = range[i][1];
-					auto itr = record.find(xOffset);
-					if (itr != record.end()) {
-						std::unordered_set<int>& set = itr->second;
-						auto it = set.find(zOffset);
-						if (it == set.end()) {
-							set.insert(zOffset);
-							pair_info->push_back(IndexPair(xOffset, zOffset));
-						}
-					} else {
-						record[xOffset] = std::unordered_set<int>();
-						record[xOffset].insert(zOffset);
-						pair_info->push_back(IndexPair(xOffset, zOffset));
-					}
-				}
-			}
-
-			if (d < 0) {
-				d = d + 4 * tx + 6;
-			} else {
-				d = d + 4 * (tx - tz) + 10;
-				tz--;
-			}
-			tx++;
-		}
 	}
 	MakeArea();
 }
@@ -171,14 +104,14 @@ TilePathFinder::~TilePathFinder() {
 	}
 
 	for (int i = 0; i < kSearchDepth; ++i) {
-		std::vector<IndexPair>* index = range_index_[i];
+		std::vector<Math::Vector2>* index = range_index_[i];
 		if (index) {
 			delete index;
 		}
 	}
 
 	for (int i = 0; i < kMaxRandDepth; ++i) {
-		std::vector<IndexPair>* index = circle_index_[i];
+		std::vector<Math::Vector2>* index = circle_index_[i];
 		if (index) {
 			delete index;
 		}
@@ -221,10 +154,10 @@ void TilePathFinder::SetDebugCallback(DebugFunc func, void* userdata) {
 TilePathFinder::PathNode* TilePathFinder::SearchInCircle(int cx, int cz, int depth) {
 	for (int i = 1; i <= depth; ++i) {
 		if (i <= (int)range_index_.size()) {
-			std::vector<IndexPair>* range = range_index_[i - 1];
+			std::vector<Math::Vector2>* range = range_index_[i - 1];
 			for (size_t i = 0; i < range->size(); i++) {
-				const IndexPair& pair = (*range)[i];
-				PathNode* node = FindNode(cx + pair.x_, cz + pair.z_);
+				const Math::Vector2& pair = (*range)[i];
+				PathNode* node = FindNode(cx + pair.x, cz + pair.y);
 				if (node) {
 					DEBUG(node);
 					if (Movable(node, false)) {
@@ -233,30 +166,17 @@ TilePathFinder::PathNode* TilePathFinder::SearchInCircle(int cx, int cz, int dep
 				}
 			}
 		} else {
-			int tx = 0;
-			int tz = i;
-			int d = 3 - 2 * i;
-			while (tx <= tz) {
-				int range[][2] = { { tx, tz }, { -tx, tz }, { tx, -tz }, { -tx, -tz }, { tz, tx }, { -tz, tx }, { tz, -tx }, { -tz, -tx } };
-				for (int j = 0; j < 8; ++j) {
-					int xOffset = range[j][0];
-					int zOffset = range[j][1];
-					PathNode* node = FindNode(cx + xOffset, cz + zOffset);
-					if (node) {
-						DEBUG(node);
-						if (Movable(node, false)) {
-							return node;
-						}
+			std::vector<Math::Vector2> range;
+			Util::GetCircleRoundIndex(i, range);
+			for (int i = 0; i < range.size(); ++i) {
+				const Math::Vector2& offset = range[i];
+				PathNode* node = FindNode(cx + offset.x, cz + offset.y);
+				if (node) {
+					DEBUG(node);
+					if (Movable(node, false)) {
+						return node;
 					}
 				}
-
-				if (d < 0) {
-					d = d + 4 * tx + 6;
-				} else {
-					d = d + 4 * (tx - tz) + 10;
-					tz--;
-				}
-				tx++;
 			}
 		}
 	}
@@ -642,10 +562,10 @@ int TilePathFinder::RandomInCircle(int cx, int cz, int radius, Math::Vector2& re
 	PathNode* link = NULL;
 
 	if (radius <= (int)circle_index_.size() && circle_index_[radius - 1]) {
-		std::vector<IndexPair>* range = circle_index_[radius - 1];
+		std::vector<Math::Vector2>* range = circle_index_[radius - 1];
 		for (size_t i = 0; i < range->size(); i++) {
-			const IndexPair& pair = (*range)[i];
-			PathNode* node = FindNode(cx + pair.x_, cz + pair.z_);
+			const Math::Vector2& pair = (*range)[i];
+			PathNode* node = FindNode(cx + pair.x, cz + pair.y);
 			if (node && !IsBlock(node)) {
 				DEBUG(node);
 				node->nei_ = link;
@@ -654,38 +574,21 @@ int TilePathFinder::RandomInCircle(int cx, int cz, int radius, Math::Vector2& re
 			}
 		}
 	} else {
-		int tx = 0;
-		int tz = radius;
-		int d = 3 - 2 * radius;
-		while (tx <= tz) {
-			for (int zi = tx; zi <= tz; zi++) {
-				int range[][2] = { { tx, zi }, { -tx, zi }, { tx, -zi }, { -tx, -zi },
-				{ zi, tx }, { -zi, tx }, { zi, -tx }, { -zi, -tx } };
-
-				for (int i = 0; i < 8; i++) {
-					int xOffset = range[i][0];
-					int zOffset = range[i][1];
-					PathNode* node = FindNode(cx + xOffset, cz + zOffset);
-					if (node) {
-						if (!IsBlock(node)) {
-							if (!node->nei_) {
-								node->nei_ = link;
-								link = node;
-								index++;
-								DEBUG(node);
-							}
-						}
+		std::vector<Math::Vector2> pair_info;
+		Util::GetCircleIndex(radius, pair_info);
+		for (int i = 0; i < pair_info.size(); ++i) {
+			const Math::Vector2& offset = pair_info[i];
+			PathNode* node = FindNode(cx + offset.x, cz + offset.y);
+			if (node) {
+				if (!IsBlock(node)) {
+					if (!node->nei_) {
+						node->nei_ = link;
+						link = node;
+						index++;
+						DEBUG(node);
 					}
 				}
 			}
-
-			if (d < 0) {
-				d = d + 4 * tx + 6;
-			} else {
-				d = d + 4 * (tx - tz) + 10;
-				tz--;
-			}
-			tx++;
 		}
 	}
 
@@ -743,27 +646,23 @@ void TilePathFinder::MakeArea() {
 	int area = 0;
 	for (int i = 0; i < total; i++) {
 		if (visited[i] == 0) {
-			BFS(area++, i, queue, visited);
-		}
-	}
-}
+			visited[i] = 1;
+			queue.push(&node_[i]);
+			while (!queue.empty()) {
+				PathNode* node = queue.front();
+				node->area_ = area;
+				queue.pop();
+				for (int i = 0; i < 8; ++i) {
+					int x = (int)node->pos_.x + kDirection[i][0];
+					int z = (int)node->pos_.y + kDirection[i][1];
+					PathNode* nei = FindNode(x, z);
 
-void TilePathFinder::BFS(int area, int v, std::queue<PathNode*>& queue, std::vector<uint8_t>& visited) {
-	visited[v] = 1;
-	queue.push(&node_[v]);
-	while (!queue.empty()) {
-		PathNode* node = queue.front();
-		node->area_ = area;
-		queue.pop();
-		for (int i = 0; i < 8; ++i) {
-			int x = (int)node->pos_.x + kDirection[i][0];
-			int z = (int)node->pos_.y + kDirection[i][1];
-			PathNode* nei = FindNode(x, z);
-
-			if (nei && node->block_ == nei->block_) {
-				if (visited[nei->index_] == 0) {
-					visited[nei->index_] = 1;
-					queue.push(nei);
+					if (nei && node->block_ == nei->block_) {
+						if (visited[nei->index_] == 0) {
+							visited[nei->index_] = 1;
+							queue.push(nei);
+						}
+					}
 				}
 			}
 		}
