@@ -6,7 +6,7 @@
 #include "pathfinder.h"
 #include "pathfinderDlg.h"
 #include "afxdialogex.h"
-
+#include <iostream>
 #include <io.h>    
 #include <fcntl.h>  
 
@@ -190,7 +190,7 @@ BOOL CNavDlg::OnInitDialog() {
 	*stdout = *hf;
 
 	size_t mem = m_finder->CountMemory();
-
+	std::cout << mem / 1024 / 1024 << std::endl;
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 

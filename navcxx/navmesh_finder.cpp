@@ -8,17 +8,11 @@ static inline int NodeCmp(min_elt_t* lhs, min_elt_t* rhs) {
 }
 
 static inline float NeighborEstimate(NavNode* src, NavNode* dst) {
-	double dx = src->pos_.x() - dst->pos_.x();
-	double dy = 0;
-	double dz = src->pos_.z() - dst->pos_.z();
-	return sqrt(dx * dx + dy * dy + dz * dz) * NavPathFinder::kGrate;
+	return Distance(src->pos_, dst->pos_) * NavPathFinder::kGrate;
 }
 
 static inline float GoalEstimate(NavNode* src, const Math::Vector3& dst) {
-	double dx = src->center_.x() - dst.x();
-	double dy = 0;
-	double dz = src->center_.z() - dst.z();
-	return sqrt(dx * dx + dy * dy + dz * dz) * NavPathFinder::kHrate;
+	return Distance(src->center_, dst) * NavPathFinder::kHrate;
 }
 
 NavPathFinder::NavPathFinder() {

@@ -45,13 +45,13 @@ namespace Math {
 	}
 
 	inline int Rand(int min, int max) {
-		std::random_device rd;
+		static std::random_device rd;
 		std::uniform_int_distribution<int> dist(min, max);
 		return dist(rd);
 	}
 
 	inline float Rand(float min, float max) {
-		std::random_device rd;
+		static std::random_device rd;
 		std::uniform_real_distribution<float> dist(min, max);
 		return dist(rd);
 	}
