@@ -87,14 +87,14 @@
     <ClInclude Include="navmesh_finder.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="tile_path_finder.h" />
-    <ClInclude Include="Util.h" />
+    <ClInclude Include="util.h" />
     <ClInclude Include="vector-neron.h" />
     <ClInclude Include="vector-sse.h" />
     <ClInclude Include="vector.h" />
     <ClInclude Include="wp_path_finder.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Intersect.cpp">
+    <ClCompile Include="intersect.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -107,7 +107,7 @@
     <ClCompile Include="navmesh_loader.cpp" />
     <ClCompile Include="navmesh_search.cpp" />
     <ClCompile Include="tile_path_finder.cpp" />
-    <ClCompile Include="Util.cpp">
+    <ClCompile Include="util.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
