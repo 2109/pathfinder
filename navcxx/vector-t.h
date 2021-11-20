@@ -220,7 +220,7 @@ namespace Math {
 
 	template <typename T>
 	float Cross_Y(const Vector<T, 3>& lhs, const Vector<T, 3>& rhs) noexcept {
-		return lhs.z() * rhs.x() - lhs.x() * rhs.z();
+		return lhs[2] * rhs[0] - lhs[0] * rhs[2];
 	}
 
 	template <typename T, std::size_t dims>

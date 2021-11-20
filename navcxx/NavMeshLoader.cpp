@@ -27,15 +27,15 @@ void NavPathFinder::CreateMesh(float** vert, int vert_total, int** index, int in
 		pos.v[1] = vert[i][1];
 		pos.v[2] = vert[i][2];
 
-		mesh_->lt_.v[0] = std::min(mesh_->lt_.x(), pos.x());
-		mesh_->lt_.v[2] = std::min(mesh_->lt_.z(), pos.z());
+		mesh_->lt_.v[0] = std::min(mesh_->lt_[0], pos[0]);
+		mesh_->lt_.v[2] = std::min(mesh_->lt_[2], pos[2]);
 
-		mesh_->br_.v[0] = std::max(mesh_->br_.x(), pos.x());
-		mesh_->br_.v[2] = std::max(mesh_->br_.z(), pos.z());
+		mesh_->br_.v[0] = std::max(mesh_->br_[0], pos[0]);
+		mesh_->br_.v[2] = std::max(mesh_->br_[2], pos[2]);
 	}
 
-	mesh_->width_ = (uint32_t)(mesh_->br_.x() - mesh_->lt_.x());
-	mesh_->height_ = (uint32_t)(mesh_->br_.z() - mesh_->lt_.z());
+	mesh_->width_ = (uint32_t)(mesh_->br_[0] - mesh_->lt_[0]);
+	mesh_->height_ = (uint32_t)(mesh_->br_[2] - mesh_->lt_[2]);
 
 	mesh_->node_.resize(index_total);
 
@@ -91,22 +91,22 @@ void NavPathFinder::CreateTile(uint32_t unit) {
 		for (uint32_t x = 0; x < mesh_->tile_width_; ++x) {
 			uint32_t index = x + z * mesh_->tile_width_;
 			TileAux* ti = &tileInfo[index];
-			ti->pos_[0].v[0] = mesh_->lt_.x() + x * unit;
-			ti->pos_[0].v[2] = mesh_->lt_.z() + z * unit;
-			ti->pos_[1].v[0] = mesh_->lt_.x() + (x + 1) * unit;
-			ti->pos_[1].v[2] = mesh_->lt_.z() + z * unit;
-			ti->pos_[2].v[0] = mesh_->lt_.x() + (x + 1) * unit;
-			ti->pos_[2].v[2] = mesh_->lt_.z() + (z + 1) * unit;
-			ti->pos_[3].v[0] = mesh_->lt_.x() + x * unit;
-			ti->pos_[3].v[2] = mesh_->lt_.z() + (z + 1) * unit;
+			ti->pos_[0].v[0] = mesh_->lt_[0] + x * unit;
+			ti->pos_[0].v[2] = mesh_->lt_[2] + z * unit;
+			ti->pos_[1].v[0] = mesh_->lt_[0] + (x + 1) * unit;
+			ti->pos_[1].v[2] = mesh_->lt_[2] + z * unit;
+			ti->pos_[2].v[0] = mesh_->lt_[0] + (x + 1) * unit;
+			ti->pos_[2].v[2] = mesh_->lt_[2] + (z + 1) * unit;
+			ti->pos_[3].v[0] = mesh_->lt_[0] + x * unit;
+			ti->pos_[3].v[2] = mesh_->lt_[2] + (z + 1) * unit;
 #ifdef NAV_DEBUG_TILE
 			NavTile* tile = &mesh_->tile_[index];
 			for (int i = 0; i < 4; ++i) {
 				tile->pos_[i] = ti->pos_[i];
 			}
 #endif
-			ti->center_.v[0] = mesh_->lt_.x() + (x + 0.5) * unit;
-			ti->center_.v[2] = mesh_->lt_.z() + (z + 0.5) * unit;
+			ti->center_.v[0] = mesh_->lt_[0] + (x + 0.5) * unit;
+			ti->center_.v[2] = mesh_->lt_[2] + (z + 0.5) * unit;
 			mesh_->tile_[index].center_ = ti->center_;
 		}
 	}
@@ -117,17 +117,17 @@ void NavPathFinder::CreateTile(uint32_t unit) {
 		Math::Vector3 br(FLT_MIN, FLT_MIN, FLT_MIN);
 		for (int n = 0; n < (int)node->vertice_.size(); ++n) {
 			const Math::Vector3& pos = mesh_->vertice_[node->vertice_[n]];
-			lt.v[0] = std::min(lt.x(), pos.x());
-			lt.v[2] = std::min(lt.z(), pos.z());
+			lt.v[0] = std::min(lt[0], pos[0]);
+			lt.v[2] = std::min(lt[2], pos[2]);
 
-			br.v[0] = std::max(br.x(), pos.x());
-			br.v[2] = std::max(br.z(), pos.z());
+			br.v[0] = std::max(br[0], pos[0]);
+			br.v[2] = std::max(br[2], pos[2]);
 		}
 
-		int xMin = (lt.x() - mesh_->lt_.x()) / unit;
-		int zMin = (lt.z() - mesh_->lt_.z()) / unit;
-		int xMax = (br.x() - mesh_->lt_.x()) / unit;
-		int zMax = (br.z() - mesh_->lt_.z()) / unit;
+		int xMin = (lt[0] - mesh_->lt_[0]) / unit;
+		int zMin = (lt[2] - mesh_->lt_[2]) / unit;
+		int xMax = (br[0] - mesh_->lt_[0]) / unit;
+		int zMax = (br[2] - mesh_->lt_[2]) / unit;
 
 		for (int z = zMin; z <= zMax; ++z) {
 			for (int x = xMin; x <= xMax; ++x) {
@@ -201,7 +201,7 @@ NavPathFinder* NavPathFinder::LoadMesh(const char* file) {
 	mesh->vertice_.resize(nvert);
 	for (int i = 0; i < nvert; ++i) {
 		Math::Vector3& pos = mesh->vertice_[i];
-		ms >> pos.x() >> pos.y() >> pos.z();
+		ms >> pos[0] >> pos[1] >> pos[2];
 	}
 
 	int nedge = 0;
@@ -211,7 +211,7 @@ NavPathFinder* NavPathFinder::LoadMesh(const char* file) {
 		NavEdge* edge = new NavEdge();
 		ms >> edge->node_[0] >> edge->node_[1];
 		ms >> edge->a_ >> edge->b_ >> edge->inverse_;
-		ms >> edge->center_.x() >> edge->center_.y() >> edge->center_.z();
+		ms >> edge->center_[0] >> edge->center_[1] >> edge->center_[2];
 		mesh->edge_.push_back(edge);
 	}
 
@@ -239,13 +239,13 @@ NavPathFinder* NavPathFinder::LoadMesh(const char* file) {
 			node.edge_[j] = index;
 		}
 		ms >> node.size_;
-		ms >> node.center_.x() >> node.center_.y() >> node.center_.z();
+		ms >> node.center_[0] >> node.center_[1] >> node.center_[2];
 		ms >> node.area_;
 	}
 
 	ms >> mesh->area_;
-	ms >> mesh->lt_.x() >> mesh->lt_.y() >> mesh->lt_.z();
-	ms >> mesh->br_.x() >> mesh->br_.y() >> mesh->br_.z();
+	ms >> mesh->lt_[0] >> mesh->lt_[1] >> mesh->lt_[2];
+	ms >> mesh->br_[0] >> mesh->br_[1] >> mesh->br_[2];
 	ms >> mesh->width_ >> mesh->height_;
 
 	return finder;
@@ -320,7 +320,7 @@ void NavPathFinder::LoadTile(const char* file) {
 			tile.node_[j] = index;
 		}
 		ms >> tile.center_node_;
-		ms >> tile.center_.x() >> tile.center_.y() >> tile.center_.z();
+		ms >> tile.center_[0] >> tile.center_[1] >> tile.center_[2];
 	}
 }
 
@@ -347,8 +347,8 @@ void NavPathFinder::LoadTileEx(const char* file) {
 				tile->node_[j] = val;
 			}
 		}
-		tile->center_.y() = 0;
-		ms >> tile->center_.x() >> tile->center_.z() >> tile->center_node_;
+		tile->center_[1] = 0;
+		ms >> tile->center_[0] >> tile->center_[2] >> tile->center_node_;
 	}
 	mesh_->tile_width_ = mesh_->width_ / mesh_->tile_unit_ + 1;
 	mesh_->tile_height_ = mesh_->height_ / mesh_->tile_unit_ + 1;
@@ -360,7 +360,7 @@ void NavPathFinder::SerializeMesh(const char* file) {
 	ms << (int)mesh_->vertice_.size();
 	for (int i = 0; i < (int)mesh_->vertice_.size(); ++i) {
 		const Math::Vector3& pos = mesh_->vertice_[i];
-		ms << pos.x() << pos.y() << pos.z();
+		ms << pos[0] << pos[1] << pos[2];
 	}
 
 	ms << (int)mesh_->edge_.size();
@@ -368,7 +368,7 @@ void NavPathFinder::SerializeMesh(const char* file) {
 		const NavEdge* edge = mesh_->edge_[i];
 		ms << edge->node_[0] << edge->node_[1];
 		ms << edge->a_ << edge->b_ << edge->inverse_;
-		ms << edge->center_.x() << edge->center_.y() << edge->center_.z();
+		ms << edge->center_[0] << edge->center_[1] << edge->center_[2];
 	}
 
 	ms << (int)mesh_->node_.size();
@@ -385,13 +385,13 @@ void NavPathFinder::SerializeMesh(const char* file) {
 			ms << node.edge_[j];
 		}
 		ms << node.size_;
-		ms << node.center_.x() << node.center_.y() << node.center_.z();
+		ms << node.center_[0] << node.center_[1] << node.center_[2];
 		ms << node.area_;
 	}
 
 	ms << mesh_->area_;
-	ms << mesh_->lt_.x() << mesh_->lt_.y() << mesh_->lt_.z();
-	ms << mesh_->br_.x() << mesh_->br_.y() << mesh_->br_.z();
+	ms << mesh_->lt_[0] << mesh_->lt_[1] << mesh_->lt_[2];
+	ms << mesh_->br_[0] << mesh_->br_[1] << mesh_->br_[2];
 	ms << mesh_->width_ << mesh_->height_;
 
 	FILE* fp = fopen(file, "wb");
@@ -410,7 +410,7 @@ void NavPathFinder::SerializeTile(const char* file) {
 			ms << tile.node_[j];
 		}
 		ms << tile.center_node_;
-		ms << tile.center_.x() << tile.center_.y() << tile.center_.z();
+		ms << tile.center_[0] << tile.center_[1] << tile.center_[2];
 	}
 	FILE* fp = fopen(file, "wb");
 	fwrite(ms.Begin(), ms.Length(), 1, fp);

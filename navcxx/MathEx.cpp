@@ -74,14 +74,14 @@ namespace Math {
 		float dx = sin(Rad(angle)) * rr;
 		float dz = cos(Rad(angle)) * rr;
 
-		return Vector3(center.x() + dx, 0.0f, center.z() + dz);
+		return Vector3(center[0] + dx, 0.0f, center[2] + dz);
 	}
 
 	Vector3 RandomInRectangle(const Vector3& center, float length, float width, float angle) {
 		float dx = Math::Rand(-length / 2, length / 2);
 		float dz = Math::Rand(-width / 2, width / 2);
 
-		Vector3 result(center.x() + dx, 0.0f, center.z() + dz);
+		Vector3 result(center[0] + dx, 0.0f, center[2] + dz);
 		Rotate(result, center, 360 - angle);
 		return result;
 	}
@@ -98,7 +98,7 @@ namespace Math {
 			z = 1 - z;
 		}
 
-		return Vector3(a.x() + ab.x() * x + ac.x() * z, 0.0f, a.z() + ab.z() * x + ac.z() * z);
+		return Vector3(a[0] + ab[0] * x + ac[0] * z, 0.0f, a[2] + ab[2] * x + ac[2] * z);
 	}
 
 	Vector3 RandomInPoly(std::vector<const Vector3*>& vertice, float area) {

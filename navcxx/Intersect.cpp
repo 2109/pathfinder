@@ -12,7 +12,7 @@ namespace Math {
 	bool IsCircleCircleIntersect(const Vector2& src, float l, const Vector2& center, float r) {
 		Vector2 d = src - center;
 		float range = l + r;
-		if (fabs(d.x()) <= range && fabs(d.y()) <= range) {
+		if (fabs(d[0]) <= range && fabs(d[1]) <= range) {
 			return LengthSquared(d) <= (range * range);
 		}
 		return false;
@@ -26,7 +26,7 @@ namespace Math {
 	bool IsRectangleCirecleIntersect(const Vector2& a, float l, float w, float angle, const Vector2& circleCenter, float r) {
 		float radian = Math::Rad(angle);
 
-		Vector2 reactangleCenter(a.x() + (cos(radian) * (l / 2)), a.y() + (sin(radian) * (l / 2)));
+		Vector2 reactangleCenter(a[0] + (cos(radian) * (l / 2)), a[1] + (sin(radian) * (l / 2)));
 
 		Vector2 relativeCenter = circleCenter - reactangleCenter;
 
@@ -53,7 +53,7 @@ namespace Math {
 		Vector2 u(cos(radian), sin(radian));
 
 		float px = Dot(d, u);
-		float py = fabs(Dot(d, Vector2(-u.y(), u.x())));
+		float py = fabs(Dot(d, Vector2(-u[1], u[0])));
 
 		float theta = Math::Rad(degree / 2);
 		if (px > sqrt(magnitude2) * cos(theta)) {
@@ -73,7 +73,7 @@ namespace Math {
 			return true;
 		}
 
-		float targetAngle = Math::Deg(atan2(delta.x(), delta.y()));
+		float targetAngle = Math::Deg(atan2(delta[0], delta[1]));
 		float diffAngle = targetAngle - angle;
 
 		if (diffAngle >= 270) {
@@ -107,7 +107,7 @@ namespace Math {
 			return false;
 		}
 
-		float targetAngle = Math::Deg(atan2(delta.x(), delta.y()));
+		float targetAngle = Math::Deg(atan2(delta[0], delta[1]));
 
 		float diffAngle = targetAngle - angle;
 		float transAngle = diffAngle + degree / 2;
@@ -133,7 +133,7 @@ namespace Math {
 			return true;
 		}
 
-		float targetAngle = Math::Deg(atan2(delta.x(), delta.y()));
+		float targetAngle = Math::Deg(atan2(delta[0], delta[1]));
 		float diffAngle = targetAngle - angle;
 
 		if (diffAngle >= 270) {
@@ -171,17 +171,17 @@ namespace Math {
 
 	bool SegmentIntersect(const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& d) {
 		const float EPS = 1e-6f;
-		float delta = determinant(b.x() - a.x(), c.x() - d.x(), b.z() - a.z(), c.z() - d.z());
+		float delta = determinant(b[0] - a[0], c[0] - d[0], b[2] - a[2], c[2] - d[2]);
 		if (delta <= EPS && delta >= -EPS) {
 			return false;
 		}
 
-		float namenda = determinant(c.x() - a.x(), c.x() - d.x(), c.z() - a.z(), c.z() - d.z()) / delta;
+		float namenda = determinant(c[0] - a[0], c[0] - d[0], c[2] - a[2], c[2] - d[2]) / delta;
 		if (namenda > 1 || namenda < 0) {
 			return false;
 		}
 
-		float miu = determinant(b.x() - a.x(), c.x() - a.x(), b.z() - a.z(), c.z() - a.z()) / delta;
+		float miu = determinant(b[0] - a[0], c[0] - a[0], b[2] - a[2], c[2] - a[2]) / delta;
 		if (miu > 1 || miu < 0) {
 			return false;
 		}
@@ -189,10 +189,10 @@ namespace Math {
 	}
 
 	bool Intersect(const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& d) {
-		if (std::max(a.x(), b.x()) >= std::min(c.x(), d.x()) &&
-			std::max(a.z(), b.z()) >= std::min(c.z(), d.z()) &&
-			std::max(c.x(), d.x()) >= std::min(a.x(), b.x()) &&
-			std::max(c.z(), d.z()) >= std::min(a.z(), b.z())) {
+		if (std::max(a[0], b[0]) >= std::min(c[0], d[0]) &&
+			std::max(a[2], b[2]) >= std::min(c[2], d[2]) &&
+			std::max(c[0], d[0]) >= std::min(a[0], b[0]) &&
+			std::max(c[2], d[2]) >= std::min(a[2], b[2])) {
 			Vector3 ac = a - c;
 			Vector3 dc = d - c;
 			Vector3 bc = b - c;

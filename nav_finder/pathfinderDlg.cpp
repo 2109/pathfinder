@@ -451,7 +451,7 @@ void CNavDlg::DrawBegin(CPoint& pos) {
 
 	printf("nav node:%d\n", node->id_);
 	for (int i = 0; i < node->size_; i++)
-		printf("%d,%f\t", node->vertice_[i], m_finder->mesh_->vertice_[node->vertice_[i]].y());
+		printf("%d,%f\t", node->vertice_[i], m_finder->mesh_->vertice_[node->vertice_[i]][1]);
 	printf("\n");
 
 	float h = m_finder->GetHeight(Math::Vector3((float)nav_x, (float)0, (float)nav_z), NULL);
@@ -465,7 +465,7 @@ void CNavDlg::DrawBegin(CPoint& pos) {
 		Math::Vector3 result;
 		Math::DistancePointToSegment(a, b, Math::Vector3((float)nav_x, (float)0, (float)nav_z), &result);
 		CClientDC dc(this);
-		dc.Ellipse(result.x() * m_scale + m_offset_x - 3, result.z() * m_scale + m_offset_z - 3, result.x() * m_scale + m_offset_x + 3, result.z() * m_scale + m_offset_z + 3);
+		dc.Ellipse(result[0] * m_scale + m_offset_x - 3, result[2] * m_scale + m_offset_z - 3, result[0] * m_scale + m_offset_x + 3, result[2] * m_scale + m_offset_z + 3);
 	}
 	m_finder->SetDebugOverlapFunc(OnOverlayDump, this);
 
@@ -475,8 +475,8 @@ void CNavDlg::DrawBegin(CPoint& pos) {
 	//	Math::Vector3 result;
 	//	//Math::Vector3 result = m_finder->RandomMovable(-1);
 	//	if (m_finder->RandomInCircle(result, Math::Vector3(nav_x, 0, nav_z), 2000)) {
-	//		//printf("%f,%f\n", result.x()*m_scale + m_offset_x, result.z()*m_scale + m_offset_z);
-	//		dc.SetPixel(result.x()*m_scale + m_offset_x, result.z()*m_scale + m_offset_z, RGB(255, 111, 250));
+	//		//printf("%f,%f\n", result[0]*m_scale + m_offset_x, result[2]*m_scale + m_offset_z);
+	//		dc.SetPixel(result[0]*m_scale + m_offset_x, result[2]*m_scale + m_offset_z, RGB(255, 111, 250));
 	//	}
 
 	//}
@@ -513,10 +513,10 @@ void CNavDlg::DrawOver(CPoint& pos) {
 		CBrush brush(RGB(66, 88, 188));
 		CClientDC dc(this);
 		CBrush* obrush = dc.SelectObject(&brush);
-		dc.Ellipse(vt.v[0] * m_scale + m_offset_x - 3, vt.z() * m_scale + m_offset_z - 3, vt.v[0] * m_scale + m_offset_x + 3, vt.z() * m_scale + m_offset_z + 3);
+		dc.Ellipse(vt.v[0] * m_scale + m_offset_x - 3, vt[2] * m_scale + m_offset_z - 3, vt.v[0] * m_scale + m_offset_x + 3, vt[2] * m_scale + m_offset_z + 3);
 		dc.SelectObject(obrush);
 		pos.x = vt.v[0] * m_scale + m_offset_x;
-		pos.y = vt.z() * m_scale + m_offset_z;
+		pos.y = vt[2] * m_scale + m_offset_z;
 
 		if (m_pt_over != NULL) {
 			free(m_pt_over);
@@ -524,19 +524,19 @@ void CNavDlg::DrawOver(CPoint& pos) {
 		}
 
 		m_pt_over = new Math::Vector3();
-		m_pt_over->v[0] = vt.x() * m_scale + m_offset_x;
-		m_pt_over->v[2] = vt.z() * m_scale + m_offset_z;
+		m_pt_over->v[0] = vt[0] * m_scale + m_offset_x;
+		m_pt_over->v[2] = vt[2] * m_scale + m_offset_z;
 
-		printf("nav over:%f,%f\n", vt.x(), vt.z());
+		printf("nav over:%f,%f\n", vt[0], vt[2]);
 		printf("nav node:%d\n", node->id_);
 
 		//vector3 start;
 		//start.x = nav_x;
-		//start.z() = nav_z;
+		//start[2] = nav_z;
 		//vector3 result;
 		//bool ok = raycast(m_mesh, vt, &start, &result, NULL, this);
 		//if ( ok ){
-		//	dc.Ellipse(result.x*m_scale + m_offset_x - 3, result.z()*m_scale + m_offset_z - 3, result.x*m_scale + m_offset_x + 3, result.z()*m_scale + m_offset_z + 3);
+		//	dc.Ellipse(result.x*m_scale + m_offset_x - 3, result[2]*m_scale + m_offset_z - 3, result.x*m_scale + m_offset_x + 3, result[2]*m_scale + m_offset_z + 3);
 		//	dc.SelectObject(obrush);
 		//}
 	} else {
@@ -559,7 +559,7 @@ void CNavDlg::DrawOver(CPoint& pos) {
 
 	for (int i = 0; i < node->size_; i++) {
 		Math::Vector3 pt = m_finder->mesh_->vertice_[node->vertice_[i]];
-		printf("%f,%f,%f\t", pt.x(), pt.y(), pt.z());
+		printf("%f,%f,%f\t", pt[0], pt[1], pt[2]);
 	}
 
 	printf("\n");
@@ -597,8 +597,8 @@ void CNavDlg::Straightline() {
 		Math::Vector3 over((m_pt_over->x() - m_offset_x) / (float)m_scale, (float)0, (m_pt_over->z() - m_offset_z) / (float)m_scale);
 
 		POINT from;
-		from.x = begin.x() * m_scale + m_offset_x;
-		from.y = begin.z() * m_scale + m_offset_z;
+		from.x = begin[0] * m_scale + m_offset_x;
+		from.y = begin[2] * m_scale + m_offset_z;
 
 		CPen pen(PS_SOLID, 1, RGB(255, 255, 255));
 		CClientDC dc(this);
@@ -609,8 +609,8 @@ void CNavDlg::Straightline() {
 		m_finder->Raycast(begin, over, result);
 
 		POINT to;
-		to.x = result.x() * m_scale + m_offset_x;
-		to.y = result.z() * m_scale + m_offset_z;
+		to.x = result[0] * m_scale + m_offset_x;
+		to.y = result[2] * m_scale + m_offset_z;
 
 		dc.LineTo(to);
 		dc.SelectObject(open);
@@ -657,8 +657,8 @@ void CNavDlg::OnIgnoreLine() {
 		Math::Vector3 over((m_pt_over->x() - (float)m_offset_x) / (float)m_scale, (float)0, (m_pt_over->z() - m_offset_z) / (float)m_scale);
 
 		POINT from;
-		from.x = begin.x() * m_scale + m_offset_x;
-		from.y = begin.z() * m_scale + m_offset_z;
+		from.x = begin[0] * m_scale + m_offset_x;
+		from.y = begin[2] * m_scale + m_offset_z;
 
 		CPen pen(PS_SOLID, 1, RGB(255, 255, 255));
 		CClientDC dc(this);
@@ -669,8 +669,8 @@ void CNavDlg::OnIgnoreLine() {
 		m_finder->Raycast(begin, over, result);
 
 		POINT to;
-		to.x = result.x() * m_scale + m_offset_x;
-		to.y = result.z() * m_scale + m_offset_z;
+		to.x = result[0] * m_scale + m_offset_x;
+		to.y = result[2] * m_scale + m_offset_z;
 
 		dc.LineTo(to);
 		dc.SelectObject(open);

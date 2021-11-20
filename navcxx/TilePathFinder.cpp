@@ -2,8 +2,8 @@
 #include "Util.h"
 #include "TilePathFinder.h"
 
-#define DX(A,B) (A->pos_.x() - B->pos_.x())
-#define DZ(A,B) (A->pos_.y() - B->pos_.y())
+#define DX(A,B) (A->pos_[0] - B->pos_[0])
+#define DZ(A,B) (A->pos_[1] - B->pos_[1])
 
 #ifdef TILE_HAVE_DEBUG
 #define DEBUG_NODE(x, y) do { if (debug_func_) { debug_func_(debug_userdata_, x, y); } while(false);
@@ -55,8 +55,8 @@ TilePathFinder::TilePathFinder(int width, int height, int tile, const uint8_t* d
 		for (int z = 0; z < height; ++z) {
 			PathNode* node = FindNode(x, z);
 			node->index_ = x * height_ + z;
-			node->pos_.x() = x;
-			node->pos_.y() = z;
+			node->pos_[0] = x;
+			node->pos_[1] = z;
 			node->block_ = data[node->index_];
 			min_heap_elem_init_(&node->elt_);
 			if (!IsBlock(node)) {
@@ -157,7 +157,7 @@ TilePathFinder::PathNode* TilePathFinder::SearchInCircle(int cx, int cz, int dep
 			std::vector<Math::Vector2>* range = range_index_[i - 1];
 			for (size_t i = 0; i < range->size(); i++) {
 				const Math::Vector2& pair = (*range)[i];
-				PathNode* node = FindNode(cx + pair.x(), cz + pair.y());
+				PathNode* node = FindNode(cx + pair[0], cz + pair[1]);
 				if (node) {
 					DEBUG(node);
 					if (Movable(node, false)) {
@@ -170,7 +170,7 @@ TilePathFinder::PathNode* TilePathFinder::SearchInCircle(int cx, int cz, int dep
 			Util::GetCircleRoundIndex(i, range);
 			for (int i = 0; i < range.size(); ++i) {
 				const Math::Vector2& offset = range[i];
-				PathNode* node = FindNode(cx + offset.x(), cz + offset.y());
+				PathNode* node = FindNode(cx + offset[0], cz + offset[1]);
 				if (node) {
 					DEBUG(node);
 					if (Movable(node, false)) {
@@ -269,8 +269,8 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 
 				Math::Vector2 result;
 				Raycast(*start_node, *check_node, true, &result, NULL, false);
-				if ((int)result.x() == (int)check_node->x() &&
-					(int)result.y() == (int)check_node->y()) {
+				if ((int)result[0] == (int)check_node->x() &&
+					(int)result[1] == (int)check_node->y()) {
 					last = j;
 				} else {
 					break;
@@ -298,7 +298,7 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 				const Math::Vector2* tail_node = list[tail];
 				Math::Vector2 result;
 				Raycast(*head_node, *tail_node, true, &result, NULL, false);
-				if ((int)result.x() == (int)tail_node->x() && (int)result.y() == (int)tail_node->y()) {
+				if ((int)result[0] == (int)tail_node->x() && (int)result[1] == (int)tail_node->y()) {
 					head = tail - 1;
 					break;
 				}
@@ -310,17 +310,17 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 }
 
 int TilePathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, std::vector<const Math::Vector2*>& list, SmoothType smooth, bool check_close, float estimate) {
-	PathNode* from_node = FindNode((int)from.x(), (int)from.y());
+	PathNode* from_node = FindNode((int)from[0], (int)from[1]);
 	if (!from_node || IsBlock(from_node)) {
-		from_node = SearchInReactangle((int)from.x(), (int)from.y(), kSearchDepth);
+		from_node = SearchInReactangle((int)from[0], (int)from[1], kSearchDepth);
 		if (!from_node) {
 			return STATUS_START_ERROR;
 		}
 	}
 
-	PathNode* to_node = FindNode((int)to.x(), (int)to.y());
+	PathNode* to_node = FindNode((int)to[0], (int)to[1]);
 	if (!to_node || IsBlock(to_node)) {
-		to_node = SearchInReactangle((int)to.x(), (int)to.y(), kSearchDepth);
+		to_node = SearchInReactangle((int)to[0], (int)to[1], kSearchDepth);
 		if (!to_node) {
 			return STATUS_OVER_ERROR;
 		}
@@ -392,7 +392,7 @@ int TilePathFinder::Find(int x0, int z0, int x1, int z1, std::vector<const Math:
 }
 
 int TilePathFinder::Raycast(const Math::Vector2& from, const Math::Vector2& to, bool ignore, Math::Vector2* result, Math::Vector2* stop, bool use_breshemham) {
-	return Raycast((int)from.x(), (int)from.y(), (int)to.x(), (int)to.y(), ignore, result, stop, use_breshemham);
+	return Raycast((int)from[0], (int)from[1], (int)to[0], (int)to[1], ignore, result, stop, use_breshemham);
 }
 
 int TilePathFinder::Raycast(int x0, int z0, int x1, int z1, bool ignore, Math::Vector2* result, Math::Vector2* stop, bool use_breshemham) {
@@ -565,7 +565,7 @@ int TilePathFinder::RandomInCircle(int cx, int cz, int radius, Math::Vector2& re
 		std::vector<Math::Vector2>* range = circle_index_[radius - 1];
 		for (size_t i = 0; i < range->size(); i++) {
 			const Math::Vector2& pair = (*range)[i];
-			PathNode* node = FindNode(cx + pair.x(), cz + pair.y());
+			PathNode* node = FindNode(cx + pair[0], cz + pair[1]);
 			if (node && !IsBlock(node)) {
 				DEBUG(node);
 				node->nei_ = link;
@@ -578,7 +578,7 @@ int TilePathFinder::RandomInCircle(int cx, int cz, int radius, Math::Vector2& re
 		Util::GetCircleIndex(radius, pair_info);
 		for (int i = 0; i < pair_info.size(); ++i) {
 			const Math::Vector2& offset = pair_info[i];
-			PathNode* node = FindNode(cx + offset.x(), cz + offset.y());
+			PathNode* node = FindNode(cx + offset[0], cz + offset[1]);
 			if (node) {
 				if (!IsBlock(node)) {
 					if (!node->nei_) {
@@ -625,8 +625,8 @@ void TilePathFinder::Reset() {
 
 void TilePathFinder::FindNeighbors(PathNode* node, PathNode** link, bool check_close) {
 	for (int i = 0; i < 8; ++i) {
-		int x = (int)node->pos_.x() + kDirection[i][0];
-		int z = (int)node->pos_.y() + kDirection[i][1];
+		int x = (int)node->pos_[0] + kDirection[i][0];
+		int z = (int)node->pos_[1] + kDirection[i][1];
 		PathNode* nei = FindNode(x, z);
 
 		if (nei && !IsBlock(nei)) {
@@ -653,8 +653,8 @@ void TilePathFinder::MakeArea() {
 				node->area_ = area;
 				queue.pop();
 				for (int i = 0; i < 8; ++i) {
-					int x = (int)node->pos_.x() + kDirection[i][0];
-					int z = (int)node->pos_.y() + kDirection[i][1];
+					int x = (int)node->pos_[0] + kDirection[i][0];
+					int z = (int)node->pos_[1] + kDirection[i][1];
 					PathNode* nei = FindNode(x, z);
 
 					if (nei && node->block_ == nei->block_) {
