@@ -1,6 +1,6 @@
 ﻿
-#include "Intersect.h"
-#include "MathEx.h"
+#include "intersect.h"
+#include "mathex.h"
 
 
 namespace Math {

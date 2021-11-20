@@ -1,15 +1,27 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30709.132
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wp_editor", "wp_editor\waypoint_editor.vcxproj", "{4833AE44-C18C-4B12-A6B8-0FFBE7F43C77}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F94B6B16-D94E-4511-9367-C9EBC29A694F} = {F94B6B16-D94E-4511-9367-C9EBC29A694F}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wp_finder", "wp_finder\wp_finder.vcxproj", "{2BC2BC43-4359-4191-B8F6-0F2C3778F9F3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F94B6B16-D94E-4511-9367-C9EBC29A694F} = {F94B6B16-D94E-4511-9367-C9EBC29A694F}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nav_finder", "nav_finder\pathfinder.vcxproj", "{639688DC-CEC1-45D4-900A-AEE56C4EBEED}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F94B6B16-D94E-4511-9367-C9EBC29A694F} = {F94B6B16-D94E-4511-9367-C9EBC29A694F}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tile_finder", "tile_finder\tile_findpath.vcxproj", "{646EC273-7E27-4B35-A333-0121A9653BE9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F94B6B16-D94E-4511-9367-C9EBC29A694F} = {F94B6B16-D94E-4511-9367-C9EBC29A694F}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "navcxx", "navcxx\navcxx.vcxproj", "{F94B6B16-D94E-4511-9367-C9EBC29A694F}"
 EndProject
@@ -42,5 +54,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {900817B1-6C18-4592-A610-8FCC5B22804D}
 	EndGlobalSection
 EndGlobal

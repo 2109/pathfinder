@@ -1,19 +1,18 @@
 #ifndef PLANE_H
 #define PLANE_H
 
-#include "vector-t.h"
+#include "vector.h"
 
 namespace Math {
 	class Plane {
 	public:
 		enum PLANE_SIDE {
-			eINSIDE,
-			eBACK,
-			eFRONT
+			kINSIDE,
+			kBACK,
+			kFRONT
 		};
 
 		Plane() : normal_(), distance_(0) {
-
 		}
 
 		Plane(float a, float b, float c, float d) {
@@ -90,11 +89,11 @@ namespace Math {
 	inline Plane::PLANE_SIDE Plane::GetSide(const Vector3& pt) {
 		float dist = Dot(normal_, pt) + distance_;
 		if (dist == 0) {
-			eINSIDE;
+			return kINSIDE;
 		} else if (dist < 0) {
-			return eBACK;
+			return kBACK;
 		} else {
-			return eFRONT;
+			return kFRONT;
 		}
 	}
 

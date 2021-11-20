@@ -1,7 +1,7 @@
 #ifndef VECTOR_NERON_H
 #define VECTOR_NERON_H
 
-#include "vector-t.h"
+#include "vector.h"
 
 #ifdef __ARM_NEON__
 #  include <arm_neon.h>

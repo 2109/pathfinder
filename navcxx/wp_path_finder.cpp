@@ -1,6 +1,6 @@
 
-#include "Util.h"
-#include "WpPathFinder.h"
+#include "util.h"
+#include "wp_path_finder.h"
 
 static inline int NodeCmp(min_elt_t* lhs, min_elt_t* rhs) {
 	return ((WpPathFinder::WpNode*)lhs)->F > ((WpPathFinder::WpNode*)rhs)->F;

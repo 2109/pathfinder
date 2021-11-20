@@ -1,7 +1,7 @@
 #ifndef VECTOR_SSE_H
 #define VECTOR_SSE_H
 
-#include "vector-t.h"
+#include "vector.h"
 
 #if defined(__SSE__) || defined(_M_X64) || _M_IX86_FP >= 1
 #  include <xmmintrin.h>

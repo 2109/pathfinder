@@ -1,8 +1,8 @@
 
-#include "Intersect.h"
-#include "MathEx.h"
-#include "NavMeshFinder.h"
-#include "Util.h"
+#include "intersect.h"
+#include "mathex.h"
+#include "navmesh_finder.h"
+#include "util.h"
 
 struct TileAux {
 	Math::Vector3 center_;
@@ -146,7 +146,7 @@ void NavPathFinder::CreateTile(uint32_t unit) {
 
 				if (!inside) {
 					std::vector<Math::Vector3> rectangle = { ti->pos_[3], ti->pos_[2],ti->pos_[1],ti->pos_[0] };
-					for (int j = 0; j < node->vertice_.size(); j++) {
+					for (unsigned int j = 0; j < node->vertice_.size(); j++) {
 						if (Math::InsidePoly(rectangle, mesh_->vertice_[j])) {
 							tile->node_.push_back(node->id_);
 							inside = true;
@@ -159,7 +159,7 @@ void NavPathFinder::CreateTile(uint32_t unit) {
 					bool cross = false;
 					for (int j = 0; j < 4; j++) {
 						const Math::Vector3& pos = ti->pos_[j];
-						for (int k = 0; k < node->edge_.size(); k++) {
+						for (unsigned int k = 0; k < node->edge_.size(); k++) {
 							NavEdge* edge = GetEdge(node->edge_[k]);
 							if (Intersect(tile->pos_[j], tile->pos_[(j + 1) % 4], mesh_->vertice_[edge->a_], mesh_->vertice_[edge->b_])) {
 								tile->node_.push_back(node->id_);

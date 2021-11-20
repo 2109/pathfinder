@@ -1,15 +1,12 @@
-
-// #include "Vector3.h"
-#include "MathEx.h"
-
+#include "mathex.h"
 
 namespace Math {
 
 	bool InsideVector(const Vector3& lhs, const Vector3& rhs, const Vector3& pos) {
-		float lCross = Cross_Y(lhs, pos);
-		float rCross = Cross_Y(rhs, pos);
+		float lc = Cross_Y(lhs, pos);
+		float rc = Cross_Y(rhs, pos);
 
-		if ((lCross < 0 && rCross > 0) || (lCross == 0 && rCross > 0) || (lCross < 0 && rCross == 0)) {
+		if ((lc < 0 && rc > 0) || (lc == 0 && rc > 0) || (lc < 0 && rc == 0)) {
 			return true;
 		}
 		return false;
@@ -109,7 +106,7 @@ namespace Math {
 		float weight = area * (Rand(0, 10000) / 10000.0f);
 		float tmp = 0.0f;
 		std::vector<const Vector3*> tri = { NULL, NULL, NULL };
-		for (int i = 1; i < vertice.size() - 1; ++i) {
+		for (unsigned int i = 1; i < vertice.size() - 1; ++i) {
 			tri[0] = vertice[0];
 			tri[1] = vertice[i];
 			tri[2] = vertice[i + 1];

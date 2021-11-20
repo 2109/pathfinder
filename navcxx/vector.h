@@ -13,12 +13,12 @@ namespace Math {
 	template <typename T, std::size_t dims> class Vector final {
 	public:
 #if defined(__SSE__) || defined(_M_X64) || _M_IX86_FP >= 1 || defined(__ARM_NEON__)
-		alignas(std::is_same<T, float>::value && dims == 4 ? dims * sizeof(T) : sizeof(T))
+		alignas(std::is_same<T, float>::value&& dims == 4 ? dims * sizeof(T) : sizeof(T))
 #endif
 #if (defined(__SSE2__) || defined(_M_X64) || _M_IX86_FP >= 2) || (defined(__ARM_NEON__) && defined(__aarch64__))
-		alignas(std::is_same<T, double>::value && dims == 4 ? dims * sizeof(T) : sizeof(T))
+			alignas(std::is_same<T, double>::value&& dims == 4 ? dims * sizeof(T) : sizeof(T))
 #endif
-		T v[dims];
+			T v[dims];
 
 		Vector() noexcept {
 			for (std::size_t i = 0; i < dims; ++i)
@@ -27,7 +27,8 @@ namespace Math {
 
 		template <typename ...A>
 		explicit Vector(const A... args) noexcept :
-			v{ args... } {}
+			v{ args... } {
+		}
 
 		template <std::size_t d, std::size_t c = dims, std::enable_if<(c != d)>* = nullptr>
 		Vector(const Math::Vector<T, d>& vec) noexcept {
@@ -48,7 +49,7 @@ namespace Math {
 			return v[0];
 		}
 
-		 T& y() noexcept {
+		T& y() noexcept {
 			static_assert(dims >= 2, "");
 			return v[1];
 		}
@@ -58,7 +59,7 @@ namespace Math {
 			return v[1];
 		}
 
-		 T& z() noexcept {
+		T& z() noexcept {
 			static_assert(dims >= 3, "");
 			return v[2];
 		}
@@ -350,7 +351,7 @@ namespace Math {
 		Vector<T, 3> y = Cross(axis, from);
 		from = (o + x * cos(angle) + y * sin(angle));
 	}
-	
+
 	template <typename T, std::size_t dims>
 	void Clamp(Vector<T, dims>& vec, const Vector<T, dims>& min, const Vector<T, dims>& max) noexcept {
 		for (std::size_t i = 0; i < dims; ++i)
@@ -398,7 +399,7 @@ namespace Math {
 
 	template <typename T, std::size_t dims>
 	Vector<T, dims> Reflect(const Vector<T, dims>& direction, const Vector<T, dims>& normal) {
-		return -2.0f * dot(normal, direction) * normal + direction;
+		return -2.0f * Dot(normal, direction) * normal + direction;
 	}
 
 	template <typename T, std::size_t dims>
@@ -410,7 +411,7 @@ namespace Math {
 
 	typedef Vector<float, 2> Vector2;
 
-	static const Vector<float, 3> Vector3_Zero{0.0f, 0.0f, 0.0f };
+	static const Vector<float, 3> Vector3_Zero{ 0.0f, 0.0f, 0.0f };
 
 	static const Vector<float, 2> Vector2_Zero{ 0.0f, 0.0f };
 

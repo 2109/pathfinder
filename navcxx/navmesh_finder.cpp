@@ -1,6 +1,6 @@
-#include "Intersect.h"
-#include "Math.h"
-#include "NavMeshFinder.h"
+#include "intersect.h"
+#include "mathex.h"
+#include "navmesh_finder.h"
 
 
 static inline int NodeCmp(min_elt_t* lhs, min_elt_t* rhs) {
@@ -92,7 +92,7 @@ NavPathFinder::NavPathFinder() {
 		int size = i * 2 + 1;
 		std::vector<IndexPair>* vt = new std::vector<IndexPair>();
 		vt->resize(size * size);
-		int y = size / 2, x = size / 2;//从中心点开始
+		int y = size / 2, x = size / 2;//麓脫脰脨脨脛碌茫驴陋脢录
 		for (int i = 1; i <= size * size; i++) {
 			if (x <= size - y - 1 && x >= y) {
 				IndexPair& pairs = (*vt)[i - 1];
@@ -429,26 +429,26 @@ void NavPathFinder::BuildPathUseFunnel(const Math::Vector3& src, const Math::Vec
 		Funnel::SIDE rvt_side_r = funnel.SideRight(rpt_tmp);
 
 		uint8_t mask = 0;
-		//下一条边的左点在漏斗里，更新为新的左点,同时记录当前左点的多边形
+		//脧脗脪禄脤玫卤脽碌脛脳贸碌茫脭脷脗漏露路脌茂拢卢赂眉脨脗脦陋脨脗碌脛脳贸碌茫,脥卢脢卤录脟脗录碌卤脟掳脳贸碌茫碌脛露脿卤脽脨脦
 		if (lvt_side_l != Funnel::eLEFT && rvt_side_l != Funnel::eRIGHT) {
 			funnel.SetLeft(node, lpt_tmp);
 			mask |= 0x01;
 		}
-		//下一条边的右点在漏斗里，更新为新的右点,同时记录当前右点的多边形
+		//脧脗脪禄脤玫卤脽碌脛脫脪碌茫脭脷脗漏露路脌茂拢卢赂眉脨脗脦陋脨脗碌脛脫脪碌茫,脥卢脢卤录脟脗录碌卤脟掳脫脪碌茫碌脛露脿卤脽脨脦
 		if (lvt_side_r != Funnel::eLEFT && rvt_side_r != Funnel::eRIGHT) {
 			funnel.SetRight(node, rpt_tmp);
 			mask |= 0x02;
 		}
 
 		if (mask == 0x03) {
-			//如果左右两点同时更新了，直接跳到一个多边形
+			//脠莽鹿没脳贸脫脪脕陆碌茫脥卢脢卤赂眉脨脗脕脣拢卢脰卤陆脫脤酶碌陆脪禄赂枚露脿卤脽脨脦
 			node = node->link_parent_;
 			continue;
 		}
 
 		if (lvt_side_l == Funnel::eLEFT && rvt_side_l == Funnel::eLEFT &&
 			lvt_side_r == Funnel::eLEFT && rvt_side_r == Funnel::eLEFT) {
-			//左右两点都在漏斗左边，更新漏斗，以左点为新的拐点,同时以左点的当时多边形为基础，一直找到一边不共边的多边形
+			//脳贸脫脪脕陆碌茫露录脭脷脗漏露路脳贸卤脽拢卢赂眉脨脗脗漏露路拢卢脪脭脳贸碌茫脦陋脨脗碌脛鹿脮碌茫,脥卢脢卤脪脭脳贸碌茫碌脛碌卤脢卤露脿卤脽脨脦脦陋禄霉麓隆拢卢脪禄脰卤脮脪碌陆脪禄卤脽虏禄鹿虏卤脽碌脛露脿卤脽脨脦
 			node = funnel.UpdateLeft();
 			if (node == NULL) {
 				PathAdd((Math::Vector3&)src);
@@ -456,7 +456,7 @@ void NavPathFinder::BuildPathUseFunnel(const Math::Vector3& src, const Math::Vec
 			}
 		} else if (lvt_side_l == Funnel::eRIGHT && rvt_side_l == Funnel::eRIGHT &&
 			lvt_side_r == Funnel::eRIGHT && rvt_side_r == Funnel::eRIGHT) {
-			//左右两点都在漏斗右边，更新漏斗，以右点为新的拐点,同时以右点的当时多边形为基础，一直找到一边不共边的多边形
+			//脳贸脫脪脕陆碌茫露录脭脷脗漏露路脫脪卤脽拢卢赂眉脨脗脗漏露路拢卢脪脭脫脪碌茫脦陋脨脗碌脛鹿脮碌茫,脥卢脢卤脪脭脫脪碌茫碌脛碌卤脢卤露脿卤脽脨脦脦陋禄霉麓隆拢卢脪禄脰卤脮脪碌陆脪禄卤脽虏禄鹿虏卤脽碌脛露脿卤脽脨脦
 			node = funnel.UpdateRight();
 			if (node == NULL) {
 				PathAdd((Math::Vector3&)src);
@@ -576,7 +576,7 @@ void NavPathFinder::MakeArea() {
 	visited.resize(mesh_->node_.size());
 
 	int area_id = 0;
-	for (int i = 0; i < mesh_->node_.size(); i++) {
+	for (unsigned int i = 0; i < mesh_->node_.size(); i++) {
 		if (visited[i] == 0) {
 			BFS(area_id++, i, queue, visited);
 		}

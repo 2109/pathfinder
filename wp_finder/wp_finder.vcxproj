@@ -14,6 +14,7 @@
     <ProjectGuid>{2BC2BC43-4359-4191-B8F6-0F2C3778F9F3}</ProjectGuid>
     <RootNamespace>wp_finder</RootNamespace>
     <Keyword>MFCProj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -45,7 +46,7 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>../navcxx;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)Bin\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Build\$(ProjectName)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\</IntDir>
     <LibraryPath>$(SolutionDir)Bin\$(Configuration);$(LibraryPath)</LibraryPath>
     <SourcePath>;$(SourcePath)</SourcePath>
   </PropertyGroup>
@@ -63,6 +64,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <DisableSpecificWarnings>4244</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

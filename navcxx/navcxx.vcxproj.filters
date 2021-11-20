@@ -18,37 +18,37 @@
     <ClInclude Include="Util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Intersect.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MemoryStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NavMeshFinder.h">
+    <ClInclude Include="intersect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="minheap-internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MathEx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WpPathFinder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TilePathFinder.h">
+    <ClInclude Include="mathex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Plane.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vector-t.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vector-neron.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vector-sse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="memory_stream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="navmesh_finder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tile_path_finder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wp_path_finder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -59,25 +59,25 @@
     <ClCompile Include="Intersect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MemoryStream.cpp">
+    <ClCompile Include="mathex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NavMeshFinder.cpp">
+    <ClCompile Include="memory_stream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NavMeshLoader.cpp">
+    <ClCompile Include="navmesh_finder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NavMeshSearcher.cpp">
+    <ClCompile Include="navmesh_loader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MathEx.cpp">
+    <ClCompile Include="navmesh_search.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WpPathFinder.cpp">
+    <ClCompile Include="tile_path_finder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TilePathFinder.cpp">
+    <ClCompile Include="wp_path_finder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

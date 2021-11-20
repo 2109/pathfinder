@@ -126,7 +126,7 @@ BOOL CWpFinderDlg::OnInitDialog() {
 
 	m_wp_list.clear();
 
-	for (int i = 0; i < m_finder->size_; i++) {
+	for (unsigned int i = 0; i < m_finder->size_; i++) {
 		WpPathFinder::WpNode* node = &m_finder->node_[i];
 		WayPoint* wp = new WayPoint();
 		wp->id = i;
@@ -135,7 +135,7 @@ BOOL CWpFinderDlg::OnInitDialog() {
 		wp->r = 250;
 		wp->check = false;
 		m_wp_list[wp->id] = wp;
-		for (int j = 0; j < node->size_; j++) {
+		for (unsigned int j = 0; j < node->size_; j++) {
 			wp->link.insert(node->link_[j]);
 		}
 	}
@@ -198,7 +198,7 @@ void CWpFinderDlg::UpdateMesh() {
 	CBrush* obrush = dc.SelectObject(&brush);
 
 	CBrush brushDoor(RGB(88, 88, 0));
-	for (int i = 0; i < m_mesh_finder->mesh_->node_.size(); i++) {
+	for (unsigned int i = 0; i < m_mesh_finder->mesh_->node_.size(); i++) {
 		NavNode* node = m_mesh_finder->GetNode(i);
 		CPoint* pt = new CPoint[node->size_];
 
@@ -431,7 +431,7 @@ void CWpFinderDlg::OnBnClickedButton1() {
 	Math::Vector2 over((float)m_over->x, (float)m_over->y);
 	if (m_finder->Find(start, over, result) >= 0) {
 		m_path.push_back(CPoint(m_start->x, m_start->y));
-		for (int i = 0; i < result.size(); i++) {
+		for (unsigned int i = 0; i < result.size(); i++) {
 			m_path.push_back(CPoint(result[i]->x(), result[i]->y()));
 		}
 		m_path.push_back(CPoint(m_over->x, m_over->y));

@@ -3,8 +3,8 @@
 
 #include <string>
 #include <vector>
-#include "MemoryStream.h"
-#include "MathEx.h"
+#include "memory_stream.h"
+#include "mathex.h"
 // #include "Vector2.h"
 
 namespace Util {

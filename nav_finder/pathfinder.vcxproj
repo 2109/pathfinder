@@ -15,6 +15,7 @@
     <RootNamespace>pathfinder</RootNamespace>
     <Keyword>MFCProj</Keyword>
     <ProjectName>nav_finder</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -49,7 +50,7 @@
     <SourcePath>;$(SourcePath)</SourcePath>
     <TargetName>nav_finder</TargetName>
     <OutDir>$(SolutionDir)Bin\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Build\$(ProjectName)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -67,6 +68,9 @@
       <SDLCheck>true</SDLCheck>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <AdditionalIncludeDirectories>..\nav;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatSpecificWarningsAsErrors>
+      </TreatSpecificWarningsAsErrors>
+      <DisableSpecificWarnings>4244</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

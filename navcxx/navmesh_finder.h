@@ -4,8 +4,8 @@
 extern "C" {
 #include "minheap-internal.h"
 }
-#include "MathEx.h"
-#include "vector-t.h"
+#include "mathex.h"
+#include "vector.h"
 #include "Plane.h"
 #include <queue>
 

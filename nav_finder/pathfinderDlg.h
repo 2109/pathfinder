@@ -6,7 +6,7 @@
 
 
 
-#include "NavMeshFinder.h"
+#include "navmesh_finder.h"
 #include <vector>
 // CNavDlg ¶Ô»°¿ò
 class CNavDlg : public CDialogEx

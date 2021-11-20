@@ -9,7 +9,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include <random>
-#include "vector-t.h"
+#include "vector.h"
 
 #define PI (float)3.14159265358979323846
 

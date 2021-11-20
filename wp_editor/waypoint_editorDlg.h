@@ -6,7 +6,7 @@
 #include <vector>
 #include <set>
 #include <map>
-#include "NavMeshFinder.h"
+#include "navmesh_finder.h"
 
 struct WayPoint {
 	std::set<int> link;

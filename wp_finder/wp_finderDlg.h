@@ -7,8 +7,8 @@
 #include <vector>
 #include <set>
 #include <map>
-#include "NavMeshFinder.h"
-#include "WpPathFinder.h"
+#include "navmesh_finder.h"
+#include "wp_path_finder.h"
 
 struct WayPoint {
 	std::set<int> link;

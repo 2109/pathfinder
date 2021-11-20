@@ -1,6 +1,6 @@
-#include "Intersect.h"
-#include "Math.h"
-#include "NavMeshFinder.h"
+#include "intersect.h"
+#include "mathex.h"
+#include "navmesh_finder.h"
 
 struct SearchAux {
 	NavNode** link_;
@@ -48,7 +48,7 @@ void NavPathFinder::SearchTile(const Math::Vector3& pos, int depth, SearchFunc f
 		int xmin = x_index - depth;
 		int zmin = z_index - depth;
 		std::vector<IndexPair>* indexes = reactangle_index_[depth - 1];
-		for (int i = 0; i < indexes->size(); i++) {
+		for (unsigned int i = 0; i < indexes->size(); i++) {
 			IndexPair& pair = (*indexes)[i];
 			int x = xmin + pair.x_;
 			int z = zmin + pair.z_;

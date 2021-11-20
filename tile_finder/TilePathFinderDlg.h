@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <vector>
 #include <map>
-#include "TilePathFinder.h"
+#include "tile_path_finder.h"
 // CTilePathFinderDlg 对话框
 class CTilePathFinderDlg : public CDialogEx {
 	// 构造

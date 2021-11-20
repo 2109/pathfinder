@@ -6,9 +6,7 @@
 #include <unordered_set>
 #include <algorithm>
 #include <assert.h>
-#include "vector-t.h"
-// #include "Vector2.h"
-// #include "Vector3.h"
+#include "vector.h"
 
 namespace Math {
 	bool IsCapsuleCircleIntersect(const Vector<float, 2>& x0, const Vector<float, 2>& x1, float cr, const Vector<float, 2>& center, float r);

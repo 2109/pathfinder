@@ -148,7 +148,7 @@ BOOL CNavDlg::OnInitDialog() {
 		memdc->SelectObject(&memBitmap);
 		memdc->FillSolidRect(0, 0, rect.Width(), rect.Height(), RGB(255, 255, 255));
 
-		for (int i = 0; i < m_finder->mesh_->node_.size(); i++) {
+		for (unsigned int i = 0; i < m_finder->mesh_->node_.size(); i++) {
 			NavNode* node = m_finder->GetNode(i);
 			CPoint* pt = new CPoint[node->size_];
 
@@ -263,7 +263,7 @@ void OnOverlayDump(void* self, std::vector<const Math::Vector3*>& poly) {
 	dc.SelectObject(&brush);
 
 	CPoint* pt = new CPoint[poly.size()];
-	for (int j = 0; j < poly.size(); j++) {
+	for (unsigned int j = 0; j < poly.size(); j++) {
 		const Math::Vector3* pos = poly[j];
 		pt[j].x = pos->x() * dlgPtr->m_scale + dlgPtr->m_offset_x;
 		pt[j].y = pos->z() * dlgPtr->m_scale + dlgPtr->m_offset_z;
@@ -733,7 +733,7 @@ void CNavDlg::DrawPath(std::vector<const Math::Vector3*>& path) {
 
 
 	dc.MoveTo(path[0]->x() * m_scale + m_offset_x, path[0]->z() * m_scale + m_offset_z);
-	for (int i = 1; i < path.size(); i++) {
+	for (unsigned int i = 1; i < path.size(); i++) {
 		dc.LineTo(path[i]->x() * (float)m_scale + (float)m_offset_x, path[i]->z() * (float)m_scale + (float)m_offset_z);
 		dc.MoveTo(path[i]->x() * (float)m_scale + (float)m_offset_x, path[i]->z() * (float)m_scale + (float)m_offset_z);
 	}

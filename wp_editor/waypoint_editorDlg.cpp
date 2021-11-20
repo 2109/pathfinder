@@ -9,7 +9,7 @@
 #include <io.h>    
 #include <fcntl.h>  
 #include <fstream>
-#include "MemoryStream.h"
+#include "memory_stream.h"
 #include "Util.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW

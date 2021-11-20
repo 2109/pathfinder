@@ -1,6 +1,5 @@
-// #include "Vector2.h"
-#include "Util.h"
-#include "TilePathFinder.h"
+#include "util.h"
+#include "tile_path_finder.h"
 
 #define DX(A,B) (A->pos_[0] - B->pos_[0])
 #define DZ(A,B) (A->pos_[1] - B->pos_[1])
@@ -168,7 +167,7 @@ TilePathFinder::PathNode* TilePathFinder::SearchInCircle(int cx, int cz, int dep
 		} else {
 			std::vector<Math::Vector2> range;
 			Util::GetCircleRoundIndex(i, range);
-			for (int i = 0; i < range.size(); ++i) {
+			for (unsigned int i = 0; i < range.size(); ++i) {
 				const Math::Vector2& offset = range[i];
 				PathNode* node = FindNode(cx + offset[0], cz + offset[1]);
 				if (node) {
@@ -291,9 +290,9 @@ void TilePathFinder::BuildPath(PathNode* node, PathNode* from, SmoothType smooth
 
 	if (smooth & SmoothType::Tail) {
 		std::vector<const Math::Vector2*> smooth_path;
-		for (int head = 0; head < list.size() - 1; head++) {
+		for (unsigned int head = 0; head < list.size() - 1; head++) {
 			smooth_path.push_back(list[head]);
-			for (int tail = list.size() - 1; tail > head + 1; tail--) {
+			for (unsigned int tail = list.size() - 1; tail > head + 1; tail--) {
 				const Math::Vector2* head_node = list[head];
 				const Math::Vector2* tail_node = list[tail];
 				Math::Vector2 result;
@@ -576,7 +575,7 @@ int TilePathFinder::RandomInCircle(int cx, int cz, int radius, Math::Vector2& re
 	} else {
 		std::vector<Math::Vector2> pair_info;
 		Util::GetCircleIndex(radius, pair_info);
-		for (int i = 0; i < pair_info.size(); ++i) {
+		for (unsigned int i = 0; i < pair_info.size(); ++i) {
 			const Math::Vector2& offset = pair_info[i];
 			PathNode* node = FindNode(cx + offset[0], cz + offset[1]);
 			if (node) {
