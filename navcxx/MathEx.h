@@ -9,12 +9,11 @@
 #include <sstream>
 #include <stdlib.h>
 #include <random>
+#include "vector-t.h"
 
 #define PI (float)3.14159265358979323846
 
 namespace Math {
-	class Vector2;
-	class Vector3;
 
 	inline float Rad(float angle) {
 		return angle * (PI / 180);
@@ -57,9 +56,9 @@ namespace Math {
 		return dist(rd);
 	}
 
-	bool InsideVector(const Math::Vector3& lhs, const Math::Vector3& rhs, const Math::Vector3& pos);
+	bool InsideVector(const Vector3& lhs, const Vector3& rhs, const Vector3& pos);
 
-	bool InsidePoly(std::vector<Math::Vector3>& vertice, const Math::Vector3& pos);
+	bool InsidePoly(std::vector<Vector3>& vertice, const Vector3& pos);
 
 	float SqrDistancePointToSegment(const Vector3& a, const Vector3& u, const Vector3& b, Vector3* p);
 

@@ -5,7 +5,7 @@
 #include <vector>
 #include "MemoryStream.h"
 #include "MathEx.h"
-#include "Vector2.h"
+// #include "Vector2.h"
 
 namespace Util {
 	int ReadFile(const char* file, std::string& result);

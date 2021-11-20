@@ -1,7 +1,7 @@
 #ifndef PLANE_H
 #define PLANE_H
 
-#include "Vector3.h"
+#include "vector-t.h"
 
 namespace Math {
 	class Plane {
@@ -22,7 +22,7 @@ namespace Math {
 
 		Plane(const Vector3& vt, float distance) {
 			normal_ = vt;
-			ToNormalize(normal_);
+			Normalize(normal_);
 			distance_ = distance;
 		}
 
@@ -54,21 +54,21 @@ namespace Math {
 	}
 
 	inline void Plane::Set(float a, float b, float c, float d) {
-		normal_.x = a;
-		normal_.y = b;
-		normal_.z = c;
+		normal_.v[0] = a;
+		normal_.v[1] = b;
+		normal_.v[2] = c;
 		distance_ = d;
 	}
 
 	inline void Plane::Set(const Vector3& a, const Vector3& b, const Vector3& c) {
 		normal_ = CalcNormalFromTriangle(a, b, c);
-		ToNormalize(normal_);
+		Normalize(normal_);
 		distance_ = -Dot(normal_, a);
 	}
 
 	inline void Plane::Set(const Vector3& vt, const Vector3& pt) {
 		normal_ = vt;
-		ToNormalize(normal_);
+		Normalize(normal_);
 		distance_ = -Dot(normal_, pt);
 	}
 
@@ -102,7 +102,7 @@ namespace Math {
 		Vector3 dir = v1 - v0;
 		float d = GetDistance(v0);
 		float f = Dot(normal_, dir);
-		if (fabs(f) < Vector3::Epsilon) return false;
+		if (fabs(f) < Math::Epsilon) return false;
 		ret = v0 - (d / f) * dir;
 		return true;
 	}

@@ -6,11 +6,12 @@
 #include <unordered_set>
 #include <algorithm>
 #include <assert.h>
-#include "Vector2.h"
-#include "Vector3.h"
+#include "vector-t.h"
+// #include "Vector2.h"
+// #include "Vector3.h"
 
 namespace Math {
-	bool IsCapsuleCircleIntersect(const Vector2& x0, const Vector2& x1, float cr, const Vector2& center, float r);
+	bool IsCapsuleCircleIntersect(const Vector<float, 2>& x0, const Vector<float, 2>& x1, float cr, const Vector<float, 2>& center, float r);
 
 	bool IsCircleCircleIntersect(const Vector2& src, float l, const Vector2& center, float r);
 

@@ -103,7 +103,7 @@ BOOL CWpFinderDlg::OnInitDialog() {
 	AllocConsole();
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	int hCrt = _open_osfhandle((long)handle, _O_TEXT);
-	FILE * hf = _fdopen(hCrt, "w");
+	FILE* hf = _fdopen(hCrt, "w");
 	*stdout = *hf;
 
 	CString navTile;
@@ -111,7 +111,7 @@ BOOL CWpFinderDlg::OnInitDialog() {
 	FILE* fp = _wfopen(navTile.GetBuffer(0), _T("rb"));
 
 	USES_CONVERSION;
-	char * pFileName = T2A(navTile);
+	char* pFileName = T2A(navTile);
 
 	m_mesh_finder = NavPathFinder::LoadMeshEx(pFileName);
 
@@ -130,8 +130,8 @@ BOOL CWpFinderDlg::OnInitDialog() {
 		WpPathFinder::WpNode* node = &m_finder->node_[i];
 		WayPoint* wp = new WayPoint();
 		wp->id = i;
-		wp->pt.x = node->pos_.x;
-		wp->pt.y = node->pos_.y;
+		wp->pt.x = node->pos_.x();
+		wp->pt.y = node->pos_.y();
 		wp->r = 250;
 		wp->check = false;
 		m_wp_list[wp->id] = wp;
@@ -192,10 +192,10 @@ HCURSOR CWpFinderDlg::OnQueryDragIcon() {
 void CWpFinderDlg::UpdateMesh() {
 	CPen pen(PS_SOLID, 1, RGB(0, 0, 0));
 	CClientDC dc(this);
-	CPen *open = dc.SelectObject(&pen);
+	CPen* open = dc.SelectObject(&pen);
 
 	CBrush brush(RGB(255, 0, 0));
-	CBrush *obrush = dc.SelectObject(&brush);
+	CBrush* obrush = dc.SelectObject(&brush);
 
 	CBrush brushDoor(RGB(88, 88, 0));
 	for (int i = 0; i < m_mesh_finder->mesh_->node_.size(); i++) {
@@ -210,8 +210,8 @@ void CWpFinderDlg::UpdateMesh() {
 		for (int j = 0; j < node->size_; j++) {
 			Math::Vector3* pos = &m_mesh_finder->mesh_->vertice_[node->vertice_[j]];
 
-			pt[j].x = pos->x*m_scale + m_offset_x;
-			pt[j].y = pos->z*m_scale + m_offset_z;
+			pt[j].x = pos->x() * m_scale + m_offset_x;
+			pt[j].y = pos->z() * m_scale + m_offset_z;
 		}
 		dc.Polygon(pt, node->size_);
 		delete[] pt;
@@ -250,7 +250,7 @@ void CWpFinderDlg::UpdateMesh() {
 			}
 		}
 
-		dc.Ellipse(mesh_pt_from.x - wp->r * m_scale, mesh_pt_from.y - wp->r* m_scale, mesh_pt_from.x + wp->r* m_scale, mesh_pt_from.y + wp->r* m_scale);
+		dc.Ellipse(mesh_pt_from.x - wp->r * m_scale, mesh_pt_from.y - wp->r * m_scale, mesh_pt_from.x + wp->r * m_scale, mesh_pt_from.y + wp->r * m_scale);
 	}
 
 	if (m_start) {
@@ -396,14 +396,14 @@ void OnPathDump(void* ud, int x, int z) {
 
 void OnSearchDump(void* ud, const Math::Vector2& pos) {
 	CWpFinderDlg* self = (CWpFinderDlg*)ud;
-	self->m_search.push_back(CPoint(pos.x, pos.y));
+	self->m_search.push_back(CPoint(pos.x(), pos.y()));
 
-	CPoint pt(pos.x, pos.y);
+	CPoint pt(pos.x(), pos.y());
 	CPoint editor_pt;
 	self->mesh2editor(&pt, &editor_pt);
 	CClientDC dc(self);
 	CBrush brush(RGB(0, 255, 0));
-	CBrush *obrush = dc.SelectObject(&brush);
+	CBrush* obrush = dc.SelectObject(&brush);
 	dc.Ellipse(editor_pt.x - 250 * self->m_scale, editor_pt.y - 250 * self->m_scale, editor_pt.x + 250 * self->m_scale, editor_pt.y + 250 * self->m_scale);
 	dc.SelectObject(obrush);
 	Sleep(100);
@@ -427,12 +427,12 @@ void CWpFinderDlg::OnBnClickedButton1() {
 	m_finder->SetDebugCallback(OnSearchDump, this);
 
 	std::vector<const Math::Vector2*> result;
-	Math::Vector2 start(m_start->x, m_start->y);
-	Math::Vector2 over(m_over->x, m_over->y);
+	Math::Vector2 start((float)m_start->x, (float)m_start->y);
+	Math::Vector2 over((float)m_over->x, (float)m_over->y);
 	if (m_finder->Find(start, over, result) >= 0) {
 		m_path.push_back(CPoint(m_start->x, m_start->y));
 		for (int i = 0; i < result.size(); i++) {
-			m_path.push_back(CPoint(result[i]->x, result[i]->y));
+			m_path.push_back(CPoint(result[i]->x(), result[i]->y()));
 		}
 		m_path.push_back(CPoint(m_over->x, m_over->y));
 	}

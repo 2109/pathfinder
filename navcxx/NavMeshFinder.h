@@ -4,8 +4,8 @@
 extern "C" {
 #include "minheap-internal.h"
 }
-#include "Math.h"
-#include "Vector3.h"
+#include "MathEx.h"
+#include "vector-t.h"
 #include "Plane.h"
 #include <queue>
 
@@ -233,15 +233,15 @@ public:
 	}
 
 	inline NavTile* GetTile(const Math::Vector3& pos) {
-		if (pos.x < mesh_->lt_.x || pos.x > mesh_->br_.x) {
+		if (pos.x() < mesh_->lt_.x() || pos.x() > mesh_->br_.x()) {
 			return NULL;
 		}
-		if (pos.z < mesh_->lt_.z || pos.z > mesh_->br_.z) {
+		if (pos.z() < mesh_->lt_.z() || pos.z() > mesh_->br_.z()) {
 			return NULL;
 		}
 
-		int x_index = (pos.x - mesh_->lt_.x) / mesh_->tile_unit_;
-		int z_index = (pos.z - mesh_->lt_.z) / mesh_->tile_unit_;
+		int x_index = (pos.x() - mesh_->lt_.x()) / mesh_->tile_unit_;
+		int z_index = (pos.z() - mesh_->lt_.z()) / mesh_->tile_unit_;
 
 		return GetTile(x_index, z_index);
 	}
@@ -334,13 +334,13 @@ public:
 
 	static inline bool AngleCompare(const VertexAux& lhs, const VertexAux& rhs) {
 		Math::Vector3 v0 = lhs.center_ - lhs.pos_;
-		float angle0 = atan2(v0.z, v0.x) * 180 / PI;
+		float angle0 = atan2(v0.z(), v0.x()) * 180 / PI;
 		if (angle0 < 0) {
 			angle0 += 360;
 		}
 
 		Math::Vector3 v1 = rhs.center_ - rhs.pos_;
-		float angle1 = atan2(v1.z, v1.x) * 180 / PI;
+		float angle1 = atan2(v1.z(), v1.x()) * 180 / PI;
 		if (angle1 < 0) {
 			angle1 += 360;
 		}

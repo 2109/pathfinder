@@ -31,8 +31,8 @@ WpPathFinder::WpPathFinder(const char* file) {
 		WpNode* node = &node_[i];
 		uint32_t x, z;
 		ms >> x >> z;
-		node->pos_.x = x;
-		node->pos_.y = z;
+		node->pos_.v[0] = x;
+		node->pos_.v[1] = z;
 	}
 
 	for (uint32_t i = 0; i < size_; ++i) {
@@ -158,8 +158,8 @@ int WpPathFinder::Find(const Math::Vector2& from, const Math::Vector2& to, std::
 }
 
 int WpPathFinder::Find(int x0, int z0, int x1, int z1, std::vector<const Math::Vector2*>& list) {
-	const Math::Vector2 from(x0, z0);
-	const Math::Vector2 to(x1, z1);
+	const Math::Vector2 from((float)x0, (float)z0);
+	const Math::Vector2 to((float)x1, (float)z1);
 	return Find(from, to, list);
 }
 

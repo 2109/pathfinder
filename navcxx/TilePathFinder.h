@@ -1,16 +1,11 @@
 #ifndef TILE_PATH_FINDER_H
 #define TILE_PATH_FINDER_H
-
+#include <queue>
 extern "C" {
 #include "minheap-internal.h"
 }
 #include "MathEx.h"
-#include "Vector2.h"
-#include <queue>
-
-namespace Math {
-	class Vector2;
-};
+#include "vector-t.h"
 
 class TilePathFinder {
 public:

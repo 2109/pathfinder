@@ -283,15 +283,15 @@ void CTilePathFinderDlg::FindPath(bool check_close) {
 	if (m_smooth_tail) {
 		st |= TilePathFinder::Tail;
 	}
-	Math::Vector2 from(m_begin_x, m_begin_z);
-	Math::Vector2 to(m_over_x, m_over_z);
+	Math::Vector2 from((float)m_begin_x, (float)m_begin_z);
+	Math::Vector2 to((float)m_over_x, (float)m_over_z);
 
 	std::vector<const Math::Vector2*> list;
 	m_tile_finder->Find(from, to, list, (TilePathFinder::SmoothType)st, check_close, m_cost);
 	for (int i = 0; i < list.size(); i++) {
 		POINT* pt = new POINT();
-		pt->x = list[i]->x;
-		pt->y = list[i]->y;
+		pt->x = list[i]->x();
+		pt->y = list[i]->y();
 		m_path.push_back(pt);
 	}
 
@@ -413,7 +413,7 @@ void CTilePathFinderDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 				m_begin_x = (point.x - m_offset_x) / m_scale;
 				m_begin_z = (point.y - m_offset_z) / m_scale;
 				m_tile_finder->RandomInCircle(m_begin_x, m_begin_z, 10, result);
-				dc.SetPixel((result.x + (Math::Rand((float)0, (float)1))) * (float)m_scale + m_offset_x, (result.y + (Math::Rand((float)0, (float)1))) * (float)m_scale + m_offset_z, RGB(255, 255, 250));
+				dc.SetPixel((result.x() + (Math::Rand((float)0, (float)1))) * (float)m_scale + m_offset_x, (result.y() + (Math::Rand((float)0, (float)1))) * (float)m_scale + m_offset_z, RGB(255, 255, 250));
 			}
 		} else if (bCtrl) {
 			CClientDC cdc(this);
@@ -453,8 +453,8 @@ void CTilePathFinderDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 					node = m_tile_finder->SearchInReactangle(m_over_x, m_over_z, 16);
 				}
 				if (node) {
-					m_over_x = node->pos_.x;
-					m_over_z = node->pos_.y;
+					m_over_x = node->pos_.x();
+					m_over_z = node->pos_.y();
 					DrawOver();
 				}
 			} else {
@@ -527,8 +527,8 @@ void CTilePathFinderDlg::RayCast(int type) {
 
 	m_tile_finder->SetDebugCallback(m_show_line_search ? CTilePathFinderDlg::OnSearchDump : NULL, this);
 
-	const Math::Vector2 fromPos(m_begin_x, m_begin_z);
-	const Math::Vector2 toPos(m_over_x, m_over_z);
+	const Math::Vector2 fromPos((float)m_begin_x, (float)m_begin_z);
+	const Math::Vector2 toPos((float)m_over_x, (float)m_over_z);
 	Math::Vector2 result;
 	Math::Vector2 stop;
 
@@ -549,14 +549,14 @@ void CTilePathFinderDlg::RayCast(int type) {
 	from.x = (m_begin_x + 0.5) * m_scale + m_offset_x;
 	from.y = (m_begin_z + 0.5) * m_scale + m_offset_z;
 	POINT to;
-	to.x = (result.x + 0.5) * m_scale + m_offset_x;
-	to.y = (result.y + 0.5) * m_scale + m_offset_z;
+	to.x = (result.x() + 0.5) * m_scale + m_offset_x;
+	to.y = (result.y() + 0.5) * m_scale + m_offset_z;
 	cdc.MoveTo(from);
 	cdc.LineTo(to);
 	cdc.SelectObject(oriPen);
 
 	CBrush* ori = cdc.SelectObject(pBrushStop);
-	DrawTile(&cdc, stop.x, stop.y);
+	DrawTile(&cdc, stop.x(), stop.y());
 	cdc.SelectObject(ori);
 
 	CString str;
@@ -578,8 +578,8 @@ void CTilePathFinderDlg::OnRandomPos() {
 		Math::Vector2 result;
 		m_tile_finder->Random(result);
 		POINT pt;
-		pt.x = ((float)result.x + Math::Rand(0.0f, 1.0f)) * (float)m_scale + m_offset_x;
-		pt.y = ((float)result.y + Math::Rand(0.0f, 1.0f)) * (float)m_scale + m_offset_z;
+		pt.x = ((float)result.x() + Math::Rand(0.0f, 1.0f)) * (float)m_scale + (float)m_offset_x;
+		pt.y = ((float)result.y() + Math::Rand(0.0f, 1.0f)) * (float)m_scale + (float)m_offset_z;
 
 		cdc.Ellipse(pt.x - 2, pt.y - 2, pt.x + 2, pt.y + 2);
 	}

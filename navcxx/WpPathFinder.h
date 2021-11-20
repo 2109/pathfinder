@@ -4,7 +4,7 @@ extern "C" {
 #include "minheap-internal.h"
 }
 #include "MathEx.h"
-#include "Vector2.h"
+// #include "Vector2.h"
 
 
 class WpPathFinder {

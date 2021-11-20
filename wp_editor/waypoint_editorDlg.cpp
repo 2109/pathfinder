@@ -199,8 +199,8 @@ void CWpEditorDlg::UpdateMesh() {
 		for (int j = 0; j < node->size_; j++) {
 			Math::Vector3* pos = &m_finder->mesh_->vertice_[node->vertice_[j]];
 
-			pt[j].x = pos->x*m_scale + m_offset_x;
-			pt[j].y = pos->z*m_scale + m_offset_z;
+			pt[j].x = pos->x()*m_scale + m_offset_x;
+			pt[j].y = pos->z()*m_scale + m_offset_z;
 		}
 		dc.Polygon(pt, node->size_);
 		delete[] pt;
@@ -278,7 +278,7 @@ void CWpEditorDlg::OnLButtonUp(UINT nFlags, CPoint point) {
 
 	CPoint mesh_pt;
 	editor2mesh(point, mesh_pt);
-	NavNode* node = m_finder->SearchNode(Math::Vector3((float)mesh_pt.x, 0, (double)mesh_pt.y), 1);
+	NavNode* node = m_finder->SearchNode(Math::Vector3((float)mesh_pt.x, 0.0f, (float)mesh_pt.y), 1);
 	if (node == NULL)
 		return;
 
@@ -343,7 +343,7 @@ void CWpEditorDlg::OnRButtonUp(UINT nFlags, CPoint point) {
 	{
 		CPoint mesh_pt;
 		editor2mesh(point, mesh_pt);
-		NavNode* node = m_finder->SearchNode(Math::Vector3((float)mesh_pt.x, 0, (double)mesh_pt.y), 1);
+		NavNode* node = m_finder->SearchNode(Math::Vector3((float)mesh_pt.x, 0.0f, (float)mesh_pt.y), 1);
 		if (node == NULL)
 			return;
 

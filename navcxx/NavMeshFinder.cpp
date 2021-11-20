@@ -8,16 +8,16 @@ static inline int NodeCmp(min_elt_t* lhs, min_elt_t* rhs) {
 }
 
 static inline float NeighborEstimate(NavNode* src, NavNode* dst) {
-	double dx = src->pos_.x - dst->pos_.x;
+	double dx = src->pos_.x() - dst->pos_.x();
 	double dy = 0;
-	double dz = src->pos_.z - dst->pos_.z;
+	double dz = src->pos_.z() - dst->pos_.z();
 	return sqrt(dx * dx + dy * dy + dz * dz) * NavPathFinder::kGrate;
 }
 
 static inline float GoalEstimate(NavNode* src, const Math::Vector3& dst) {
-	double dx = src->center_.x - dst.x;
+	double dx = src->center_.x() - dst.x();
 	double dy = 0;
-	double dz = src->center_.z - dst.z;
+	double dz = src->center_.z() - dst.z();
 	return sqrt(dx * dx + dy * dy + dz * dz) * NavPathFinder::kHrate;
 }
 
@@ -285,7 +285,7 @@ NavNode* NavPathFinder::NextEdge(NavNode* node, const Math::Vector3& wp, int& li
 		NavEdge* edge = GetEdge(link_edge);
 		vt0 = mesh_->vertice_[edge->a_] - wp;
 		vt1 = mesh_->vertice_[edge->b_] - wp;
-		if ((vt0.x == 0 && vt0.z == 0) || (vt1.x == 0 && vt1.z == 0)) {
+		if ((vt0.x() == 0 && vt0.z() == 0) || (vt1.x() == 0 && vt1.z() == 0)) {
 			node = node->link_parent_;
 			link_edge = node->link_edge_;
 		} else {
@@ -365,7 +365,7 @@ struct Funnel {
 
 	SIDE SideLeft(const Math::Vector3& pt) {
 		Math::Vector3 tmp = pt - pivot_;
-		float cross = Math::CrossY(lvt_, tmp);
+		float cross = Math::Cross_Y(lvt_, tmp);
 		if (cross < 0) {
 			return eRIGHT;
 		} else if (cross > 0) {
@@ -376,7 +376,7 @@ struct Funnel {
 
 	SIDE SideRight(const Math::Vector3& pt) {
 		Math::Vector3 tmp = pt - pivot_;
-		float cross = Math::CrossY(rvt_, tmp);
+		float cross = Math::Cross_Y(rvt_, tmp);
 		if (cross < 0) {
 			return eRIGHT;
 		} else if (cross > 0) {
@@ -477,7 +477,7 @@ bool NavPathFinder::InsideTriangle(int a, int b, int c, const Math::Vector3& pos
 		const Math::Vector3& pt1 = mesh_->vertice_[vert[(i + 1) % 3]];
 		Math::Vector3 vt0 = pos - pt0;
 		Math::Vector3 vt1 = pt1 - pt0;
-		float cross = Math::CrossY(vt0, vt1);
+		float cross = Math::Cross_Y(vt0, vt1);
 		if (cross == 0) {
 			continue;
 		}
@@ -502,7 +502,7 @@ bool NavPathFinder::InsidePoly(std::vector<int>& index, const Math::Vector3& pos
 		const Math::Vector3& pt1 = mesh_->vertice_[index[(i + 1) % count]];
 		Math::Vector3 vt0 = pos - pt0;
 		Math::Vector3 vt1 = pt1 - pt0;
-		float cross = Math::CrossY(vt0, vt1);
+		float cross = Math::Cross_Y(vt0, vt1);
 		if (cross == 0) {
 			continue;
 		}

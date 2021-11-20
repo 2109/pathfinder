@@ -1,13 +1,13 @@
 
-#include "Vector3.h"
+// #include "Vector3.h"
 #include "MathEx.h"
 
 
 namespace Math {
 
-	bool InsideVector(const Math::Vector3& lhs, const Math::Vector3& rhs, const Math::Vector3& pos) {
-		float lCross = CrossY(lhs, pos);
-		float rCross = CrossY(rhs, pos);
+	bool InsideVector(const Vector3& lhs, const Vector3& rhs, const Vector3& pos) {
+		float lCross = Cross_Y(lhs, pos);
+		float rCross = Cross_Y(rhs, pos);
 
 		if ((lCross < 0 && rCross > 0) || (lCross == 0 && rCross > 0) || (lCross < 0 && rCross == 0)) {
 			return true;
@@ -15,15 +15,15 @@ namespace Math {
 		return false;
 	}
 
-	bool InsidePoly(std::vector<Math::Vector3>& vertice, const Math::Vector3& pos) {
+	bool InsidePoly(std::vector<Vector3>& vertice, const Vector3& pos) {
 		int sign = 0;
 		int count = vertice.size();
 		for (int i = 0; i < count; ++i) {
-			Math::Vector3& pt0 = vertice[i];
-			Math::Vector3& pt1 = vertice[(i + 1) % count];
-			Math::Vector3 vt0 = pos - pt0;
-			Math::Vector3 vt1 = pt1 - pt0;
-			float cross = CrossY(vt0, vt1);
+			Vector3& pt0 = vertice[i];
+			Vector3& pt1 = vertice[(i + 1) % count];
+			Vector3 vt0 = pos - pt0;
+			Vector3 vt1 = pt1 - pt0;
+			float cross = Cross_Y(vt0, vt1);
 			if (cross == 0) {
 				continue;
 			}
@@ -41,7 +41,7 @@ namespace Math {
 	}
 
 	float SqrDistancePointToSegment(const Vector3& a, const Vector3& u, const Vector3& b, Vector3* p) {
-		float t = Dot(b - a, u) / SqrMagnitude(u);
+		float t = Dot(b - a, u) / LengthSquared(u);
 		Vector3 dot = a + u * Clamp(t, 0, 1);
 		if (p) {
 			*p = dot;
@@ -62,7 +62,7 @@ namespace Math {
 			int next = (i + 1) % vertice.size();
 			const Vector3* pt0 = vertice[last];
 			const Vector3* pt1 = vertice[next];
-			area += pt0->x * pt1->z - pt0->z * pt1->x;
+			area += pt0->x() * pt1->z() - pt0->z() * pt1->x();
 		}
 		return fabs(area / 2.0);
 	}
@@ -74,15 +74,16 @@ namespace Math {
 		float dx = sin(Rad(angle)) * rr;
 		float dz = cos(Rad(angle)) * rr;
 
-		return Vector3(center.x + dx, 0, center.z + dz);
+		return Vector3(center.x() + dx, 0.0f, center.z() + dz);
 	}
 
 	Vector3 RandomInRectangle(const Vector3& center, float length, float width, float angle) {
 		float dx = Math::Rand(-length / 2, length / 2);
 		float dz = Math::Rand(-width / 2, width / 2);
 
-		Vector3 result(center.x + dx, 0, center.z + dz);
-		return Rotation(result, center, 360 - angle);
+		Vector3 result(center.x() + dx, 0.0f, center.z() + dz);
+		Rotate(result, center, 360 - angle);
+		return result;
 	}
 
 	Vector3 RandomInTriangle(const Vector3& a, const Vector3& b, const Vector3& c) {
@@ -97,7 +98,7 @@ namespace Math {
 			z = 1 - z;
 		}
 
-		return Vector3(a.x + ab.x * x + ac.x * z, 0, a.z + ab.z * x + ac.z * z);
+		return Vector3(a.x() + ab.x() * x + ac.x() * z, 0.0f, a.z() + ab.z() * x + ac.z() * z);
 	}
 
 	Vector3 RandomInPoly(std::vector<const Vector3*>& vertice, float area) {

@@ -62,12 +62,12 @@ namespace Util {
 					auto it = set.find(zOffset);
 					if (it == set.end()) {
 						set.insert(zOffset);
-						result.push_back(Math::Vector2(xOffset, zOffset));
+						result.push_back(Math::Vector2((float)xOffset, (float)zOffset));
 					}
 				} else {
 					record[xOffset] = std::unordered_set<int>();
 					record[xOffset].insert(zOffset);
-					result.push_back(Math::Vector2(xOffset, zOffset));
+					result.push_back(Math::Vector2((float)xOffset, (float)zOffset));
 				}
 			}
 
@@ -100,12 +100,12 @@ namespace Util {
 						auto it = set.find(zOffset);
 						if (it == set.end()) {
 							set.insert(zOffset);
-							result.push_back(Math::Vector2(xOffset, zOffset));
+							result.push_back(Math::Vector2((float)xOffset, (float)zOffset));
 						}
 					} else {
 						record[xOffset] = std::unordered_set<int>();
 						record[xOffset].insert(zOffset);
-						result.push_back(Math::Vector2(xOffset, zOffset));
+						result.push_back(Math::Vector2((float)xOffset, (float)zOffset));
 					}
 				}
 			}
